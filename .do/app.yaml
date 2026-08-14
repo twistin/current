@@ -19,8 +19,6 @@ databases:
     engine: PG
     version: "15"
     production: false
-    db_name: current
-    db_user: current
 
 services:
   - name: backend
