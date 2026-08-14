@@ -4,6 +4,12 @@ use std::net::SocketAddr;
 async fn main() {
     tracing_subscriber::fmt::init();
 
+    for (k, v) in std::env::vars() {
+        if k.contains("DB") || k.contains("DATABASE") || k.contains("POSTGRES") {
+            tracing::info!("ENV DB DEBUG: {}={}", k, if k.contains("URL") || k.contains("PASS") { "[REDACTED]" } else { &v });
+        }
+    }
+
     let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
         "postgres://current:current_secret@localhost:5432/current_dev".to_string()
     });

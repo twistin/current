@@ -17,7 +17,7 @@ ingress:
 databases:
   - name: db
     engine: PG
-    version: "14"
+    version: "15"
     production: false
 
 services:
