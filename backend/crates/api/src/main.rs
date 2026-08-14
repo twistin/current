@@ -18,25 +18,30 @@ async fn main() {
         .await
         .expect("No se pudo conectar a PostgreSQL");
 
-    // En PostgreSQL 15+ de nubes gestionadas, los usuarios no-superuser no pueden crear tablas en 'public'.
-    // Creamos el esquema propio 'current', ajustamos search_path en la sesión y en la rol del usuario.
-    tracing::info!("Configurando esquema de base de datos 'current'...");
+    // Prevenir bloqueos de advisory locks y preparar esquema
+    tracing::info!("Configurando base de datos...");
+    let _ = sqlx::query("SELECT pg_advisory_unlock_all()")
+        .execute(&pool)
+        .await;
     let _ = sqlx::query("CREATE SCHEMA IF NOT EXISTS current")
         .execute(&pool)
         .await;
-    let _ = sqlx::query("SET search_path TO current")
-        .execute(&pool)
-        .await;
-    let _ = sqlx::query("ALTER ROLE CURRENT_USER SET search_path TO current")
+    let _ = sqlx::query("SET search_path TO current, public")
         .execute(&pool)
         .await;
 
-    // Ejecutar migraciones SQLx sobre la base de datos (idempotente)
+    // Ejecutar migraciones SQLx con un timeout de 15s para garantizar el arranque rápido del servidor HTTP
     tracing::info!("Ejecutando migraciones SQLx...");
-    sqlx::migrate!("../../migrations")
-        .run(&pool)
-        .await
-        .expect("Error al ejecutar migraciones SQLx en la base de datos");
+    match tokio::time::timeout(
+        std::time::Duration::from_secs(15),
+        sqlx::migrate!("../../migrations").run(&pool),
+    )
+    .await
+    {
+        Ok(Ok(_)) => tracing::info!("Migraciones SQLx completadas exitosamente"),
+        Ok(Err(err)) => tracing::warn!("Aviso durante las migraciones: {}", err),
+        Err(_) => tracing::warn!("Timeout al ejecutar migraciones SQLx, continuando con el arranque"),
+    }
 
     let app = current_api::router::build_router(pool);
 
