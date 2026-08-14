@@ -2,8 +2,7 @@ use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use sqlx::PgPool;
 use std::str::FromStr;
 
-/// Crea el pool de conexiones a PostgreSQL asegurando la creación del esquema 'current'
-/// y fijando search_path TO current, public en cada conexión nueva vía after_connect.
+/// Crea el pool de conexiones a PostgreSQL reseteando el search_path a 'public'.
 pub async fn create_pool(database_url: &str) -> Result<PgPool, sqlx::Error> {
     let options = PgConnectOptions::from_str(database_url)?;
 
@@ -11,12 +10,12 @@ pub async fn create_pool(database_url: &str) -> Result<PgPool, sqlx::Error> {
         .max_connections(10)
         .after_connect(|conn, _meta| {
             Box::pin(async move {
-                sqlx::query("CREATE SCHEMA IF NOT EXISTS current")
+                let _ = sqlx::query("ALTER ROLE CURRENT_USER SET search_path TO public")
                     .execute(&mut *conn)
-                    .await?;
-                sqlx::query("SET search_path TO current, public")
+                    .await;
+                let _ = sqlx::query("SET search_path TO public")
                     .execute(&mut *conn)
-                    .await?;
+                    .await;
                 Ok(())
             })
         })

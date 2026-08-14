@@ -28,7 +28,7 @@ async fn main() {
 
         tracing::info!("Ejecutando migraciones SQLx en segundo plano...");
         match sqlx::migrate!("../../migrations").run(&migration_pool).await {
-            Ok(_) => tracing::info!("Migraciones SQLx aplicadas exitosamente en 'current'"),
+            Ok(_) => tracing::info!("Migraciones SQLx aplicadas exitosamente en 'public'"),
             Err(err) => tracing::error!("Error al aplicar migraciones SQLx: {}", err),
         }
     });
