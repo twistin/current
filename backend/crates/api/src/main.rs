@@ -2,7 +2,6 @@ use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() {
-    // Inicializar el sistema de logs (respetando RUST_LOG si existe).
     tracing_subscriber::fmt::init();
 
     let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
@@ -18,17 +17,31 @@ async fn main() {
         .await
         .expect("No se pudo conectar a PostgreSQL");
 
-    // Lanza las migraciones en segundo plano para abrir el socket HTTP de inmediato
-    // y superar el Readiness Probe de DigitalOcean en el puerto 8080.
     let migration_pool = pool.clone();
     tokio::spawn(async move {
         let _ = sqlx::query("SELECT pg_advisory_unlock_all()")
             .execute(&migration_pool)
             .await;
 
-        tracing::info!("Ejecutando migraciones SQLx en segundo plano...");
+        // Diagnóstico de usuario y permisos en PostgreSQL
+        if let Ok(row) = sqlx::query_as::<_, (String, String, String)>(
+            "SELECT current_user::text, current_database()::text, current_schema()::text"
+        )
+        .fetch_one(&migration_pool)
+        .await {
+            tracing::info!("DB Auth Diagnostic: user={}, db={}, schema={}", row.0, row.1, row.2);
+        }
+
+        // Intentar otorgar permisos en schema public por si el usuario es el owner de la BD
+        let grant_res = sqlx::query("GRANT ALL ON SCHEMA public TO CURRENT_USER").execute(&migration_pool).await;
+        tracing::info!("GRANT ALL ON SCHEMA public result: {:?}", grant_res);
+
+        let grant_pub_res = sqlx::query("GRANT CREATE ON SCHEMA public TO PUBLIC").execute(&migration_pool).await;
+        tracing::info!("GRANT CREATE ON SCHEMA public TO PUBLIC result: {:?}", grant_pub_res);
+
+        tracing::info!("Ejecutando migraciones SQLx...");
         match sqlx::migrate!("../../migrations").run(&migration_pool).await {
-            Ok(_) => tracing::info!("Migraciones SQLx aplicadas exitosamente en 'public'"),
+            Ok(_) => tracing::info!("Migraciones SQLx aplicadas exitosamente"),
             Err(err) => tracing::error!("Error al aplicar migraciones SQLx: {}", err),
         }
     });
