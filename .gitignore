@@ -8,9 +8,16 @@
 /frontend/dist/
 **/node_modules/
 **/dist/
+
+# Secrets & Credentials
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.secret
+*.keystore
 
 # IDEs & System
 .DS_Store
