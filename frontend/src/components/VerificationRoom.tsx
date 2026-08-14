@@ -5,6 +5,7 @@ import { AuthorChip } from './AuthorChip';
 import { MeterBar, calcWeight } from './MeterBar';
 import { AddEvidenceModal } from './AddEvidenceModal';
 import { DecomposeClaimModal } from './DecomposeClaimModal';
+import { PublishRebuttalModal } from './PublishRebuttalModal';
 
 interface VerificationRoomProps {
   detail: ClaimDetailResponse;
@@ -40,7 +41,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
   onRequestAuth,
 }) => {
   const { t } = useTranslation();
-  const { claim, assertions } = detail;
+  const { claim, assertions, variants, rebuttal } = detail;
   const kindLabel = t(`kinds.${claim.kind}`, { defaultValue: claim.kind });
 
   const [activeEvidence, setActiveEvidence] = useState<Record<string, boolean>>(() => {
@@ -55,6 +56,8 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
 
   const [addEvidenceTarget, setAddEvidenceTarget] = useState<{ id: string; text: string } | null>(null);
   const [showDecomposeModal, setShowDecomposeModal] = useState(false);
+  const [showRebuttalModal, setShowRebuttalModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const toggleEvidence = (id: string) => {
     setActiveEvidence((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -132,8 +135,50 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
     )
   );
 
+  const canPublishRebuttal = currentVerdictKey !== 'unproven';
+
+  // Variante principal (origen)
+  const primaryVariant = variants && variants.length > 0 ? variants[0] : null;
+  const platformName = primaryVariant ? primaryVariant.platform : 'Red Social';
+  const originUrl = primaryVariant ? primaryVariant.origin_url : '#';
+
+  const handleRespondOnSocial = (textToCopy: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(textToCopy);
+    }
+    const toast = t('rebuttal.copied_toast', { platform: platformName });
+    setToastMessage(toast);
+    setTimeout(() => setToastMessage(null), 4000);
+
+    if (originUrl && originUrl !== '#') {
+      window.open(originUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <div style={{ paddingBottom: '60px' }}>
+      {/* Toast Notificación */}
+      {toastMessage && (
+        <div
+          className="mono"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            background: 'var(--accent)',
+            color: '#0c1830',
+            fontWeight: 600,
+            padding: '12px 20px',
+            borderRadius: '10px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            zIndex: 1000,
+            fontSize: '12px',
+          }}
+        >
+          {toastMessage}
+        </div>
+      )}
+
       <button
         onClick={onBack}
         className="mono"
@@ -187,6 +232,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
         </div>
       </div>
 
+      {/* Panel de Veredicto Derivado */}
       <div
         style={{
           background: 'linear-gradient(158deg, var(--surface-2), #181B21)',
@@ -258,28 +304,57 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
             </div>
           </div>
 
-          <div
-            className="mono"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '7px',
-              fontSize: '9.5px',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: 'var(--text-faint)',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <span
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+            <div
+              className="mono"
               style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--accent)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '7px',
+                fontSize: '9.5px',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'var(--text-faint)',
+                whiteSpace: 'nowrap',
               }}
-            />
-            {t('verification.live_tag')}
+            >
+              <span
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--accent)',
+                }}
+              />
+              {t('verification.live_tag')}
+            </div>
+
+            {/* Botón Redactar Desmentido */}
+            {!rebuttal && (
+              <button
+                onClick={() => {
+                  if (canPublishRebuttal) {
+                    setShowRebuttalModal(true);
+                  }
+                }}
+                disabled={!canPublishRebuttal}
+                title={!canPublishRebuttal ? t('rebuttal.draft_disabled_tooltip') : ''}
+                className="mono"
+                style={{
+                  background: canPublishRebuttal ? 'var(--accent)' : 'var(--surface-3)',
+                  color: canPublishRebuttal ? '#0c1830' : 'var(--text-faint)',
+                  border: canPublishRebuttal ? 'none' : '1px solid var(--border)',
+                  fontWeight: 600,
+                  fontSize: '11px',
+                  padding: '7px 14px',
+                  borderRadius: '8px',
+                  cursor: canPublishRebuttal ? 'pointer' : 'not-allowed',
+                  opacity: canPublishRebuttal ? 1 : 0.6,
+                }}
+              >
+                {t('rebuttal.draft_button')}
+              </button>
+            )}
           </div>
         </div>
 
@@ -330,6 +405,106 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
         </div>
       </div>
 
+      {/* SECCIÓN DESMENTIDO PUBLICADO Y VUELTA A REDES */}
+      {rebuttal && (
+        <div
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--accent)',
+            borderRadius: '16px',
+            padding: '24px',
+            margin: '24px 0',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: '4px' }}>
+                {t('rebuttal.section_title')}
+              </div>
+              <div className="mono" style={{ fontSize: '11px', color: 'var(--text-faint)' }}>
+                {t('rebuttal.section_subtitle')}
+              </div>
+            </div>
+
+            {/* BOTÓN VUELTA A REDES SOCIALES (Responder en [Plataforma]) */}
+            <button
+              onClick={() => handleRespondOnSocial(rebuttal.base_text)}
+              className="mono"
+              style={{
+                background: 'var(--accent)',
+                color: '#0c1830',
+                border: 'none',
+                fontWeight: 600,
+                fontSize: '12px',
+                padding: '9px 18px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 14px rgba(111, 168, 255, 0.25)',
+              }}
+            >
+              ↗ {t('rebuttal.respond_on_platform', { platform: platformName })}
+            </button>
+          </div>
+
+          {/* Texto del Desmentido */}
+          <div
+            style={{
+              background: 'var(--bg)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              padding: '16px 20px',
+              color: 'var(--text)',
+              fontSize: '13.5px',
+              fontFamily: 'var(--mono)',
+              lineHeight: 1.6,
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {rebuttal.base_text}
+          </div>
+
+          {/* Cadena de Evidencias / Fuentes asociadas al desmentido */}
+          <div style={{ marginTop: '16px' }}>
+            <div className="mono" style={{ fontSize: '10.5px', color: 'var(--text-faint)', marginBottom: '8px' }}>
+              {t('rebuttal.source_chain_title')}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {assertions.flatMap((a) =>
+                a.evidence.map((ev) => (
+                  <div
+                    key={ev.evidence.id}
+                    className="mono"
+                    style={{
+                      fontSize: '11px',
+                      color: 'var(--text-soft)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span style={{ color: 'var(--accent)' }}>•</span>
+                    <a
+                      href={ev.source?.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: 'var(--text)', textDecoration: 'underline' }}
+                    >
+                      {ev.source?.title || 'Fuente'}
+                    </a>
+                    <span>({ev.source?.reliability})</span>
+                    <AuthorChip pseudonym={ev.added_by_pseudonym} />
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sección Afirmaciones */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '13px', margin: '32px 0 14px' }}>
         <span className="eyebrow">{t('verification.assertions_title')}</span>
         <small style={{ fontSize: '12px', color: 'var(--text-faint)' }}>{t('verification.assertions_subtitle')}</small>
@@ -375,7 +550,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
                 <span
                   className="mono"
                   style={{
-                    fontSize: '9px',
+                    fontSize: '9.5px',
                     letterSpacing: '0.09em',
                     textTransform: 'uppercase',
                     padding: '3px 8px',
@@ -538,7 +713,6 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
         </p>
       </div>
 
-      {/* Modal Añadir Evidencia */}
       {addEvidenceTarget && (
         <AddEvidenceModal
           assertionId={addEvidenceTarget.id}
@@ -549,12 +723,23 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
         />
       )}
 
-      {/* Modal Descomponer Bulo */}
       {showDecomposeModal && (
         <DecomposeClaimModal
           claimId={claim.id}
           claimSummary={claim.summary}
           onClose={() => setShowDecomposeModal(false)}
+          onSuccess={onRefresh}
+          onRequestAuth={onRequestAuth}
+        />
+      )}
+
+      {showRebuttalModal && (
+        <PublishRebuttalModal
+          claimId={claim.id}
+          claimSummary={claim.summary}
+          verdictLabel={verdictLabel}
+          assertions={assertions}
+          onClose={() => setShowRebuttalModal(false)}
           onSuccess={onRefresh}
           onRequestAuth={onRequestAuth}
         />

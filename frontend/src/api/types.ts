@@ -7,6 +7,7 @@ export type SourceReliability = 'high' | 'medium' | 'low' | 'disputed';
 export type EvidenceStance = 'supports' | 'refutes' | 'contextualizes';
 export type EvidenceStrength = 'strong' | 'moderate' | 'weak';
 export type AssertionStatus = 'unverified' | 'supported' | 'refuted' | 'contested';
+export type RebuttalStatus = 'draft' | 'published';
 
 export interface Source {
   id: string;
@@ -47,6 +48,24 @@ export interface Assertion {
   evidence: EvidenceWithSource[];
 }
 
+export interface ClaimVariant {
+  id: string;
+  claim_id: string;
+  origin_url: string;
+  platform: string;
+  language: string;
+  snapshot: string | null;
+  seen_at: string;
+}
+
+export interface Rebuttal {
+  id: string;
+  claim_id: string;
+  base_text: string;
+  published_at: string | null;
+  status: RebuttalStatus;
+}
+
 export interface Claim {
   id: string;
   summary: string;
@@ -61,6 +80,8 @@ export interface Claim {
 export interface ClaimDetailResponse {
   claim: Claim;
   assertions: Assertion[];
+  variants?: ClaimVariant[];
+  rebuttal?: Rebuttal | null;
 }
 
 export interface RegisterResponse {

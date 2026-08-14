@@ -5,6 +5,7 @@ import {
   Claim,
   ClaimDetailResponse,
   CreateClaimPayload,
+  Rebuttal,
   RegisterResponse,
 } from './types';
 
@@ -27,7 +28,7 @@ export async function fetchClaims(): Promise<Claim[]> {
   return res.json();
 }
 
-/// Obtiene el detalle de un bulo con sus afirmaciones y evidencias (GET /claims/:id)
+/// Obtiene el detalle de un bulo con sus afirmaciones, evidencias, variantes y desmentido (GET /claims/:id)
 export async function fetchClaimDetail(id: string): Promise<ClaimDetailResponse> {
   const res = await fetch(`/claims/${id}`);
   if (!res.ok) {
@@ -129,6 +130,36 @@ export async function addEvidence(
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.details || 'Error al añadir evidencia');
+  }
+
+  return res.json();
+}
+
+/// Publica un desmentido verificando el invariante (POST /claims/:id/rebuttal)
+export async function publishRebuttal(claimId: string, baseText: string): Promise<Rebuttal> {
+  const token = getToken();
+  if (!token) {
+    throw new Error('UNAUTHORIZED');
+  }
+
+  const res = await fetch(`/claims/${claimId}/rebuttal`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ base_text: baseText }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    if (res.status === 409) {
+      throw new Error(
+        errorData.details ||
+          'CONFLICT: El desmentido no puede publicarse si el veredicto del bulo es unproven (no probado).'
+      );
+    }
+    throw new Error(errorData.details || 'Error al publicar el desmentido');
   }
 
   return res.json();

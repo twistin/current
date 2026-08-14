@@ -50,6 +50,18 @@
     "loading": "Entering verification room...",
     "error_title": "ROOM LOADING ERROR"
   },
+  "rebuttal": {
+    "draft_button": "+ Draft Rebuttal",
+    "draft_disabled_tooltip": "Unproven verdict · A definitive verdict (False, True, or Misleading) is required to draft a rebuttal",
+    "modal_title": "Draft Official Rebuttal",
+    "modal_subtitle": "Editable base text with compiled sources. Adapt the wording with your own voice.",
+    "submit": "Publish Rebuttal",
+    "section_title": "Official Rebuttal Published",
+    "section_subtitle": "the social network loop · ready to reply",
+    "respond_on_platform": "Reply on {{platform}}",
+    "copied_toast": "Text copied to clipboard! Opening {{platform}}...",
+    "source_chain_title": "Compiled evidence chain:"
+  },
   "forms": {
     "rationale_required": "Explanatory rationale is mandatory and cannot be empty.",
     "text_required": "Text is mandatory.",

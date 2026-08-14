@@ -134,7 +134,7 @@ pub async fn get_claim(State(pool): State<PgPool>, Path(id): Path<Uuid>) -> Resp
     let assertion_repo = AssertionRepo::new(pool.clone());
     let evidence_repo = EvidenceRepo::new(pool.clone());
     let source_repo = SourceRepo::new(pool.clone());
-    let member_repo = MemberRepo::new(pool);
+    let member_repo = MemberRepo::new(pool.clone());
 
     let claim = match claim_repo.find_by_id(id).await {
         Ok(Some(c)) => c,
@@ -201,9 +201,17 @@ pub async fn get_claim(State(pool): State<PgPool>, Path(id): Path<Uuid>) -> Resp
         });
     }
 
+    let variant_repo = current_persistence::repos::claim_variant_repo::ClaimVariantRepo::new(pool.clone());
+    let rebuttal_repo = current_persistence::repos::rebuttal_repo::RebuttalRepo::new(pool.clone());
+
+    let variants = variant_repo.list_by_claim(id).await.unwrap_or_default();
+    let rebuttal = rebuttal_repo.find_by_claim(id).await.ok().flatten();
+
     let body = Json(json!({
         "claim": claim,
-        "assertions": detailed_assertions
+        "variants": variants,
+        "assertions": detailed_assertions,
+        "rebuttal": rebuttal
     }));
 
     (StatusCode::OK, body).into_response()
