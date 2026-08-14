@@ -11,6 +11,10 @@ databases:
 
 services:
   - name: backend
+    github:
+      repo: twistin/current
+      branch: main
+      deploy_on_push: true
     environment_slug: rust
     source_dir: backend
     build_command: cargo build --release --bin current-api
@@ -34,6 +38,10 @@ services:
 
 static_sites:
   - name: frontend
+    github:
+      repo: twistin/current
+      branch: main
+      deploy_on_push: true
     source_dir: frontend
     build_command: npm run build
     output_dir: dist
