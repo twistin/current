@@ -18,24 +18,19 @@ async fn main() {
         .await
         .expect("No se pudo conectar a PostgreSQL");
 
-    // Asegurar permisos sobre el esquema public (PostgreSQL 15+ en nubes gestionadas)
-    tracing::info!("Asegurando permisos en esquema public de PostgreSQL...");
-    let _ = sqlx::query("ALTER SCHEMA public OWNER TO CURRENT_USER")
-        .execute(&pool)
-        .await;
-    let _ = sqlx::query("GRANT ALL ON SCHEMA public TO CURRENT_USER")
-        .execute(&pool)
-        .await;
-    let _ = sqlx::query("GRANT ALL ON SCHEMA public TO PUBLIC")
+    // Para evitar restricciones de permisos de PostgreSQL 15 en 'public',
+    // aseguramos la creación del esquema 'current_app' perteneciente al usuario actual.
+    tracing::info!("Asegurando esquema 'current_app' en PostgreSQL...");
+    let _ = sqlx::query("CREATE SCHEMA IF NOT EXISTS current_app")
         .execute(&pool)
         .await;
 
-    // Ejecutar migraciones de la base de datos automáticamente en startup (idempotente).
+    // Ejecutar migraciones SQLx sobre la base de datos (idempotente)
     tracing::info!("Ejecutando migraciones SQLx...");
-    match sqlx::migrate!("../../migrations").run(&pool).await {
-        Ok(_) => tracing::info!("Migraciones SQLx aplicadas correctamente"),
-        Err(err) => tracing::warn!("Aviso durante la ejecución de migraciones SQLx: {}", err),
-    }
+    sqlx::migrate!("../../migrations")
+        .run(&pool)
+        .await
+        .expect("Error al ejecutar migraciones SQLx en la base de datos");
 
     let app = current_api::router::build_router(pool);
 
