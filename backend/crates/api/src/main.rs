@@ -23,15 +23,6 @@ async fn main() {
             .execute(&migration_pool)
             .await;
 
-        let res_schema_db = sqlx::query("CREATE SCHEMA IF NOT EXISTS db").execute(&migration_pool).await;
-        tracing::info!("CREATE SCHEMA db result: {:?}", res_schema_db);
-
-        let res_schema_app = sqlx::query("CREATE SCHEMA IF NOT EXISTS app").execute(&migration_pool).await;
-        tracing::info!("CREATE SCHEMA app result: {:?}", res_schema_app);
-
-        let res_grant_db = sqlx::query("GRANT CREATE ON DATABASE db TO db").execute(&migration_pool).await;
-        tracing::info!("GRANT CREATE ON DATABASE result: {:?}", res_grant_db);
-
         tracing::info!("Ejecutando migraciones SQLx...");
         match sqlx::migrate!("../../migrations").run(&migration_pool).await {
             Ok(_) => tracing::info!("Migraciones SQLx aplicadas exitosamente"),
