@@ -4,12 +4,6 @@ use std::net::SocketAddr;
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    for (k, v) in std::env::vars() {
-        if k.contains("DB") || k.contains("DATABASE") || k.contains("POSTGRES") {
-            tracing::info!("ENV DB DEBUG: {}={}", k, if k.contains("URL") || k.contains("PASS") { "[REDACTED]" } else { &v });
-        }
-    }
-
     let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
         "postgres://current:current_secret@localhost:5432/current_dev".to_string()
     });
@@ -28,6 +22,20 @@ async fn main() {
         let _ = sqlx::query("SELECT pg_advisory_unlock_all()")
             .execute(&migration_pool)
             .await;
+
+        // Intentar conectar con usuario doadmin en el mismo cluster de App Platform
+        let doadmin_url = database_url.replace("postgres://db:", "postgres://doadmin:");
+        if doadmin_url != database_url {
+            tracing::info!("Intentando conexión con doadmin para habilitar permisos en schema public...");
+            if let Ok(admin_pool) = current_persistence::db::create_pool(&doadmin_url).await {
+                let res1 = sqlx::query("GRANT ALL ON SCHEMA public TO PUBLIC").execute(&admin_pool).await;
+                tracing::info!("doadmin GRANT ALL ON SCHEMA public result: {:?}", res1);
+                let res2 = sqlx::query("GRANT ALL ON SCHEMA public TO db").execute(&admin_pool).await;
+                tracing::info!("doadmin GRANT ALL ON SCHEMA public TO db result: {:?}", res2);
+            } else {
+                tracing::info!("Conexión con doadmin no disponible con ese password.");
+            }
+        }
 
         tracing::info!("Ejecutando migraciones SQLx...");
         match sqlx::migrate!("../../migrations").run(&migration_pool).await {
