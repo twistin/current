@@ -1,6 +1,19 @@
 name: current-app
 region: fra
 
+ingress:
+  rules:
+    - component:
+        name: frontend
+      match:
+        path:
+          prefix: /
+    - component:
+        name: backend
+      match:
+        path:
+          prefix: /api
+
 databases:
   - name: db
     engine: PG
