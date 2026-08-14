@@ -45,6 +45,8 @@ static_sites:
     source_dir: frontend
     build_command: npm run build
     output_dir: dist
+    routes:
+      - path: /
     envs:
       - key: VITE_API_URL
         scope: BUILD_TIME
