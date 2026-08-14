@@ -18,10 +18,16 @@ async fn main() {
         .await
         .expect("No se pudo conectar a PostgreSQL");
 
-    // Para evitar restricciones de permisos de PostgreSQL 15 en 'public',
-    // aseguramos la creación del esquema 'current_app' perteneciente al usuario actual.
-    tracing::info!("Asegurando esquema 'current_app' en PostgreSQL...");
-    let _ = sqlx::query("CREATE SCHEMA IF NOT EXISTS current_app")
+    // En PostgreSQL 15+ de nubes gestionadas, los usuarios no-superuser no pueden crear tablas en 'public'.
+    // Creamos el esquema propio 'current', ajustamos search_path en la sesión y en la rol del usuario.
+    tracing::info!("Configurando esquema de base de datos 'current'...");
+    let _ = sqlx::query("CREATE SCHEMA IF NOT EXISTS current")
+        .execute(&pool)
+        .await;
+    let _ = sqlx::query("SET search_path TO current")
+        .execute(&pool)
+        .await;
+    let _ = sqlx::query("ALTER ROLE CURRENT_USER SET search_path TO current")
         .execute(&pool)
         .await;
 
