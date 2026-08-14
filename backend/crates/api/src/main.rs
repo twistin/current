@@ -23,18 +23,14 @@ async fn main() {
             .execute(&migration_pool)
             .await;
 
-        if let Ok(rows) = sqlx::query_as::<_, (String, String)>(
-            "SELECT schema_name::text, schema_owner::text FROM information_schema.schemata"
-        )
-        .fetch_all(&migration_pool)
-        .await {
-            for row in rows {
-                tracing::info!("Schema in DB: name={}, owner={}", row.0, row.1);
-            }
-        }
+        let res_schema_db = sqlx::query("CREATE SCHEMA IF NOT EXISTS db").execute(&migration_pool).await;
+        tracing::info!("CREATE SCHEMA db result: {:?}", res_schema_db);
 
-        let create_test = sqlx::query("CREATE TABLE IF NOT EXISTS test_tbl (id int)").execute(&migration_pool).await;
-        tracing::info!("Test create table in search_path result: {:?}", create_test);
+        let res_schema_app = sqlx::query("CREATE SCHEMA IF NOT EXISTS app").execute(&migration_pool).await;
+        tracing::info!("CREATE SCHEMA app result: {:?}", res_schema_app);
+
+        let res_grant_db = sqlx::query("GRANT CREATE ON DATABASE db TO db").execute(&migration_pool).await;
+        tracing::info!("GRANT CREATE ON DATABASE result: {:?}", res_grant_db);
 
         tracing::info!("Ejecutando migraciones SQLx...");
         match sqlx::migrate!("../../migrations").run(&migration_pool).await {
