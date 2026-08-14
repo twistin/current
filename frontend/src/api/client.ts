@@ -10,6 +10,7 @@ import {
 } from './types';
 
 const TOKEN_KEY = 'current_bearer_token';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
@@ -21,7 +22,7 @@ export function setToken(token: string): void {
 
 /// Obtiene la lista priorizada de bulos (GET /claims)
 export async function fetchClaims(): Promise<Claim[]> {
-  const res = await fetch('/claims');
+  const res = await fetch(`${API_BASE_URL}/claims`);
   if (!res.ok) {
     throw new Error(`Error al obtener bulos: ${res.status} ${res.statusText}`);
   }
@@ -30,7 +31,7 @@ export async function fetchClaims(): Promise<Claim[]> {
 
 /// Obtiene el detalle de un bulo con sus afirmaciones, evidencias, variantes y desmentido (GET /claims/:id)
 export async function fetchClaimDetail(id: string): Promise<ClaimDetailResponse> {
-  const res = await fetch(`/claims/${id}`);
+  const res = await fetch(`${API_BASE_URL}/claims/${id}`);
   if (!res.ok) {
     throw new Error(`Error al obtener detalle del bulo: ${res.status} ${res.statusText}`);
   }
@@ -39,7 +40,7 @@ export async function fetchClaimDetail(id: string): Promise<ClaimDetailResponse>
 
 /// Registro seudónimo de miembro (POST /auth/register)
 export async function registerMember(pseudonym: string): Promise<RegisterResponse> {
-  const res = await fetch('/auth/register', {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -64,7 +65,7 @@ export async function createClaim(payload: CreateClaimPayload): Promise<{ claim:
     throw new Error('UNAUTHORIZED');
   }
 
-  const res = await fetch('/claims', {
+  const res = await fetch(`${API_BASE_URL}/claims`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -91,7 +92,7 @@ export async function decomposeClaim(
     throw new Error('UNAUTHORIZED');
   }
 
-  const res = await fetch(`/claims/${claimId}/assertions`, {
+  const res = await fetch(`${API_BASE_URL}/claims/${claimId}/assertions`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -118,7 +119,7 @@ export async function addEvidence(
     throw new Error('UNAUTHORIZED');
   }
 
-  const res = await fetch(`/assertions/${assertionId}/evidence`, {
+  const res = await fetch(`${API_BASE_URL}/assertions/${assertionId}/evidence`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -142,7 +143,7 @@ export async function publishRebuttal(claimId: string, baseText: string): Promis
     throw new Error('UNAUTHORIZED');
   }
 
-  const res = await fetch(`/claims/${claimId}/rebuttal`, {
+  const res = await fetch(`${API_BASE_URL}/claims/${claimId}/rebuttal`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,

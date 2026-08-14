@@ -1,0 +1,43 @@
+name: current-app
+region: fra
+
+databases:
+  - name: db
+    engine: PG
+    version: "15"
+    production: false
+    db_name: current
+    db_user: current
+
+services:
+  - name: backend
+    environment_slug: rust
+    source_dir: backend
+    build_command: cargo build --release --bin current-api
+    run_command: ./target/release/current-api
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${db.DATABASE_URL}
+      - key: PORT
+        scope: RUN_TIME
+        value: "8080"
+      - key: CORS_ALLOWED_ORIGIN
+        scope: RUN_TIME
+        value: ${frontend.PUBLIC_URL}
+      - key: RUST_LOG
+        scope: RUN_TIME
+        value: info
+
+static_sites:
+  - name: frontend
+    source_dir: frontend
+    build_command: npm run build
+    output_dir: dist
+    envs:
+      - key: VITE_API_URL
+        scope: BUILD_TIME
+        value: ${backend.PUBLIC_URL}

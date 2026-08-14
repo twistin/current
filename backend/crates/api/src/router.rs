@@ -1,24 +1,33 @@
 use axum::{
+    http::{header, HeaderValue, Method},
     routing::{get, post},
     Router,
 };
 use sqlx::PgPool;
+use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 
 use crate::handlers::{auth, claims, evidence, health, rebuttals};
 
-/// Construye el router de la aplicación HTTP de Axum.
-///
-/// Rutas del MVP:
-/// - `GET  /health`                — estado del servidor
-/// - `POST /auth/register`         — registro seudónimo (devuelve token opaco)
-/// - `GET  /claims`                — cola de trabajo priorizada por propagation_score
-/// - `POST /claims`                — reportar nuevo bulo emergente [Autenticado]
-/// - `GET  /claims/:id`            — detalle de la sala de verificación (bulo + afirmaciones + veredicto)
-/// - `POST /claims/:id/assertions` — descomponer bulo en afirmaciones [Autenticado]
-/// - `POST /assertions/:id/evidence` — añadir evidencia con cascada automática [Autenticado]
-/// - `POST /claims/:id/rebuttal`   — publicar desmentido (409 Conflict si veredicto es 'unproven') [Autenticado]
+/// Construye el router de la aplicación HTTP de Axum con soporte CORS y trazado.
 pub fn build_router(pool: PgPool) -> Router {
+    // Configuración dinámica de CORS
+    let cors = if let Ok(origin) = std::env::var("CORS_ALLOWED_ORIGIN") {
+        if origin == "*" {
+            CorsLayer::permissive()
+        } else {
+            let parsed = origin
+                .parse::<HeaderValue>()
+                .expect("CORS_ALLOWED_ORIGIN debe ser una URL válida");
+            CorsLayer::new()
+                .allow_origin(parsed)
+                .allow_methods([Method::GET, Method::POST, Method::OPTIONS, Method::PUT, Method::DELETE])
+                .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE, header::ACCEPT])
+        }
+    } else {
+        CorsLayer::permissive()
+    };
+
     Router::new()
         // Health
         .route("/health", get(health::health_check))
@@ -33,7 +42,8 @@ pub fn build_router(pool: PgPool) -> Router {
         // Rebuttals
         .route("/rebuttals", get(rebuttals::list_rebuttals))
         .route("/claims/:id/rebuttal", post(rebuttals::publish_rebuttal))
-        // Middleware de trazado HTTP
+        // Middlewares
+        .layer(cors)
         .layer(TraceLayer::new_for_http())
         .with_state(pool)
 }
