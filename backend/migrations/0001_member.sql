@@ -2,8 +2,6 @@
 -- Persona seudónima. SIN PII en el núcleo (principio innegociable del documento maestro).
 -- Sin real_name, sin phone, sin email obligatorio.
 
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
 CREATE TABLE member (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     pseudonym    TEXT        NOT NULL UNIQUE,
