@@ -48,16 +48,16 @@ export const MeterBar: React.FC<MeterBarProps> = ({ evidenceList, activeIds }) =
   const thrPct = (T / max) * 100;
 
   return (
-    <div style={{ padding: '14px 20px', background: 'var(--bg)' }}>
+    <div style={{ padding: '14px 16px', background: 'var(--bg)' }}>
       {/* Fila Apoyo */}
       <div
         className="mono"
-        style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '10px', color: 'var(--text-soft)' }}
+        style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '10px', color: 'var(--text-soft)' }}
       >
-        <span style={{ width: '74px', textTransform: 'uppercase', letterSpacing: '0.07em', fontSize: '9px', color: 'var(--text-faint)' }}>
+        <span style={{ minWidth: '64px', maxWidth: '74px', textTransform: 'uppercase', letterSpacing: '0.07em', fontSize: '9px', color: 'var(--text-faint)', flexShrink: 0 }}>
           {t('verification.meter_support')}
         </span>
-        <div style={{ flex: 1, height: '7px', background: 'var(--surface-3)', borderRadius: '3px', position: 'relative' }}>
+        <div style={{ flex: 1, height: '7px', background: 'var(--surface-3)', borderRadius: '3px', position: 'relative', minWidth: 0 }}>
           <div
             style={{
               height: '100%',
@@ -83,7 +83,7 @@ export const MeterBar: React.FC<MeterBarProps> = ({ evidenceList, activeIds }) =
             </span>
           </div>
         </div>
-        <span style={{ width: '28px', textAlign: 'right', color: 'var(--text-body)', fontWeight: 500 }}>
+        <span style={{ width: '28px', textAlign: 'right', color: 'var(--text-body)', fontWeight: 500, flexShrink: 0 }}>
           {supWeight.toFixed(1)}
         </span>
       </div>
@@ -91,12 +91,12 @@ export const MeterBar: React.FC<MeterBarProps> = ({ evidenceList, activeIds }) =
       {/* Fila Refutación */}
       <div
         className="mono"
-        style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '10px', color: 'var(--text-soft)', marginTop: '8px' }}
+        style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '10px', color: 'var(--text-soft)', marginTop: '8px' }}
       >
-        <span style={{ width: '74px', textTransform: 'uppercase', letterSpacing: '0.07em', fontSize: '9px', color: 'var(--text-faint)' }}>
+        <span style={{ minWidth: '64px', maxWidth: '74px', textTransform: 'uppercase', letterSpacing: '0.07em', fontSize: '9px', color: 'var(--text-faint)', flexShrink: 0 }}>
           {t('verification.meter_refute')}
         </span>
-        <div style={{ flex: 1, height: '7px', background: 'var(--surface-3)', borderRadius: '3px', position: 'relative' }}>
+        <div style={{ flex: 1, height: '7px', background: 'var(--surface-3)', borderRadius: '3px', position: 'relative', minWidth: 0 }}>
           <div
             style={{
               height: '100%',
@@ -122,10 +122,11 @@ export const MeterBar: React.FC<MeterBarProps> = ({ evidenceList, activeIds }) =
             </span>
           </div>
         </div>
-        <span style={{ width: '28px', textAlign: 'right', color: 'var(--text-body)', fontWeight: 500 }}>
+        <span style={{ width: '28px', textAlign: 'right', color: 'var(--text-body)', fontWeight: 500, flexShrink: 0 }}>
           {refWeight.toFixed(1)}
         </span>
       </div>
     </div>
   );
 };
+

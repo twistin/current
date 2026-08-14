@@ -21,7 +21,7 @@ export const Header: React.FC<HeaderProps> = ({ memberPseudonym, onRegisterClick
         <div className="brand">
           Current<span className="dot">.</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
           {/* Selector de idioma ES / EN */}
           <div
             className="mono"
@@ -32,6 +32,7 @@ export const Header: React.FC<HeaderProps> = ({ memberPseudonym, onRegisterClick
               borderRadius: '6px',
               padding: '2px',
               fontSize: '10px',
+              flexShrink: 0,
             }}
           >
             <button
@@ -65,8 +66,19 @@ export const Header: React.FC<HeaderProps> = ({ memberPseudonym, onRegisterClick
           </div>
 
           {memberPseudonym ? (
-            <div className="mono" style={{ fontSize: '11px', color: 'var(--text-soft)' }}>
-              {t('header.pseudonym')}: <span style={{ color: 'var(--accent)', fontWeight: 600 }}>@{memberPseudonym}</span>
+            <div
+              className="mono"
+              style={{
+                fontSize: '11px',
+                color: 'var(--text-soft)',
+                maxWidth: '110px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                flexShrink: 1,
+              }}
+            >
+              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>@{memberPseudonym}</span>
             </div>
           ) : (
             <button
@@ -77,9 +89,11 @@ export const Header: React.FC<HeaderProps> = ({ memberPseudonym, onRegisterClick
                 border: '1px solid var(--border)',
                 color: 'var(--accent)',
                 fontSize: '11px',
-                padding: '5px 12px',
+                padding: '5px 10px',
                 borderRadius: '6px',
                 cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
               }}
             >
               {t('header.generate_pseudonym')}

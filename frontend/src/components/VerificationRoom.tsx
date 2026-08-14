@@ -209,7 +209,10 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
           style={{
             position: 'fixed',
             bottom: '24px',
-            right: '24px',
+            right: '16px',
+            left: '16px',
+            maxWidth: '340px',
+            margin: '0 auto',
             background: 'var(--accent)',
             color: '#0c1830',
             fontWeight: 600,
@@ -249,7 +252,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
         <h1
           className="serif"
           style={{
-            fontSize: '27px',
+            fontSize: 'clamp(20px, 5vw, 27px)',
             fontWeight: 500,
             lineHeight: 1.32,
             color: 'var(--text)',
@@ -260,7 +263,18 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
           {claim.summary}
           <span style={{ color: 'var(--text-faint)' }}>”</span>
         </h1>
-        <div className="meta" style={{ display: 'flex', gap: '16px', fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--text-soft)' }}>
+        {/* Meta: propagación, tipo, hora — en móvil fluye en varias líneas */}
+        <div
+          className="meta"
+          style={{
+            display: 'flex',
+            gap: '10px 16px',
+            flexWrap: 'wrap',
+            fontFamily: 'var(--mono)',
+            fontSize: '11px',
+            color: 'var(--text-soft)',
+          }}
+        >
           <span>
             {t('verification.propagation')}{' '}
             <span style={{ color: 'var(--refute)' }}>
@@ -287,13 +301,15 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
           overflow: 'hidden',
         }}
       >
+        {/* Panel interior del veredicto — en móvil apila veredicto y botón */}
         <div
           style={{
             display: 'flex',
             alignItems: 'flex-start',
             justifyContent: 'space-between',
-            gap: '18px',
-            padding: '20px 22px 16px',
+            gap: '14px',
+            padding: '18px 16px 14px',
+            flexWrap: 'wrap',
           }}
         >
           <div>
@@ -349,7 +365,8 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+          {/* Columna derecha: live tag + botón redactar — se apila bajo el veredicto en móvil */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', flexShrink: 0 }}>
             <div
               className="mono"
               style={{
@@ -549,11 +566,11 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
         </div>
       )}
 
-      {/* Sección Afirmaciones */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '13px', margin: '32px 0 14px' }}>
+      {/* Sección Afirmaciones — el botón baja en móvil con flex-wrap */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '32px 0 14px', flexWrap: 'wrap' }}>
         <span className="eyebrow">{t('verification.assertions_title')}</span>
         <small style={{ fontSize: '12px', color: 'var(--text-faint)' }}>{t('verification.assertions_subtitle')}</small>
-        <span style={{ height: '1px', background: 'var(--border)', flex: 1 }} />
+        <span style={{ height: '1px', background: 'var(--border)', flex: 1, minWidth: '20px' }} />
         <button
           onClick={() => setShowDecomposeModal(true)}
           className="mono"
@@ -562,9 +579,11 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
             border: '1px solid var(--border)',
             color: 'var(--accent)',
             fontSize: '11px',
-            padding: '5px 10px',
+            padding: '7px 12px',
             borderRadius: '6px',
             cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
           }}
         >
           {t('verification.decompose_button')}
@@ -587,10 +606,11 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
               overflow: 'hidden',
             }}
           >
-            <div style={{ padding: '16px 20px 15px', borderBottom: '1px solid var(--border-soft)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '11px' }}>
-                <span className="mono" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-faint)' }}>
-                  0{idx + 1}
+            <div style={{ padding: '14px 16px 13px', borderBottom: '1px solid var(--border-soft)' }}>
+              {/* Fila: número + badge tipo + estado — en móvil el estado puede bajar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                <span className="mono" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-faint)', flexShrink: 0 }}>
+                  {String(idx + 1).padStart(2, '0')}
                 </span>
                 <span
                   className="mono"
@@ -603,6 +623,8 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
                     fontWeight: 500,
                     backgroundColor: a.is_load_bearing ? 'var(--accent)' : 'var(--surface-3)',
                     color: a.is_load_bearing ? '#0c1830' : 'var(--text-soft)',
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {a.is_load_bearing ? t('verification.tag_key') : t('verification.tag_aux')}
@@ -617,16 +639,18 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
                     fontWeight: 600,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '7px',
+                    gap: '6px',
                     color: sm.color,
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: sm.color }} />
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: sm.color, flexShrink: 0 }} />
                   {statusText}
                 </span>
               </div>
 
-              <div style={{ fontSize: '15.5px', lineHeight: 1.45, color: 'var(--text)', maxWidth: '54ch' }}>{a.text}</div>
+              <div style={{ fontSize: '15px', lineHeight: 1.5, color: 'var(--text)' }}>{a.text}</div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '11px', fontFamily: 'var(--mono)', fontSize: '10.5px', color: 'var(--text-faint)' }}>
                 {t('verification.proposed_by')} <AuthorChip pseudonym={a.created_by_pseudonym} />

@@ -43,8 +43,8 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick }) => {
         transition: 'border-color 0.2s ease, transform 0.15s ease',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <span className="eyebrow">{t('queue.propagation')} {claim.propagation_score}</span>
           <span
             className="mono"
@@ -63,6 +63,7 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick }) => {
             color: verdict.color,
             backgroundColor: verdict.bg,
             border: `1px solid ${verdict.color}`,
+            flexShrink: 0,
           }}
         >
           <span
@@ -71,6 +72,7 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick }) => {
               height: '6px',
               borderRadius: '50%',
               backgroundColor: verdict.color,
+              flexShrink: 0,
             }}
           />
           {verdictLabel}
@@ -96,6 +98,8 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '4px 12px',
           fontSize: '11px',
           color: 'var(--text-faint)',
           borderTop: '1px solid var(--border-soft)',
