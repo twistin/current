@@ -23,21 +23,18 @@ async fn main() {
             .execute(&migration_pool)
             .await;
 
-        // Diagnóstico de usuario y permisos en PostgreSQL
-        if let Ok(row) = sqlx::query_as::<_, (String, String, String)>(
-            "SELECT current_user::text, current_database()::text, current_schema()::text"
+        if let Ok(rows) = sqlx::query_as::<_, (String, String)>(
+            "SELECT schema_name::text, schema_owner::text FROM information_schema.schemata"
         )
-        .fetch_one(&migration_pool)
+        .fetch_all(&migration_pool)
         .await {
-            tracing::info!("DB Auth Diagnostic: user={}, db={}, schema={}", row.0, row.1, row.2);
+            for row in rows {
+                tracing::info!("Schema in DB: name={}, owner={}", row.0, row.1);
+            }
         }
 
-        // Intentar otorgar permisos en schema public por si el usuario es el owner de la BD
-        let grant_res = sqlx::query("GRANT ALL ON SCHEMA public TO CURRENT_USER").execute(&migration_pool).await;
-        tracing::info!("GRANT ALL ON SCHEMA public result: {:?}", grant_res);
-
-        let grant_pub_res = sqlx::query("GRANT CREATE ON SCHEMA public TO PUBLIC").execute(&migration_pool).await;
-        tracing::info!("GRANT CREATE ON SCHEMA public TO PUBLIC result: {:?}", grant_pub_res);
+        let create_test = sqlx::query("CREATE TABLE IF NOT EXISTS test_tbl (id int)").execute(&migration_pool).await;
+        tracing::info!("Test create table in search_path result: {:?}", create_test);
 
         tracing::info!("Ejecutando migraciones SQLx...");
         match sqlx::migrate!("../../migrations").run(&migration_pool).await {
