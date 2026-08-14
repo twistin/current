@@ -23,20 +23,6 @@ async fn main() {
             .execute(&migration_pool)
             .await;
 
-        // Intentar conectar con usuario doadmin en el mismo cluster de App Platform
-        let doadmin_url = database_url.replace("postgres://db:", "postgres://doadmin:");
-        if doadmin_url != database_url {
-            tracing::info!("Intentando conexión con doadmin para habilitar permisos en schema public...");
-            if let Ok(admin_pool) = current_persistence::db::create_pool(&doadmin_url).await {
-                let res1 = sqlx::query("GRANT ALL ON SCHEMA public TO PUBLIC").execute(&admin_pool).await;
-                tracing::info!("doadmin GRANT ALL ON SCHEMA public result: {:?}", res1);
-                let res2 = sqlx::query("GRANT ALL ON SCHEMA public TO db").execute(&admin_pool).await;
-                tracing::info!("doadmin GRANT ALL ON SCHEMA public TO db result: {:?}", res2);
-            } else {
-                tracing::info!("Conexión con doadmin no disponible con ese password.");
-            }
-        }
-
         tracing::info!("Ejecutando migraciones SQLx...");
         match sqlx::migrate!("../../migrations").run(&migration_pool).await {
             Ok(_) => tracing::info!("Migraciones SQLx aplicadas exitosamente"),
