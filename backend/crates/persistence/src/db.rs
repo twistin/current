@@ -7,8 +7,14 @@ pub async fn create_pool(database_url: &str) -> Result<PgPool, sqlx::Error> {
     let options = PgConnectOptions::from_str(database_url)?
         .options([("search_path", "current,public")]);
 
-    PgPoolOptions::new()
+    let pool = PgPoolOptions::new()
         .max_connections(10)
         .connect_with(options)
-        .await
+        .await?;
+
+    let _ = sqlx::query("CREATE SCHEMA IF NOT EXISTS current")
+        .execute(&pool)
+        .await;
+
+    Ok(pool)
 }

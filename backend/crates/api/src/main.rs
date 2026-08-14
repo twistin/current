@@ -18,23 +18,20 @@ async fn main() {
         .await
         .expect("No se pudo conectar a PostgreSQL");
 
-    // Asegurar la existencia del esquema 'current' perteneciente al usuario
-    tracing::info!("Asegurando esquema de la base de datos...");
-    let _ = sqlx::query("CREATE SCHEMA IF NOT EXISTS current")
-        .execute(&pool)
-        .await;
+    // Lanza las migraciones en segundo plano para abrir el socket HTTP de inmediato
+    // y superar el Readiness Probe de DigitalOcean en el puerto 8080.
+    let migration_pool = pool.clone();
+    tokio::spawn(async move {
+        let _ = sqlx::query("SELECT pg_advisory_unlock_all()")
+            .execute(&migration_pool)
+            .await;
 
-    // Liberar advisory locks obsoletos si los hubiere de builds previos
-    let _ = sqlx::query("SELECT pg_advisory_unlock_all()")
-        .execute(&pool)
-        .await;
-
-    // Ejecutar migraciones SQLx sobre la base de datos
-    tracing::info!("Ejecutando migraciones SQLx...");
-    sqlx::migrate!("../../migrations")
-        .run(&pool)
-        .await
-        .expect("Error crítico al ejecutar migraciones SQLx");
+        tracing::info!("Ejecutando migraciones SQLx en segundo plano...");
+        match sqlx::migrate!("../../migrations").run(&migration_pool).await {
+            Ok(_) => tracing::info!("Migraciones SQLx aplicadas exitosamente en 'current'"),
+            Err(err) => tracing::error!("Error al aplicar migraciones SQLx: {}", err),
+        }
+    });
 
     let app = current_api::router::build_router(pool);
 
