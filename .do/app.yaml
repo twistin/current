@@ -26,10 +26,8 @@ services:
       repo: twistin/current
       branch: main
       deploy_on_push: true
-    environment_slug: rust
+    dockerfile_path: backend/Dockerfile
     source_dir: backend
-    build_command: cargo build --release --bin current-api
-    run_command: ./target/release/current-api
     http_port: 8080
     instance_count: 1
     instance_size_slug: basic-xxs
