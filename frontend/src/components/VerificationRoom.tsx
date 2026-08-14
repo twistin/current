@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClaimDetailResponse, Assertion } from '../api/types';
 import { AuthorChip } from './AuthorChip';
@@ -6,6 +6,38 @@ import { MeterBar, calcWeight } from './MeterBar';
 import { AddEvidenceModal } from './AddEvidenceModal';
 import { DecomposeClaimModal } from './DecomposeClaimModal';
 import { PublishRebuttalModal } from './PublishRebuttalModal';
+
+const CURRENT_BASE_URL =
+  import.meta.env.VITE_PUBLIC_URL ||
+  'https://current-app-qg6pp.ondigitalocean.app';
+
+const VERDICT_EMOJI: Record<string, string> = {
+  false: '❌',
+  misleading: '⚠️',
+  true: '✅',
+};
+
+function buildShortTweet(
+  claimId: string,
+  claimSummary: string,
+  verdictLabel: string,
+  verdictKey: string,
+  assertions: Assertion[]
+): string {
+  const claimUrl = `${CURRENT_BASE_URL}/claims/${claimId}`;
+  const emoji = VERDICT_EMOJI[verdictKey] ?? '🔍';
+  const keyAssertion = assertions.find((a) => a.is_load_bearing && a.evidence.length > 0);
+  const keyFact = keyAssertion
+    ? keyAssertion.text.slice(0, 80).trimEnd() + (keyAssertion.text.length > 80 ? '…' : '')
+    : '';
+  const suffix = ` Verificación completa: ${claimUrl}`;
+  const suffixDisplayLen = ' Verificación completa: '.length + 23; // Twitter acorta URLs a 23
+  const verdictLine = `${emoji} ${verdictLabel.toUpperCase()}:`;
+  const budgetForSummary = 280 - verdictLine.length - 2 - (keyFact ? keyFact.length + 2 : 0) - suffixDisplayLen;
+  const truncated = claimSummary.slice(0, Math.max(budgetForSummary, 20)).trimEnd() +
+    (claimSummary.length > Math.max(budgetForSummary, 20) ? '…' : '');
+  return [verdictLine, `"${truncated}"`, keyFact ? keyFact + '.' : '', suffix].filter(Boolean).join('\n');
+}
 
 interface VerificationRoomProps {
   detail: ClaimDetailResponse;
@@ -142,17 +174,30 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
   const platformName = primaryVariant ? primaryVariant.platform : 'Red Social';
   const originUrl = primaryVariant ? primaryVariant.origin_url : '#';
 
-  const handleRespondOnSocial = (textToCopy: string) => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(textToCopy);
-    }
-    const toast = t('rebuttal.copied_toast', { platform: platformName });
-    setToastMessage(toast);
-    setTimeout(() => setToastMessage(null), 4000);
+  const shortTweet = useMemo(
+    () => buildShortTweet(claim.id, claim.summary, verdictLabel, currentVerdictKey, assertions),
+    [claim.id, claim.summary, verdictLabel, currentVerdictKey, assertions]
+  );
 
-    if (originUrl && originUrl !== '#') {
-      window.open(originUrl, '_blank', 'noopener,noreferrer');
+  const handleRespondOnSocial = () => {
+    const isX = platformName.toUpperCase() === 'X' || platformName.toLowerCase().includes('twitter');
+
+    if (isX) {
+      // Para X: abre el composer con el texto corto pre-rellenado (Twitter intent)
+      const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shortTweet)}`;
+      window.open(tweetUrl, '_blank', 'noopener,noreferrer');
+      setToastMessage(t('rebuttal.x_opened_toast'));
+    } else {
+      // Para otras plataformas: copia el texto largo y abre la URL original
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(rebuttal?.base_text ?? '');
+      }
+      setToastMessage(t('rebuttal.copied_toast', { platform: platformName }));
+      if (originUrl && originUrl !== '#') {
+        window.open(originUrl, '_blank', 'noopener,noreferrer');
+      }
     }
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   return (
@@ -428,7 +473,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
 
             {/* BOTÓN VUELTA A REDES SOCIALES (Responder en [Plataforma]) */}
             <button
-              onClick={() => handleRespondOnSocial(rebuttal.base_text)}
+              onClick={() => handleRespondOnSocial()}
               className="mono"
               style={{
                 background: 'var(--accent)',
@@ -738,6 +783,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
           claimId={claim.id}
           claimSummary={claim.summary}
           verdictLabel={verdictLabel}
+          verdictKey={currentVerdictKey}
           assertions={assertions}
           onClose={() => setShowRebuttalModal(false)}
           onSuccess={onRefresh}

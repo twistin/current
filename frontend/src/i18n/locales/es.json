@@ -54,13 +54,18 @@
     "draft_button": "+ Redactar Desmentido",
     "draft_disabled_tooltip": "Veredicto no probado · Se requiere veredicto definitivo (Falso, Verdadero o Engañoso) para redactar el desmentido",
     "modal_title": "Redactar Desmentido Oficial",
-    "modal_subtitle": "Texto base editable con fuentes recopiladas. Adapta la redacción con tu propia voz.",
+    "modal_subtitle": "Elige la plataforma para adaptar el formato. El texto es editable antes de publicar.",
     "submit": "Publicar Desmentido",
     "section_title": "Desmentido Oficial Publicado",
     "section_subtitle": "la vuelta a la red social · listo para responder",
     "respond_on_platform": "Responder en {{platform}}",
     "copied_toast": "¡Texto copiado al portapapeles! Abriendo {{platform}}...",
-    "source_chain_title": "Cadena de evidencias recopiladas:"
+    "x_opened_toast": "Abriendo 𝕏 con el tuit pre-rellenado...",
+    "source_chain_title": "Cadena de evidencias recopiladas:",
+    "platform_other": "Telegram / Otras",
+    "x_hint": "Versión compacta ≤280 caracteres. El enlace a Current lleva a la verificación completa con fuentes. Las URLs cuentan como 23 chars en Twitter.",
+    "text_label": "Texto del desmentido (editable)",
+    "canonical_link_label": "Enlace a verificación completa"
   },
   "forms": {
     "rationale_required": "La justificación explicativa (rationale) es obligatoria y no puede estar vacía.",

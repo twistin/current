@@ -54,13 +54,18 @@
     "draft_button": "+ Draft Rebuttal",
     "draft_disabled_tooltip": "Unproven verdict · A definitive verdict (False, True, or Misleading) is required to draft a rebuttal",
     "modal_title": "Draft Official Rebuttal",
-    "modal_subtitle": "Editable base text with compiled sources. Adapt the wording with your own voice.",
+    "modal_subtitle": "Choose the platform to adapt the format. Text is editable before publishing.",
     "submit": "Publish Rebuttal",
     "section_title": "Official Rebuttal Published",
     "section_subtitle": "the social network loop · ready to reply",
     "respond_on_platform": "Reply on {{platform}}",
     "copied_toast": "Text copied to clipboard! Opening {{platform}}...",
-    "source_chain_title": "Compiled evidence chain:"
+    "x_opened_toast": "Opening 𝕏 with pre-filled tweet...",
+    "source_chain_title": "Compiled evidence chain:",
+    "platform_other": "Telegram / Other",
+    "x_hint": "Compact version ≤280 characters. The Current link leads to the full verification with sources. URLs count as 23 chars on Twitter.",
+    "text_label": "Rebuttal text (editable)",
+    "canonical_link_label": "Link to full verification"
   },
   "forms": {
     "rationale_required": "Explanatory rationale is mandatory and cannot be empty.",
