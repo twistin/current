@@ -1,0 +1,120 @@
+:root {
+  /* Base (oscuro templado, azulado, no negro) */
+  --bg: #14161A;
+  --surface: #191C21;
+  --surface-2: #1C2028;
+  --surface-3: #20242C;
+  --border: #262A31;
+  --border-soft: #23262C;
+
+  /* Texto */
+  --text: #F2F3F5;
+  --text-body: #D6D9DE;
+  --text-soft: #9AA0AC;
+  --text-faint: #6B7180;
+
+  /* Marca / Interacción */
+  --accent: #6FA8FF;
+
+  /* Semánticos (estado de afirmación y veredicto) */
+  --support: #5FB88A;
+  --refute: #E8705A;
+  --contested: #E0A64D;
+  --neutral: #7C8290;
+  --misleading: #E0A64D;
+
+  /* Tipografías */
+  --serif: 'Newsreader', serif;
+  --body: 'Inter', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-body);
+  font-family: var(--body);
+  line-height: 1.5;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+.wrap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 22px;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.serif {
+  font-family: var(--serif);
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+/* Topbar */
+.topbar {
+  border-bottom: 1px solid var(--border-soft);
+  background: rgba(20, 22, 26, 0.86);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.topbar .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+
+.brand {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--text);
+}
+
+.brand .dot {
+  color: var(--accent);
+}
+
+.status-badge {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

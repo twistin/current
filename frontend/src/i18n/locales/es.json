@@ -1,0 +1,114 @@
+{
+  "header": {
+    "brand": "Current",
+    "verifiers_online": "{{count}} verificando",
+    "pseudonym": "Seudónimo",
+    "generate_pseudonym": "+ Generar Seudónimo"
+  },
+  "queue": {
+    "eyebrow": "Cola de Verificación · Priorizada por Propagación",
+    "title": "Bulos en seguimiento",
+    "subtitle": "Lectura en tiempo real del backend Rust. El veredicto emerge de la cadena de evidencia.",
+    "loading": "Cargando datos del backend en :3000...",
+    "error_title": "ERROR DE CONEXIÓN",
+    "retry": "Reintentar",
+    "empty": "No hay bulos en la base de datos actualmente.",
+    "detected": "Detectado",
+    "status": "Estado",
+    "propagation": "PROPAGACIÓN",
+    "report_claim_button": "+ Reportar Bulo Emergente"
+  },
+  "verification": {
+    "back_to_queue": "← Volver a la cola",
+    "eyebrow": "Bulo en verificación",
+    "propagation": "propagación",
+    "propagation_high": "▲ alta",
+    "type": "tipo",
+    "detected": "detectado",
+    "verdict_label": "VEREDICTO · DERIVADO DE LA EVIDENCIA",
+    "live_tag": "Recalcula en vivo",
+    "key_assertions_count": "{{count}} afirmaciones clave",
+    "unproven_sub": "derivado de {{count}} afirmaciones clave · faltan piezas — no se publica desmentido",
+    "misleading_sub": "derivado de {{count}} afirmaciones clave · verdad torcida: contexto sólido · reversible",
+    "resolved_sub": "derivado de {{count}} afirmaciones clave · {{resolved}}/{{total}} resueltas · reversible",
+    "afirm_chip": "afirm. 0{{num}} · {{status}}",
+    "solid_context": "+ contexto sólido",
+    "assertions_title": "Afirmaciones",
+    "assertions_subtitle": "el bulo, descompuesto · cada pieza con su autor",
+    "tag_key": "clave",
+    "tag_aux": "contexto",
+    "proposed_by": "afirmación planteada por",
+    "meter_support": "APOYO",
+    "meter_refute": "REFUTACIÓN",
+    "weight": "peso",
+    "source_registered": "Fuente registrada",
+    "add_evidence": "+ Añadir Evidencia",
+    "add_evidence_subtitle": "con fuente y razonamiento explicativo obligatorio",
+    "decompose_button": "+ Descomponer Bulo en Afirmación",
+    "try_it_title": "PRUÉBALO",
+    "try_it_body": "El veredicto no está escrito: se calcula desde la evidencia. Conmuta las casillas de verificación arriba para simular la retirada de fuentes en tiempo real y observa la cascada sobre los medidores y el veredicto. Cada aportación lleva el nombre de quien la hizo. Nadie verifica en la sombra.",
+    "loading": "Entrando a la sala de verificación...",
+    "error_title": "ERROR AL CARGAR SALA"
+  },
+  "forms": {
+    "rationale_required": "La justificación explicativa (rationale) es obligatoria y no puede estar vacía.",
+    "text_required": "El texto es obligatorio.",
+    "url_required": "La URL de la fuente es obligatoria.",
+    "title_required": "El título de la fuente es obligatorio.",
+    "stance_label": "Postura de la evidencia",
+    "strength_label": "Fuerza",
+    "kind_label": "Tipo de fuente",
+    "reliability_label": "Fiabilidad de la fuente",
+    "source_url_placeholder": "URL oficial o enlace a la fuente",
+    "source_title_placeholder": "Título de la fuente (ej: BOE - Boletín Oficial)",
+    "rationale_placeholder": "Razonamiento explicativo obligatorio: por qué esta fuente apoya, refuta o contextualiza esta afirmación...",
+    "cancel": "Cancelar",
+    "submit_evidence": "Guardar Evidencia",
+    "submit_assertion": "Añadir Afirmación",
+    "assertion_placeholder": "Texto de la afirmación descompuesta...",
+    "is_load_bearing_label": "Marca si es una afirmación clave (load-bearing)",
+    "summary_placeholder": "Enunciado del bulo emergente...",
+    "origin_url_placeholder": "URL del post original (ej: https://x.com/post/123)",
+    "platform_placeholder": "Plataforma (ej: X, Telegram, TikTok)",
+    "language_placeholder": "Idioma (ej: es, en, gl)",
+    "propagation_score_label": "Velocidad de propagación estimada (1-100)",
+    "report_claim_modal_title": "Reportar Bulo Emergente",
+    "submit_report": "Publicar Bulo en la Cola"
+  },
+  "verdicts": {
+    "true": "Verdadero",
+    "false": "Falso",
+    "misleading": "Engañoso",
+    "unproven": "No probado"
+  },
+  "statuses": {
+    "open": "abierto",
+    "in_review": "en verificación",
+    "resolved": "resuelto"
+  },
+  "assertion_statuses": {
+    "supported": "apoyada",
+    "refuted": "refutada",
+    "contested": "en disputa",
+    "unverified": "sin verificar"
+  },
+  "kinds": {
+    "text": "texto",
+    "image": "imagen",
+    "video": "vídeo",
+    "mixed": "mixto"
+  },
+  "stances": {
+    "supports": "apoya",
+    "refutes": "refuta",
+    "contextualizes": "contexto"
+  },
+  "auth_modal": {
+    "eyebrow": "Autenticación Seudónima sin PII",
+    "title": "Crea tu seudónimo",
+    "subtitle": "Sin email ni contraseña. El servidor generará un token opaco y solo guardará su hash SHA-256.",
+    "placeholder": "ej: GotaVigilante",
+    "cancel": "Cancelar",
+    "submit": "Generar Token"
+  }
+}

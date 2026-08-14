@@ -1,0 +1,114 @@
+{
+  "header": {
+    "brand": "Current",
+    "verifiers_online": "{{count}} verifying",
+    "pseudonym": "Pseudonym",
+    "generate_pseudonym": "+ Generate Pseudonym"
+  },
+  "queue": {
+    "eyebrow": "Verification Queue · Prioritized by Propagation",
+    "title": "Claims under tracking",
+    "subtitle": "Real-time reading from Rust backend. Verdict emerges from the evidence chain.",
+    "loading": "Loading backend data on :3000...",
+    "error_title": "CONNECTION ERROR",
+    "retry": "Retry",
+    "empty": "No claims in database currently.",
+    "detected": "Detected",
+    "status": "Status",
+    "propagation": "PROPAGATION",
+    "report_claim_button": "+ Report Emerging Claim"
+  },
+  "verification": {
+    "back_to_queue": "← Back to queue",
+    "eyebrow": "Claim under verification",
+    "propagation": "propagation",
+    "propagation_high": "▲ high",
+    "type": "type",
+    "detected": "detected",
+    "verdict_label": "VERDICT · DERIVED FROM EVIDENCE",
+    "live_tag": "Recalculates live",
+    "key_assertions_count": "{{count}} key assertions",
+    "unproven_sub": "derived from {{count}} key assertions · missing pieces — no rebuttal published",
+    "misleading_sub": "derived from {{count}} key assertions · twisted truth: solid context · reversible",
+    "resolved_sub": "derived from {{count}} key assertions · {{resolved}}/{{total}} resolved · reversible",
+    "afirm_chip": "claim 0{{num}} · {{status}}",
+    "solid_context": "+ solid context",
+    "assertions_title": "Assertions",
+    "assertions_subtitle": "the claim, decomposed · each piece with its author",
+    "tag_key": "key",
+    "tag_aux": "context",
+    "proposed_by": "assertion proposed by",
+    "meter_support": "SUPPORT",
+    "meter_refute": "REFUTATION",
+    "weight": "weight",
+    "source_registered": "Registered source",
+    "add_evidence": "+ Add Evidence",
+    "add_evidence_subtitle": "with mandatory source and explanatory rationale",
+    "decompose_button": "+ Decompose Claim into Assertion",
+    "try_it_title": "TRY IT OUT",
+    "try_it_body": "The verdict is not hardcoded: it is calculated from evidence. Toggle the checkboxes above to simulate removing sources in real-time and observe the cascade on meters and verdict. Every contribution shows who made it. Nobody verifies in the dark.",
+    "loading": "Entering verification room...",
+    "error_title": "ROOM LOADING ERROR"
+  },
+  "forms": {
+    "rationale_required": "Explanatory rationale is mandatory and cannot be empty.",
+    "text_required": "Text is mandatory.",
+    "url_required": "Source URL is mandatory.",
+    "title_required": "Source title is mandatory.",
+    "stance_label": "Evidence Stance",
+    "strength_label": "Strength",
+    "kind_label": "Source Type",
+    "reliability_label": "Source Reliability",
+    "source_url_placeholder": "Official URL or source link",
+    "source_title_placeholder": "Source title (e.g.: Official Bulletin)",
+    "rationale_placeholder": "Mandatory rationale: why this source supports, refutes, or contextualizes this assertion...",
+    "cancel": "Cancel",
+    "submit_evidence": "Save Evidence",
+    "submit_assertion": "Add Assertion",
+    "assertion_placeholder": "Decomposed assertion text...",
+    "is_load_bearing_label": "Check if this is a key assertion (load-bearing)",
+    "summary_placeholder": "Emerging claim summary...",
+    "origin_url_placeholder": "Original post URL (e.g.: https://x.com/post/123)",
+    "platform_placeholder": "Platform (e.g.: X, Telegram, TikTok)",
+    "language_placeholder": "Language (e.g.: es, en, gl)",
+    "propagation_score_label": "Estimated propagation score (1-100)",
+    "report_claim_modal_title": "Report Emerging Claim",
+    "submit_report": "Post Claim to Queue"
+  },
+  "verdicts": {
+    "true": "True",
+    "false": "False",
+    "misleading": "Misleading",
+    "unproven": "Unproven"
+  },
+  "statuses": {
+    "open": "open",
+    "in_review": "in review",
+    "resolved": "resolved"
+  },
+  "assertion_statuses": {
+    "supported": "supported",
+    "refuted": "refuted",
+    "contested": "contested",
+    "unverified": "unverified"
+  },
+  "kinds": {
+    "text": "text",
+    "image": "image",
+    "video": "video",
+    "mixed": "mixed"
+  },
+  "stances": {
+    "supports": "supports",
+    "refutes": "refutes",
+    "contextualizes": "context"
+  },
+  "auth_modal": {
+    "eyebrow": "Pseudonymous Auth without PII",
+    "title": "Create your pseudonym",
+    "subtitle": "No email, no password. The server generates an opaque token and only stores its SHA-256 hash.",
+    "placeholder": "e.g.: VigilantDrop",
+    "cancel": "Cancel",
+    "submit": "Generate Token"
+  }
+}
