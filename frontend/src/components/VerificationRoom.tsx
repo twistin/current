@@ -214,11 +214,11 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
             maxWidth: '340px',
             margin: '0 auto',
             background: 'var(--accent)',
-            color: '#0c1830',
+            color: 'var(--accent-text)',
             fontWeight: 600,
             padding: '12px 20px',
             borderRadius: '10px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            boxShadow: 'var(--card-shadow)',
             zIndex: 1000,
             fontSize: '12px',
           }}
@@ -294,7 +294,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
       {/* Panel de Veredicto Derivado */}
       <div
         style={{
-          background: 'linear-gradient(158deg, var(--surface-2), #181B21)',
+          background: 'var(--verdict-gradient)',
           border: '1px solid var(--border)',
           borderRadius: '16px',
           margin: '22px 0 10px',
@@ -404,7 +404,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
                 className="mono"
                 style={{
                   background: canPublishRebuttal ? 'var(--accent)' : 'var(--surface-3)',
-                  color: canPublishRebuttal ? '#0c1830' : 'var(--text-faint)',
+                  color: canPublishRebuttal ? 'var(--accent-text)' : 'var(--text-faint)',
                   border: canPublishRebuttal ? 'none' : '1px solid var(--border)',
                   fontWeight: 600,
                   fontSize: '11px',
@@ -494,7 +494,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
               className="mono"
               style={{
                 background: 'var(--accent)',
-                color: '#0c1830',
+                color: 'var(--accent-text)',
                 border: 'none',
                 fontWeight: 600,
                 fontSize: '12px',
@@ -504,7 +504,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 14px rgba(111, 168, 255, 0.25)',
+                boxShadow: '0 4px 14px var(--accent-shadow)',
               }}
             >
               ↗ {t('rebuttal.respond_on_platform', { platform: platformName })}
@@ -622,7 +622,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
                     borderRadius: '5px',
                     fontWeight: 500,
                     backgroundColor: a.is_load_bearing ? 'var(--accent)' : 'var(--surface-3)',
-                    color: a.is_load_bearing ? '#0c1830' : 'var(--text-soft)',
+                    color: a.is_load_bearing ? 'var(--accent-text)' : 'var(--text-soft)',
                     flexShrink: 0,
                     whiteSpace: 'nowrap',
                   }}

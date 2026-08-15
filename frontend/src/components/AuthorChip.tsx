@@ -5,14 +5,14 @@ interface AuthorChipProps {
 }
 
 const MEMBER_META: Record<string, { color: string; rigor: number }> = {
-  nix: { color: '#8FB4F0', rigor: 142 },
-  sol: { color: '#5FB88A', rigor: 98 },
-  mara: { color: '#E8705A', rigor: 210 },
-  kai: { color: '#E0A64D', rigor: 57 },
+  nix: { color: 'var(--accent)', rigor: 142 },
+  sol: { color: 'var(--support)', rigor: 98 },
+  mara: { color: 'var(--refute)', rigor: 210 },
+  kai: { color: 'var(--contested)', rigor: 57 },
 };
 
 export const AuthorChip: React.FC<AuthorChipProps> = ({ pseudonym }) => {
-  const meta = MEMBER_META[pseudonym.toLowerCase()] || { color: '#7C8290', rigor: 50 };
+  const meta = MEMBER_META[pseudonym.toLowerCase()] || { color: 'var(--neutral)', rigor: 50 };
   const avatarInitials = pseudonym.slice(0, 2).toLowerCase();
 
   return (
@@ -33,11 +33,11 @@ export const AuthorChip: React.FC<AuthorChipProps> = ({ pseudonym }) => {
           borderRadius: '50%',
           backgroundColor: meta.color,
           fontSize: '9px',
-          fontWeight: 600,
+          fontWeight: 700,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#0c0d10',
+          color: '#ffffff',
           textTransform: 'lowercase',
         }}
       >

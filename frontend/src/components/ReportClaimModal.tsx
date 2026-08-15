@@ -73,7 +73,7 @@ export const ReportClaimModal: React.FC<ReportClaimModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0,0,0,0.75)',
+        background: 'var(--overlay-bg)',
         backdropFilter: 'blur(4px)',
         display: 'flex',
         alignItems: 'center',
@@ -269,7 +269,7 @@ export const ReportClaimModal: React.FC<ReportClaimModalProps> = ({
               style={{
                 background: 'var(--accent)',
                 border: 'none',
-                color: '#0c1830',
+                color: 'var(--accent-text)',
                 fontWeight: 600,
                 padding: '8px 16px',
                 borderRadius: '6px',

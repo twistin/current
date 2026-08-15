@@ -5,7 +5,9 @@
     "nav_manifesto": "Qué es Current",
     "verifiers_online": "{{count}} verificando",
     "pseudonym": "Seudónimo",
-    "generate_pseudonym": "+ Generar Seudónimo"
+    "generate_pseudonym": "+ Generar Seudónimo",
+    "theme_light": "Cambiar a modo claro",
+    "theme_dark": "Cambiar a modo oscuro"
   },
   "landing": {
     "badge": "INFRAESTRUCTURA DE DISCERNIMIENTO Y VERIFICACIÓN",

@@ -8,10 +8,10 @@ interface ClaimCardProps {
 }
 
 const VERDICT_CONFIG: Record<string, { key: string; color: string; bg: string }> = {
-  false: { key: 'false', color: 'var(--refute)', bg: 'rgba(232, 112, 90, 0.12)' },
-  true: { key: 'true', color: 'var(--support)', bg: 'rgba(95, 184, 138, 0.12)' },
-  misleading: { key: 'misleading', color: 'var(--misleading)', bg: 'rgba(224, 166, 77, 0.12)' },
-  unproven: { key: 'unproven', color: 'var(--neutral)', bg: 'rgba(124, 130, 144, 0.12)' },
+  false: { key: 'false', color: 'var(--refute)', bg: 'color-mix(in srgb, var(--refute) 12%, transparent)' },
+  true: { key: 'true', color: 'var(--support)', bg: 'color-mix(in srgb, var(--support) 12%, transparent)' },
+  misleading: { key: 'misleading', color: 'var(--misleading)', bg: 'color-mix(in srgb, var(--misleading) 12%, transparent)' },
+  unproven: { key: 'unproven', color: 'var(--neutral)', bg: 'color-mix(in srgb, var(--neutral) 12%, transparent)' },
 };
 
 export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onClick }) => {

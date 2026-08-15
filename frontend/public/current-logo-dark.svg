@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 50" fill="none">
+  <!-- Símbolo: Gota + Olas Azules -->
+  <g transform="translate(4, 6)">
+    <circle cx="28" cy="5" r="4" fill="#5FB88A" />
+    <path d="M 2 16 C 9 10, 20 10, 28 16 C 36 22, 47 22, 54 16" stroke="#6FA8FF" stroke-width="2.6" stroke-linecap="round" />
+    <path d="M 2 24 C 9 18, 20 18, 28 24 C 36 30, 47 30, 54 24" stroke="#4F8EEB" stroke-width="2.6" stroke-linecap="round" />
+    <path d="M 2 32 C 9 26, 20 26, 28 32 C 36 38, 47 38, 54 32" stroke="#8CB8FF" stroke-width="2.6" stroke-linecap="round" />
+  </g>
+  <!-- Wordmark: Current. -->
+  <text x="74" y="34" font-family="'Newsreader', Georgia, serif" font-size="28" font-weight="600" fill="#F2F3F5" letter-spacing="-0.5">Current<tspan fill="#6FA8FF">.</tspan></text>
+</svg>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Logo } from './Logo';
 
 interface ManifestoLandingProps {
   onEnterQueue: () => void;
@@ -17,17 +18,17 @@ export const ManifestoLanding: React.FC<ManifestoLandingProps> = ({
   const { t } = useTranslation();
 
   return (
-    <div style={{ padding: '24px 0 60px' }}>
+    <div style={{ padding: '20px 0 60px' }}>
       {/* SECCIÓN HERO — MANIFIESTO CORTO */}
       <section
         style={{
-          background: 'linear-gradient(165deg, var(--surface), #14171D 80%)',
+          background: 'var(--hero-gradient)',
           border: '1px solid var(--border)',
           borderRadius: '24px',
           padding: 'clamp(28px, 6vw, 48px)',
           position: 'relative',
           overflow: 'hidden',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)',
+          boxShadow: 'var(--card-shadow)',
         }}
       >
         {/* Glow sutil en el fondo */}
@@ -38,14 +39,18 @@ export const ManifestoLanding: React.FC<ManifestoLandingProps> = ({
             right: '-80px',
             width: '260px',
             height: '260px',
-            background: 'radial-gradient(circle, rgba(111, 168, 255, 0.12) 0%, rgba(20, 22, 26, 0) 70%)',
+            background: 'radial-gradient(circle, var(--accent-soft-bg) 0%, transparent 70%)',
             borderRadius: '50%',
             pointerEvents: 'none',
           }}
         />
 
-        <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: '18px' }}>
-          {t('landing.badge')}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+          <div className="eyebrow" style={{ color: 'var(--accent)' }}>
+            {t('landing.badge')}
+          </div>
+          {/* Logo Símbolo Adaptativo en el Hero */}
+          <Logo variant="symbol-only" size="md" />
         </div>
 
         {/* LEMA PRINCIPAL — PROMINENTE */}
@@ -103,8 +108,8 @@ export const ManifestoLanding: React.FC<ManifestoLandingProps> = ({
             color: 'var(--accent)',
             letterSpacing: '0.04em',
             padding: '12px 16px',
-            background: 'rgba(111, 168, 255, 0.08)',
-            border: '1px solid rgba(111, 168, 255, 0.25)',
+            background: 'var(--accent-soft-bg)',
+            border: '1px solid var(--accent)',
             borderRadius: '10px',
             display: 'inline-block',
             marginBottom: '32px',
@@ -128,15 +133,15 @@ export const ManifestoLanding: React.FC<ManifestoLandingProps> = ({
               className="mono"
               style={{
                 background: 'var(--accent)',
-                color: '#0c1830',
+                color: 'var(--accent-text)',
                 border: 'none',
                 fontWeight: 600,
                 fontSize: '13px',
                 padding: '12px 24px',
                 borderRadius: '10px',
                 cursor: 'pointer',
-                boxShadow: '0 6px 18px rgba(111, 168, 255, 0.25)',
-                transition: 'transform 0.15s ease',
+                boxShadow: '0 6px 18px var(--accent-shadow)',
+                transition: 'transform 0.15s ease, opacity 0.15s ease',
               }}
             >
               {t('landing.join_action')}
@@ -155,7 +160,7 @@ export const ManifestoLanding: React.FC<ManifestoLandingProps> = ({
               padding: '12px 20px',
               borderRadius: '10px',
               cursor: 'pointer',
-              transition: 'background 0.15s ease',
+              transition: 'background-color 0.15s ease, border-color 0.15s ease',
             }}
           >
             {t('landing.enter_queue')}
@@ -208,6 +213,7 @@ export const ManifestoLanding: React.FC<ManifestoLandingProps> = ({
               display: 'flex',
               flexDirection: 'column',
               gap: '10px',
+              boxShadow: 'var(--card-shadow-sm)',
             }}
           >
             <span
@@ -239,6 +245,7 @@ export const ManifestoLanding: React.FC<ManifestoLandingProps> = ({
               display: 'flex',
               flexDirection: 'column',
               gap: '10px',
+              boxShadow: 'var(--card-shadow-sm)',
             }}
           >
             <span
@@ -270,6 +277,7 @@ export const ManifestoLanding: React.FC<ManifestoLandingProps> = ({
               display: 'flex',
               flexDirection: 'column',
               gap: '10px',
+              boxShadow: 'var(--card-shadow-sm)',
             }}
           >
             <span

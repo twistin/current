@@ -8,11 +8,14 @@ import { VerificationRoom } from './components/VerificationRoom';
 import { ReportClaimModal } from './components/ReportClaimModal';
 import { ManifestoLanding } from './components/ManifestoLanding';
 import { ManifestoPage } from './components/ManifestoPage';
+import { useTheme } from './theme';
 
 type AppView = 'landing' | 'queue' | 'manifesto';
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
+
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +99,6 @@ export const App: React.FC = () => {
       setPseudonym(res.pseudonym);
       setShowRegisterModal(false);
       setInputPseudonym('');
-      // Si estaba en la portada al registrarse, le llevamos a la cola para empezar
       if (currentView === 'landing') {
         setCurrentView('queue');
       }
@@ -114,6 +116,8 @@ export const App: React.FC = () => {
         onRegisterClick={() => setShowRegisterModal(true)}
         currentView={selectedClaimId ? 'room' : currentView}
         onNavigate={handleNavigate}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       <main className="wrap" style={{ paddingTop: '28px' }}>
@@ -173,13 +177,14 @@ export const App: React.FC = () => {
                 style={{
                   background: 'var(--accent)',
                   border: 'none',
-                  color: '#0c1830',
+                  color: 'var(--accent-text)',
                   fontWeight: 600,
                   fontSize: '12px',
-                  padding: '8px 16px',
+                  padding: '9px 18px',
                   borderRadius: '8px',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(111, 168, 255, 0.2)',
+                  boxShadow: '0 4px 12px var(--accent-shadow)',
+                  transition: 'opacity 0.15s ease',
                 }}
               >
                 {t('queue.report_claim_button')}
@@ -324,7 +329,7 @@ export const App: React.FC = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.8)',
+            background: 'var(--overlay-bg)',
             backdropFilter: 'blur(6px)',
             display: 'flex',
             alignItems: 'center',
@@ -343,7 +348,7 @@ export const App: React.FC = () => {
               maxWidth: '460px',
               maxHeight: '90vh',
               overflowY: 'auto',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+              boxShadow: 'var(--card-shadow)',
             }}
           >
             {/* MANIFIESTO EN ONBOARDING */}
@@ -447,7 +452,7 @@ export const App: React.FC = () => {
                   style={{
                     background: 'var(--accent)',
                     border: 'none',
-                    color: '#0c1830',
+                    color: 'var(--accent-text)',
                     fontWeight: 600,
                     padding: '8px 16px',
                     borderRadius: '6px',

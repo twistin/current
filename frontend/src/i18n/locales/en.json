@@ -5,7 +5,9 @@
     "nav_manifesto": "What is Current",
     "verifiers_online": "{{count}} verifying",
     "pseudonym": "Pseudonym",
-    "generate_pseudonym": "+ Generate Pseudonym"
+    "generate_pseudonym": "+ Generate Pseudonym",
+    "theme_light": "Switch to light mode",
+    "theme_dark": "Switch to dark mode"
   },
   "landing": {
     "badge": "INFRASTRUCTURE FOR DISCERNMENT AND VERIFICATION",

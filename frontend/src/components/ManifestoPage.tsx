@@ -272,7 +272,7 @@ export const ManifestoPage: React.FC<ManifestoPageProps> = ({
           padding: '36px',
           textAlign: 'center',
           marginTop: '40px',
-          boxShadow: '0 12px 32px rgba(0, 0, 0, 0.4)',
+          boxShadow: 'var(--card-shadow)',
         }}
       >
         <h3
@@ -295,7 +295,7 @@ export const ManifestoPage: React.FC<ManifestoPageProps> = ({
               className="mono"
               style={{
                 background: 'var(--accent)',
-                color: '#0c1830',
+                color: 'var(--accent-text)',
                 border: 'none',
                 fontWeight: 600,
                 fontSize: '13px',

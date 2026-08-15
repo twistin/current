@@ -182,7 +182,7 @@ export const PublishRebuttalModal: React.FC<PublishRebuttalModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0,0,0,0.75)',
+        background: 'var(--overlay-bg)',
         backdropFilter: 'blur(4px)',
         display: 'flex',
         alignItems: 'center',
@@ -228,7 +228,7 @@ export const PublishRebuttalModal: React.FC<PublishRebuttalModalProps> = ({
                 cursor: 'pointer',
                 border: platform === p ? 'none' : '1px solid var(--border)',
                 background: platform === p ? 'var(--accent)' : 'var(--surface-2)',
-                color: platform === p ? '#0c1830' : 'var(--text-soft)',
+                color: platform === p ? 'var(--accent-text)' : 'var(--text-soft)',
                 transition: 'all 0.15s ease',
               }}
             >
@@ -380,7 +380,7 @@ export const PublishRebuttalModal: React.FC<PublishRebuttalModalProps> = ({
               style={{
                 background: isOverLimit ? 'var(--surface-3)' : 'var(--accent)',
                 border: isOverLimit ? '1px solid var(--border)' : 'none',
-                color: isOverLimit ? 'var(--text-faint)' : '#0c1830',
+                color: isOverLimit ? 'var(--text-faint)' : 'var(--accent-text)',
                 fontWeight: 600,
                 padding: '8px 16px',
                 borderRadius: '6px',
