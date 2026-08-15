@@ -1,9 +1,58 @@
 {
   "header": {
     "brand": "Current",
+    "nav_queue": "Cola de Bulos",
+    "nav_manifesto": "Qué es Current",
     "verifiers_online": "{{count}} verificando",
     "pseudonym": "Seudónimo",
     "generate_pseudonym": "+ Generar Seudónimo"
+  },
+  "landing": {
+    "badge": "INFRAESTRUCTURA DE DISCERNIMIENTO Y VERIFICACIÓN",
+    "enter_queue": "Ver Cola de Verificación →",
+    "join_action": "+ Crear Seudónimo y Unirse",
+    "read_full_manifesto": "Leer Manifiesto Completo",
+    "how_it_works_badge": "MÉTODO DE TRABAJO",
+    "how_it_works_title": "Cómo funciona Current",
+    "step_1_title": "1. Detectar el bulo emergente",
+    "step_1_desc": "Identificamos los bulos en redes sociales priorizados por su velocidad de propagación, ganando las primeras horas.",
+    "step_2_title": "2. Descomponer y verificar con fuentes",
+    "step_2_desc": "El bulo se descompone en afirmaciones concretas. La comunidad aporta fuentes fiables y argumentos explicativos.",
+    "step_3_title": "3. Devolver la verdad a la red",
+    "step_3_desc": "Generamos un desmentido con enlace a la cadena completa de pruebas. Cada persona lo difunde con su propia voz."
+  },
+  "manifesto": {
+    "eyebrow": "Manifiesto Fundacional · Current",
+    "motto": "La mentira viaja sola. La verdad necesita que alguien la lleve.",
+    "short": {
+      "p1": "Cada día, redes diseñadas para premiar la indignación inundan tu mundo de bulos. No es un accidente: es un negocio, y a veces un arma. Solo, no puedes con el algoritmo. Nadie puede.",
+      "p2": "Pero juntos sí.",
+      "p3": "Current no te pide que creas. Te da las herramientas para comprobar. Aquí no hay un árbitro que dicta la verdad: hay personas que la construyen a la vista de todos, con las fuentes delante, para que cualquiera pueda rehacer el camino.",
+      "p4": "No venimos a gritar más fuerte. Venimos a verificar mejor.",
+      "cta": "Únete. Verifica. Que la verdad también tenga quien la lleve."
+    },
+    "long": {
+      "title": "La mentira viaja sola. La verdad necesita que alguien la lleve.",
+      "intro_p1": "Vivimos rodeados de mentiras que se propagan más rápido que cualquier desmentido. No porque la gente sea tonta: porque el terreno está diseñado así. Las redes premian lo que indigna, no lo que es cierto. Y sobre ese diseño operan quienes tienen interés en confundirnos: para vender, para ganar poder, para convertir ciudadanos en súbditos de una mentira que les conviene.",
+      "intro_p2": "Contra eso, una persona sola no puede nada. Puedes desmentir un bulo y mañana hay mil más. Es como vaciar el mar con un vaso.",
+      "riverbed_highlight": "Por eso Current no es una persona. Es un cauce.",
+      "section_beliefs": "Lo que creemos",
+      "belief_1_title": "La verdad no se acata, se comprueba.",
+      "belief_1_body": "No te pedimos que confíes en nosotros. Cualquiera que diga \"esto es falso, créeme\" es solo una autoridad más, y las autoridades se equivocan y se compran. Nosotros hacemos lo contrario: enseñamos la cadena completa de evidencia, con sus fuentes, para que la compruebes sin fiarte de nadie. El instrumento, no el veredicto.",
+      "belief_2_title": "Nadie dicta el veredicto. Emerge.",
+      "belief_2_body": "En Current un bulo se descompone en afirmaciones concretas, y cada afirmación se sostiene o cae según las pruebas que la respaldan o la refutan. El veredicto no lo firma un jefe: lo deriva la evidencia, a la vista de todos, y cambia si aparecen pruebas nuevas. Nada es dogma cerrado.",
+      "belief_3_title": "El rigor empieza por uno mismo.",
+      "belief_3_body": "El bulo más peligroso es el que te gusta, el que confirma lo que ya querías creer. Aquí no se trata de tener razón contra el otro bando: se trata de exigirte a ti primero la prueba que le exiges a los demás. Quien combate la mentira tiene que ser el más honesto de la sala.",
+      "belief_4_title": "Somos muchos, y distintos, y eso es la fuerza.",
+      "belief_4_body": "No queremos un ejército de voces idénticas repitiendo la misma consigna: eso es lo que hacen las granjas de bots que combatimos. Queremos personas reales, cada una con su voz, cada aportación con su nombre. Un río no es agua uniforme: son mil corrientes que comparten un cauce. Distintos y unidos.",
+      "section_actions": "Lo que hacemos",
+      "action_body_1": "Detectamos el bulo donde vive. Lo verificamos juntos, con fuentes. Y devolvemos el desmentido a donde nació, para que cada quien lo lleve a su gente con sus propias palabras.",
+      "action_body_2": "No venimos a saturar, ni a colapsar, ni a gritar más fuerte que ellos: en ese juego siempre ganan los que tienen más bots y más dinero. Venimos a hacer algo que ellos no pueden comprar: verdad comprobable, construida entre personas que se atreven a pensar.",
+      "section_matters": "Por qué importa",
+      "matters_body_1": "Compartimos el mismo mundo frágil. Las mismas necesidades, los mismos miedos, el mismo tiempo breve. La mentira nos divide porque a la mentira le conviene un mundo de gente sola, asustada y enfrentada. La verdad compartida hace lo contrario: nos reúne.",
+      "matters_body_2": "No es una tarea pequeña y no termina nunca. Pero el poco tiempo que tenemos se gasta mejor construyendo que destruyendo.",
+      "cta_final": "Únete. Verifica. Que la verdad también tenga quien la lleve."
+    }
   },
   "queue": {
     "eyebrow": "Cola de Verificación · Priorizada por Propagación",
@@ -123,9 +172,12 @@
   "auth_modal": {
     "eyebrow": "Autenticación Seudónima sin PII",
     "title": "Crea tu seudónimo",
-    "subtitle": "Sin email ni contraseña. El servidor generará un token opaco y solo guardará su hash SHA-256.",
+    "manifesto_badge": "EL COMPROMISO DE CURRENT",
+    "manifesto_quote": "La mentira viaja sola. La verdad necesita que alguien la lleve.",
+    "manifesto_sub": "Aquí no hay árbitros que dictan la verdad: construimos la verificación con fuentes comprobables a la vista de todos.",
+    "subtitle": "Sin email ni contraseña. Tu token se genera en el navegador y el servidor solo guarda su hash criptográfico SHA-256.",
     "placeholder": "ej: GotaVigilante",
     "cancel": "Cancelar",
-    "submit": "Generar Token"
+    "submit": "Generar Token y Entrar"
   }
 }

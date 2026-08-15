@@ -1,9 +1,58 @@
 {
   "header": {
     "brand": "Current",
+    "nav_queue": "Claims Queue",
+    "nav_manifesto": "What is Current",
     "verifiers_online": "{{count}} verifying",
     "pseudonym": "Pseudonym",
     "generate_pseudonym": "+ Generate Pseudonym"
+  },
+  "landing": {
+    "badge": "INFRASTRUCTURE FOR DISCERNMENT AND VERIFICATION",
+    "enter_queue": "View Verification Queue →",
+    "join_action": "+ Create Pseudonym & Join",
+    "read_full_manifesto": "Read Full Manifesto",
+    "how_it_works_badge": "METHODOLOGY",
+    "how_it_works_title": "How Current works",
+    "step_1_title": "1. Spot the emerging hoax",
+    "step_1_desc": "We identify hoaxes across social networks prioritized by their propagation velocity, winning the critical first hours.",
+    "step_2_title": "2. Decompose and verify with sources",
+    "step_2_desc": "The hoax is broken down into concrete claims. The community contributes reliable sources and explanatory rationales.",
+    "step_3_title": "3. Return the truth to the network",
+    "step_3_desc": "We generate a rebuttal with a link to the complete evidence chain. Each person spreads it in their own words."
+  },
+  "manifesto": {
+    "eyebrow": "Foundational Manifesto · Current",
+    "motto": "Lies travel alone. The truth needs someone to carry it.",
+    "short": {
+      "p1": "Every day, networks built to reward outrage flood your world with falsehoods. It's not an accident: it's a business, and sometimes a weapon. Alone, you can't beat the algorithm. No one can.",
+      "p2": "But together, we can.",
+      "p3": "Current doesn't ask you to believe. It gives you the tools to check. There's no arbiter here handing down the truth: there are people building it in the open, with the sources in plain sight, so anyone can retrace the path.",
+      "p4": "We're not here to shout louder. We're here to verify better.",
+      "cta": "Join. Verify. Let the truth have someone to carry it too."
+    },
+    "long": {
+      "title": "Lies travel alone. The truth needs someone to carry it.",
+      "intro_p1": "We live surrounded by lies that spread faster than any correction. Not because people are foolish: because the ground is built that way. Networks reward what enrages, not what's true. And on top of that design work those who profit from our confusion: to sell, to seize power, to turn citizens into subjects of a lie that suits them.",
+      "intro_p2": "Against that, one person alone can do nothing. You debunk one hoax and tomorrow there are a thousand more. It's like emptying the sea with a glass.",
+      "riverbed_highlight": "That's why Current isn't a person. It's a riverbed.",
+      "section_beliefs": "What we believe",
+      "belief_1_title": "Truth isn't obeyed, it's checked.",
+      "belief_1_body": "We don't ask you to trust us. Anyone who says \"this is false, believe me\" is just one more authority, and authorities are wrong and can be bought. We do the opposite: we show the full chain of evidence, with its sources, so you can check it without trusting anyone. The instrument, not the verdict.",
+      "belief_2_title": "No one dictates the verdict. It emerges.",
+      "belief_2_body": "In Current a hoax is broken down into concrete claims, and each claim stands or falls on the evidence that supports or refutes it. The verdict isn't signed by a boss: it's derived from the evidence, in the open, and it changes if new proof appears. Nothing is settled dogma.",
+      "belief_3_title": "Rigor begins with yourself.",
+      "belief_3_body": "The most dangerous hoax is the one you like, the one that confirms what you already wanted to believe. This isn't about being right against the other side: it's about demanding of yourself first the proof you demand of others. Whoever fights lies must be the most honest person in the room.",
+      "belief_4_title": "We are many, and different, and that's the strength.",
+      "belief_4_body": "We don't want an army of identical voices repeating the same slogan: that's what the bot farms we fight already do. We want real people, each with their own voice, each contribution signed with a name. A river isn't uniform water: it's a thousand currents sharing one bed. Distinct, and united.",
+      "section_actions": "What we do",
+      "action_body_1": "We spot the hoax where it lives. We verify it together, with sources. And we bring the correction back to where it was born, so each of us can carry it to our own people in our own words.",
+      "action_body_2": "We're not here to flood, or to crash, or to shout louder than them: in that game the side with more bots and more money always wins. We're here to do something they can't buy: checkable truth, built among people who dare to think.",
+      "section_matters": "Why it matters",
+      "matters_body_1": "We share the same fragile world. The same needs, the same fears, the same brief time. Lies divide us because lies thrive on a world of people who are alone, afraid and set against each other. Shared truth does the opposite: it brings us together.",
+      "matters_body_2": "It's no small task and it never ends. But the little time we have is better spent building than tearing down.",
+      "cta_final": "Join. Verify. Let the truth have someone to carry it too."
+    }
   },
   "queue": {
     "eyebrow": "Verification Queue · Prioritized by Propagation",
@@ -123,9 +172,12 @@
   "auth_modal": {
     "eyebrow": "Pseudonymous Auth without PII",
     "title": "Create your pseudonym",
-    "subtitle": "No email, no password. The server generates an opaque token and only stores its SHA-256 hash.",
+    "manifesto_badge": "THE CURRENT PLEDGE",
+    "manifesto_quote": "Lies travel alone. The truth needs someone to carry it.",
+    "manifesto_sub": "No arbiters dictating the truth: we build verification from checkable sources in plain view of everyone.",
+    "subtitle": "No email, no password. Your token is generated right in your browser and the server only stores its cryptographic SHA-256 hash.",
     "placeholder": "e.g.: VigilantDrop",
     "cancel": "Cancel",
-    "submit": "Generate Token"
+    "submit": "Generate Token & Enter"
   }
 }

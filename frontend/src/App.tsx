@@ -6,6 +6,10 @@ import { Header } from './components/Header';
 import { ClaimCard } from './components/ClaimCard';
 import { VerificationRoom } from './components/VerificationRoom';
 import { ReportClaimModal } from './components/ReportClaimModal';
+import { ManifestoLanding } from './components/ManifestoLanding';
+import { ManifestoPage } from './components/ManifestoPage';
+
+type AppView = 'landing' | 'queue' | 'manifesto';
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
@@ -18,6 +22,12 @@ export const App: React.FC = () => {
   const [showRegisterModal, setShowRegisterModal] = useState<boolean>(false);
   const [inputPseudonym, setInputPseudonym] = useState<string>('');
   const [registerError, setRegisterError] = useState<string | null>(null);
+  const [registering, setRegistering] = useState<boolean>(false);
+
+  // Navegación principal de vistas
+  const [currentView, setCurrentView] = useState<AppView>(() => {
+    return getToken() ? 'queue' : 'landing';
+  });
 
   // Navegación a Sala de Verificación
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
@@ -69,30 +79,76 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleNavigate = (view: AppView) => {
+    setSelectedClaimId(null);
+    setClaimDetail(null);
+    setCurrentView(view);
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputPseudonym.trim()) return;
 
     setRegisterError(null);
+    setRegistering(true);
     try {
       const res = await registerMember(inputPseudonym.trim());
       setPseudonym(res.pseudonym);
       setShowRegisterModal(false);
       setInputPseudonym('');
+      // Si estaba en la portada al registrarse, le llevamos a la cola para empezar
+      if (currentView === 'landing') {
+        setCurrentView('queue');
+      }
     } catch (err) {
       setRegisterError(err instanceof Error ? err.message : 'Error al registrar');
+    } finally {
+      setRegistering(false);
     }
   };
 
   return (
     <div>
-      <Header memberPseudonym={pseudonym} onRegisterClick={() => setShowRegisterModal(true)} />
+      <Header
+        memberPseudonym={pseudonym}
+        onRegisterClick={() => setShowRegisterModal(true)}
+        currentView={selectedClaimId ? 'room' : currentView}
+        onNavigate={handleNavigate}
+      />
 
-      <main className="wrap" style={{ paddingTop: '34px' }}>
-        {/* VISTA 1: Lista de Cola de Verificación */}
-        {!selectedClaimId && (
+      <main className="wrap" style={{ paddingTop: '28px' }}>
+        {/* VISTA A: Portada con Manifiesto Corto */}
+        {!selectedClaimId && currentView === 'landing' && (
+          <ManifestoLanding
+            onEnterQueue={() => setCurrentView('queue')}
+            onRegister={() => setShowRegisterModal(true)}
+            onReadFullManifesto={() => setCurrentView('manifesto')}
+            isAuthenticated={!!pseudonym}
+          />
+        )}
+
+        {/* VISTA B: Manifiesto Largo Completo (Qué es Current) */}
+        {!selectedClaimId && currentView === 'manifesto' && (
+          <ManifestoPage
+            onBackToQueue={() => setCurrentView('queue')}
+            onRegister={() => setShowRegisterModal(true)}
+            isAuthenticated={!!pseudonym}
+          />
+        )}
+
+        {/* VISTA C: Cola de Verificación */}
+        {!selectedClaimId && currentView === 'queue' && (
           <div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '16px',
+                marginBottom: '24px',
+              }}
+            >
               <div>
                 <div className="eyebrow" style={{ marginBottom: '8px' }}>
                   {t('queue.eyebrow')}
@@ -123,6 +179,7 @@ export const App: React.FC = () => {
                   padding: '8px 16px',
                   borderRadius: '8px',
                   cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(111, 168, 255, 0.2)',
                 }}
               >
                 {t('queue.report_claim_button')}
@@ -195,7 +252,7 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* VISTA 2: Sala de Verificación */}
+        {/* VISTA D: Sala de Verificación Detallada */}
         {selectedClaimId && (
           <div>
             {loadingDetail && (
@@ -261,37 +318,81 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* Modal Mínimo de Registro Seudónimo */}
+      {/* Modal de Onboarding y Registro Seudónimo con Manifiesto */}
       {showRegisterModal && (
         <div
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.75)',
-            backdropFilter: 'blur(4px)',
+            background: 'rgba(0,0,0,0.8)',
+            backdropFilter: 'blur(6px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 100,
+            padding: '16px',
           }}
         >
           <div
             style={{
               background: 'var(--surface)',
               border: '1px solid var(--border)',
-              borderRadius: '16px',
+              borderRadius: '20px',
               padding: '28px',
-              width: '90%',
-              maxWidth: '420px',
+              width: '100%',
+              maxWidth: '460px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
             }}
           >
-            <div className="eyebrow" style={{ marginBottom: '10px' }}>
+            {/* MANIFIESTO EN ONBOARDING */}
+            <div
+              style={{
+                background: 'linear-gradient(150deg, var(--surface-2), var(--bg))',
+                border: '1px solid var(--border-soft)',
+                borderRadius: '12px',
+                padding: '16px 18px',
+                marginBottom: '20px',
+              }}
+            >
+              <div
+                className="mono"
+                style={{
+                  fontSize: '9.5px',
+                  letterSpacing: '0.12em',
+                  color: 'var(--accent)',
+                  textTransform: 'uppercase',
+                  fontWeight: 600,
+                  marginBottom: '8px',
+                }}
+              >
+                {t('auth_modal.manifesto_badge')}
+              </div>
+              <p
+                className="serif"
+                style={{
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  color: 'var(--text)',
+                  lineHeight: 1.35,
+                  marginBottom: '8px',
+                }}
+              >
+                “{t('auth_modal.manifesto_quote')}”
+              </p>
+              <p style={{ fontSize: '11.5px', color: 'var(--text-soft)', lineHeight: 1.5 }}>
+                {t('auth_modal.manifesto_sub')}
+              </p>
+            </div>
+
+            <div className="eyebrow" style={{ marginBottom: '8px' }}>
               {t('auth_modal.eyebrow')}
             </div>
-            <h3 className="serif" style={{ fontSize: '20px', color: 'var(--text)', marginBottom: '12px' }}>
+            <h3 className="serif" style={{ fontSize: '20px', color: 'var(--text)', marginBottom: '8px' }}>
               {t('auth_modal.title')}
             </h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-soft)', marginBottom: '18px', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '12.5px', color: 'var(--text-soft)', marginBottom: '18px', lineHeight: 1.5 }}>
               {t('auth_modal.subtitle')}
             </p>
 
@@ -301,9 +402,10 @@ export const App: React.FC = () => {
                 placeholder={t('auth_modal.placeholder')}
                 value={inputPseudonym}
                 onChange={(e) => setInputPseudonym(e.target.value)}
+                autoFocus
                 style={{
                   width: '100%',
-                  padding: '10px 14px',
+                  padding: '11px 14px',
                   background: 'var(--bg)',
                   border: '1px solid var(--border)',
                   borderRadius: '8px',
@@ -317,7 +419,7 @@ export const App: React.FC = () => {
 
               {registerError && (
                 <div className="mono" style={{ color: 'var(--refute)', fontSize: '11px', marginBottom: '14px' }}>
-                  {registerError}
+                  ⚠️ {registerError}
                 </div>
               )}
 
@@ -340,6 +442,7 @@ export const App: React.FC = () => {
                 </button>
                 <button
                   type="submit"
+                  disabled={registering}
                   className="mono"
                   style={{
                     background: 'var(--accent)',
@@ -350,9 +453,10 @@ export const App: React.FC = () => {
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontSize: '12px',
+                    opacity: registering ? 0.7 : 1,
                   }}
                 >
-                  {t('auth_modal.submit')}
+                  {registering ? '...' : t('auth_modal.submit')}
                 </button>
               </div>
             </form>

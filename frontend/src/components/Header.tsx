@@ -4,9 +4,16 @@ import { useTranslation } from 'react-i18next';
 interface HeaderProps {
   memberPseudonym?: string | null;
   onRegisterClick?: () => void;
+  currentView?: 'landing' | 'queue' | 'manifesto' | 'room';
+  onNavigate?: (view: 'landing' | 'queue' | 'manifesto') => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ memberPseudonym, onRegisterClick }) => {
+export const Header: React.FC<HeaderProps> = ({
+  memberPseudonym,
+  onRegisterClick,
+  currentView = 'queue',
+  onNavigate,
+}) => {
   const { t, i18n } = useTranslation();
 
   const currentLang = i18n.language || 'es';
@@ -18,9 +25,58 @@ export const Header: React.FC<HeaderProps> = ({ memberPseudonym, onRegisterClick
   return (
     <header className="topbar">
       <div className="wrap">
-        <div className="brand">
-          Current<span className="dot">.</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          {/* Logo / Brand */}
+          <div
+            className="brand"
+            onClick={() => onNavigate?.('landing')}
+            style={{ cursor: 'pointer', userSelect: 'none' }}
+          >
+            Current<span className="dot">.</span>
+          </div>
+
+          {/* Navegación Principal */}
+          {onNavigate && (
+            <nav style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={() => onNavigate('queue')}
+                className="mono"
+                style={{
+                  background: currentView === 'queue' || currentView === 'room' ? 'var(--surface-3)' : 'transparent',
+                  color: currentView === 'queue' || currentView === 'room' ? 'var(--text)' : 'var(--text-soft)',
+                  border: currentView === 'queue' || currentView === 'room' ? '1px solid var(--border)' : '1px solid transparent',
+                  padding: '5px 10px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  fontWeight: currentView === 'queue' || currentView === 'room' ? 600 : 400,
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {t('header.nav_queue')}
+              </button>
+
+              <button
+                onClick={() => onNavigate('manifesto')}
+                className="mono"
+                style={{
+                  background: currentView === 'manifesto' ? 'var(--surface-3)' : 'transparent',
+                  color: currentView === 'manifesto' ? 'var(--accent)' : 'var(--text-soft)',
+                  border: currentView === 'manifesto' ? '1px solid var(--border)' : '1px solid transparent',
+                  padding: '5px 10px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  fontWeight: currentView === 'manifesto' ? 600 : 400,
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {t('header.nav_manifesto')}
+              </button>
+            </nav>
+          )}
         </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
           {/* Selector de idioma ES / EN */}
           <div
@@ -71,7 +127,7 @@ export const Header: React.FC<HeaderProps> = ({ memberPseudonym, onRegisterClick
               style={{
                 fontSize: '11px',
                 color: 'var(--text-soft)',
-                maxWidth: '110px',
+                maxWidth: '120px',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
