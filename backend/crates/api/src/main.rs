@@ -1,8 +1,25 @@
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
 use std::net::SocketAddr;
 
 async fn init_database(pool: &PgPool) {
     tracing::info!("Inicializando base de datos...");
+
+    if let Ok(row) = sqlx::query("SELECT current_user, current_database(), current_schema(), has_schema_privilege(current_user, 'public', 'CREATE'), has_schema_privilege(current_user, 'public', 'USAGE')").fetch_one(pool).await {
+        let u: String = row.get(0);
+        let d: String = row.get(1);
+        let s: Option<String> = row.get(2);
+        let can_create_public: bool = row.get(3);
+        let can_use_public: bool = row.get(4);
+        tracing::info!("DB Info -> User: {}, DB: {}, Schema: {:?}, can_create_public: {}, can_use_public: {}", u, d, s, can_create_public, can_use_public);
+    }
+
+    if let Ok(rows) = sqlx::query("SELECT nspname, pg_catalog.pg_get_userbyid(nspowner) FROM pg_namespace WHERE nspname NOT LIKE 'pg_%' AND nspname <> 'information_schema'").fetch_all(pool).await {
+        for r in rows {
+            let name: String = r.get(0);
+            let owner: String = r.get(1);
+            tracing::info!("Esquema existente: {} (owner: {})", name, owner);
+        }
+    }
 
     let ddl_scripts = [
         ("0001_member", include_str!("../../../migrations/0001_member.sql")),
