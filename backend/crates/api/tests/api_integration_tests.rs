@@ -89,11 +89,12 @@ async fn test_api_claims_prioritization_and_detail() {
     let app = build_router(pool);
 
     // Registro
+    let pseudo = format!("user_{}", uuid::Uuid::new_v4());
     let req = Request::builder()
         .method("POST")
         .uri("/auth/register")
         .header(header::CONTENT_TYPE, "application/json")
-        .body(Body::from(json!({ "pseudonym": format!("user_{}", uuid::Uuid::new_v4()) }).to_string()))
+        .body(Body::from(json!({ "pseudonym": &pseudo }).to_string()))
         .unwrap();
     let res = app.clone().oneshot(req).await.unwrap();
     let (_, body) = parse_json_response(res).await;
@@ -164,11 +165,12 @@ async fn test_api_validations_and_rebuttal_conflict_409() {
     let app = build_router(pool);
 
     // 1. Registro
+    let pseudo = format!("verifier_{}", uuid::Uuid::new_v4());
     let req = Request::builder()
         .method("POST")
         .uri("/auth/register")
         .header(header::CONTENT_TYPE, "application/json")
-        .body(Body::from(json!({ "pseudonym": format!("verifier_{}", uuid::Uuid::new_v4()) }).to_string()))
+        .body(Body::from(json!({ "pseudonym": &pseudo }).to_string()))
         .unwrap();
     let res = app.clone().oneshot(req).await.unwrap();
     let (_, body) = parse_json_response(res).await;
@@ -295,8 +297,26 @@ async fn test_api_validations_and_rebuttal_conflict_409() {
             "base_text": "Desmentido oficial verificado: La afirmación es totalmente falsa según el documento oficial."
         }).to_string()))
         .unwrap();
-    let res = app.oneshot(req).await.unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
     let (status, rebuttal_body) = parse_json_response(res).await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(rebuttal_body["status"], "published");
+
+    // 9. Consultar Perfil de Miembro por seudónimo -> 200 OK con estadísticas e historial
+    let req = Request::builder()
+        .method("GET")
+        .uri(format!("/members/{}", pseudo))
+        .body(Body::empty())
+        .unwrap();
+    let res = app.oneshot(req).await.unwrap();
+    let (status, profile_body) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(profile_body["member"]["pseudonym"], pseudo);
+    assert_eq!(profile_body["stats"]["assertions_count"], 1);
+    assert_eq!(profile_body["stats"]["evidence_count"], 1);
+    assert_eq!(profile_body["stats"]["total_contributions"], 2);
+    assert_eq!(profile_body["stats"]["claims_participated"], 1);
+    assert_eq!(profile_body["assertions"].as_array().unwrap().len(), 1);
+    assert_eq!(profile_body["evidence"].as_array().unwrap().len(), 1);
 }
+

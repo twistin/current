@@ -181,5 +181,33 @@
     "placeholder": "e.g.: VigilantDrop",
     "cancel": "Cancel",
     "submit": "Generate Token & Enter"
+  },
+  "profile": {
+    "eyebrow": "VERIFIER PSEUDONYMOUS PROFILE",
+    "member_since": "Member since",
+    "zero_pii_badge": "Zero-PII Pseudonymous Identity",
+    "rigor_label": "Rigor Score",
+    "rigor_concept_title": "How does rigor work in Current?",
+    "rigor_concept_body": "Rigor does not measure followers or popularity. It is earned by submitting primary sources and verifications that hold (held) or accepting corrections, and decreases if a submission is overturned. Rigor weights contributions, but never replaces evidence.",
+    "stats_contributions": "Contributions",
+    "stats_claims": "Claims treated",
+    "stats_assertions": "Assertions",
+    "stats_evidence": "Evidence",
+    "stats_held": "Held points",
+    "history_eyebrow": "TRACEABILITY & CONTRIBUTIONS",
+    "history_title": "Work History",
+    "tab_all": "All",
+    "tab_assertions": "Proposed Assertions",
+    "tab_evidence": "Submitted Evidence",
+    "type_assertion": "Assertion",
+    "type_evidence": "Evidence",
+    "outcome_held": "Held",
+    "outcome_overturned": "Overturned",
+    "view_claim": "View room →",
+    "view_claim_tooltip": "Go to this claim's verification room",
+    "no_activity": "This member has not yet recorded public contributions on the network.",
+    "loading": "Loading pseudonymous profile...",
+    "error_title": "Could not load profile",
+    "not_found": "The requested pseudonymous member does not exist in the system."
   }
 }

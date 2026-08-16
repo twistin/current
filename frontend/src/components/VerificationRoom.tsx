@@ -44,6 +44,7 @@ interface VerificationRoomProps {
   onBack: () => void;
   onRefresh: () => void;
   onRequestAuth: () => void;
+  onSelectMember?: (pseudonym: string) => void;
 }
 
 const STANCE_META: Record<string, { cls: string; sg: string; key: string }> = {
@@ -71,6 +72,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
   onBack,
   onRefresh,
   onRequestAuth,
+  onSelectMember,
 }) => {
   const { t } = useTranslation();
   const { claim, assertions, variants, rebuttal } = detail;
@@ -557,7 +559,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
                       {ev.source?.title || 'Fuente'}
                     </a>
                     <span>({ev.source?.reliability})</span>
-                    <AuthorChip pseudonym={ev.added_by_pseudonym} />
+                    <AuthorChip pseudonym={ev.added_by_pseudonym} onSelectMember={onSelectMember} />
                   </div>
                 ))
               )}
@@ -653,7 +655,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
               <div style={{ fontSize: '15px', lineHeight: 1.5, color: 'var(--text)' }}>{a.text}</div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '11px', fontFamily: 'var(--mono)', fontSize: '10.5px', color: 'var(--text-faint)' }}>
-                {t('verification.proposed_by')} <AuthorChip pseudonym={a.created_by_pseudonym} />
+                {t('verification.proposed_by')} <AuthorChip pseudonym={a.created_by_pseudonym} onSelectMember={onSelectMember} />
               </div>
             </div>
 
@@ -734,7 +736,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
                       </div>
 
                       <div style={{ marginTop: '8px' }}>
-                        <AuthorChip pseudonym={item.added_by_pseudonym} />
+                        <AuthorChip pseudonym={item.added_by_pseudonym} onSelectMember={onSelectMember} />
                       </div>
                     </div>
                   </div>

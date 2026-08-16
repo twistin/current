@@ -5,11 +5,13 @@ import {
   Claim,
   ClaimDetailResponse,
   CreateClaimPayload,
+  MemberProfileResponse,
   Rebuttal,
   RegisterResponse,
 } from './types';
 
 const TOKEN_KEY = 'current_bearer_token';
+const PSEUDONYM_KEY = 'current_pseudonym';
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export function getToken(): string | null {
@@ -18,6 +20,14 @@ export function getToken(): string | null {
 
 export function setToken(token: string): void {
   localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function getStoredPseudonym(): string | null {
+  return localStorage.getItem(PSEUDONYM_KEY);
+}
+
+export function setStoredPseudonym(pseudonym: string): void {
+  localStorage.setItem(PSEUDONYM_KEY, pseudonym);
 }
 
 /// Obtiene la lista priorizada de bulos (GET /claims)
@@ -34,6 +44,18 @@ export async function fetchClaimDetail(id: string): Promise<ClaimDetailResponse>
   const res = await fetch(`${API_BASE_URL}/claims/${id}`);
   if (!res.ok) {
     throw new Error(`Error al obtener detalle del bulo: ${res.status} ${res.statusText}`);
+  }
+  return res.json();
+}
+
+/// Obtiene el perfil de un miembro con sus estadísticas y aportaciones (GET /members/:identifier)
+export async function fetchMemberProfile(identifier: string): Promise<MemberProfileResponse> {
+  const res = await fetch(`${API_BASE_URL}/members/${encodeURIComponent(identifier)}`);
+  if (!res.ok) {
+    if (res.status === 404) {
+      throw new Error('member_not_found');
+    }
+    throw new Error(`Error al obtener perfil: ${res.status} ${res.statusText}`);
   }
   return res.json();
 }
@@ -55,6 +77,7 @@ export async function registerMember(pseudonym: string): Promise<RegisterRespons
 
   const data: RegisterResponse = await res.json();
   setToken(data.token);
+  setStoredPseudonym(data.pseudonym);
   return data;
 }
 
@@ -103,10 +126,11 @@ export async function decomposeClaim(
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.details || 'Error al descomponer el bulo en afirmaciones');
+    throw new Error(errorData.details || 'Error al descomponer el bulo');
   }
 
-  return res.json();
+  const data = await res.json();
+  return data.assertions;
 }
 
 /// Añade evidencia a una afirmación (POST /assertions/:id/evidence)
@@ -130,14 +154,17 @@ export async function addEvidence(
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.details || 'Error al añadir evidencia');
+    throw new Error(errorData.details || 'Error al guardar la evidencia');
   }
 
   return res.json();
 }
 
-/// Publica un desmentido verificando el invariante (POST /claims/:id/rebuttal)
-export async function publishRebuttal(claimId: string, baseText: string): Promise<Rebuttal> {
+/// Publica un desmentido oficial (POST /claims/:id/rebuttal)
+export async function publishRebuttal(
+  claimId: string,
+  baseText: string
+): Promise<Rebuttal> {
   const token = getToken();
   if (!token) {
     throw new Error('UNAUTHORIZED');
@@ -154,12 +181,6 @@ export async function publishRebuttal(claimId: string, baseText: string): Promis
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    if (res.status === 409) {
-      throw new Error(
-        errorData.details ||
-          'CONFLICT: El desmentido no puede publicarse si el veredicto del bulo es unproven (no probado).'
-      );
-    }
     throw new Error(errorData.details || 'Error al publicar el desmentido');
   }
 

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchClaims, fetchClaimDetail, registerMember, getToken } from './api/client';
+import { fetchClaims, fetchClaimDetail, registerMember, getToken, getStoredPseudonym } from './api/client';
 import { Claim, ClaimDetailResponse } from './api/types';
 import { Header } from './components/Header';
 import { ClaimCard } from './components/ClaimCard';
 import { VerificationRoom } from './components/VerificationRoom';
+import { MemberProfile } from './components/MemberProfile';
 import { ReportClaimModal } from './components/ReportClaimModal';
 import { ManifestoLanding } from './components/ManifestoLanding';
 import { ManifestoPage } from './components/ManifestoPage';
@@ -21,7 +22,7 @@ export const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Autenticación seudónima
-  const [pseudonym, setPseudonym] = useState<string | null>(null);
+  const [pseudonym, setPseudonym] = useState<string | null>(() => getStoredPseudonym());
   const [showRegisterModal, setShowRegisterModal] = useState<boolean>(false);
   const [inputPseudonym, setInputPseudonym] = useState<string>('');
   const [registerError, setRegisterError] = useState<string | null>(null);
@@ -37,6 +38,9 @@ export const App: React.FC = () => {
   const [claimDetail, setClaimDetail] = useState<ClaimDetailResponse | null>(null);
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+
+  // Navegación a Perfil de Miembro
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
   // Modal Reportar Bulo
   const [showReportClaimModal, setShowReportClaimModal] = useState<boolean>(false);
@@ -56,8 +60,11 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     loadClaims();
+    const storedPseudo = getStoredPseudonym();
     const storedToken = getToken();
-    if (storedToken) {
+    if (storedPseudo) {
+      setPseudonym(storedPseudo);
+    } else if (storedToken) {
       setPseudonym('verificador_activo');
     }
   }, []);
@@ -83,9 +90,16 @@ export const App: React.FC = () => {
   };
 
   const handleNavigate = (view: AppView) => {
+    setSelectedMemberId(null);
     setSelectedClaimId(null);
     setClaimDetail(null);
     setCurrentView(view);
+  };
+
+  const handleSelectMember = (identifier: string) => {
+    setSelectedClaimId(null);
+    setClaimDetail(null);
+    setSelectedMemberId(identifier);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -114,15 +128,28 @@ export const App: React.FC = () => {
       <Header
         memberPseudonym={pseudonym}
         onRegisterClick={() => setShowRegisterModal(true)}
-        currentView={selectedClaimId ? 'room' : currentView}
+        currentView={selectedMemberId ? 'profile' : selectedClaimId ? 'room' : currentView}
         onNavigate={handleNavigate}
+        onSelectMember={handleSelectMember}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
 
       <main className="wrap" style={{ paddingTop: '28px' }}>
+        {/* VISTA E: Perfil Seudónimo de Miembro */}
+        {selectedMemberId && (
+          <MemberProfile
+            identifier={selectedMemberId}
+            onBack={() => setSelectedMemberId(null)}
+            onSelectClaim={(claimId) => {
+              setSelectedMemberId(null);
+              handleSelectClaim(claimId);
+            }}
+          />
+        )}
+
         {/* VISTA A: Portada con Manifiesto Corto */}
-        {!selectedClaimId && currentView === 'landing' && (
+        {!selectedMemberId && !selectedClaimId && currentView === 'landing' && (
           <ManifestoLanding
             onEnterQueue={() => setCurrentView('queue')}
             onRegister={() => setShowRegisterModal(true)}
@@ -132,7 +159,7 @@ export const App: React.FC = () => {
         )}
 
         {/* VISTA B: Manifiesto Largo Completo (Qué es Current) */}
-        {!selectedClaimId && currentView === 'manifesto' && (
+        {!selectedMemberId && !selectedClaimId && currentView === 'manifesto' && (
           <ManifestoPage
             onBackToQueue={() => setCurrentView('queue')}
             onRegister={() => setShowRegisterModal(true)}
@@ -141,7 +168,7 @@ export const App: React.FC = () => {
         )}
 
         {/* VISTA C: Cola de Verificación */}
-        {!selectedClaimId && currentView === 'queue' && (
+        {!selectedMemberId && !selectedClaimId && currentView === 'queue' && (
           <div>
             <div
               style={{
@@ -258,7 +285,7 @@ export const App: React.FC = () => {
         )}
 
         {/* VISTA D: Sala de Verificación Detallada */}
-        {selectedClaimId && (
+        {!selectedMemberId && selectedClaimId && (
           <div>
             {loadingDetail && (
               <div className="mono" style={{ color: 'var(--text-soft)', padding: '60px 0', textAlign: 'center' }}>
@@ -305,6 +332,7 @@ export const App: React.FC = () => {
                 onBack={() => setSelectedClaimId(null)}
                 onRefresh={refreshCurrentRoom}
                 onRequestAuth={() => setShowRegisterModal(true)}
+                onSelectMember={handleSelectMember}
               />
             )}
           </div>

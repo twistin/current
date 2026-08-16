@@ -105,18 +105,79 @@ export interface AddEvidencePayload {
   rationale: string;
 }
 
+export interface AddEvidenceResult {
+  source: Source;
+  evidence: Evidence;
+  new_assertion_status: AssertionStatus;
+  new_claim_verdict: ClaimVerdict | null;
+}
+
 export interface CreateClaimPayload {
   summary: string;
   kind: ClaimKind;
-  propagation_score: number;
+  propagation_score?: number;
   origin_url: string;
   platform: string;
   language: string;
+  snapshot?: string | null;
 }
 
-export interface AddEvidenceResult {
-  evidence_id: string;
-  source_id: string;
-  new_assertion_status: AssertionStatus;
-  new_claim_verdict: ClaimVerdict | null;
+export interface PublishRebuttalPayload {
+  base_text: string;
+}
+
+// ---------------------------------------------------------------------------
+// Modelos de Comunidad y Perfil Seudónimo
+// ---------------------------------------------------------------------------
+
+export interface Member {
+  id: string;
+  pseudonym: string;
+  created_at: string;
+  rigor_score: number;
+  auth_ref?: string | null;
+}
+
+export interface MemberStats {
+  total_contributions: number;
+  claims_participated: number;
+  assertions_count: number;
+  evidence_count: number;
+  held_count: number;
+  overturned_count: number;
+}
+
+export interface MemberAssertionActivity {
+  id: string;
+  claim_id: string;
+  text: string;
+  is_load_bearing: boolean;
+  status: AssertionStatus | string;
+  claim_summary: string;
+  claim_verdict: ClaimVerdict | string | null;
+  outcome: 'held' | 'overturned' | null;
+}
+
+export interface MemberEvidenceActivity {
+  id: string;
+  assertion_id: string;
+  stance: EvidenceStance;
+  strength: EvidenceStrength;
+  rationale: string;
+  added_at: string;
+  source_title: string;
+  source_url: string;
+  source_reliability: SourceReliability;
+  assertion_text: string;
+  claim_id: string;
+  claim_summary: string;
+  claim_verdict: ClaimVerdict | string | null;
+  outcome: 'held' | 'overturned' | null;
+}
+
+export interface MemberProfileResponse {
+  member: Member;
+  stats: MemberStats;
+  assertions: MemberAssertionActivity[];
+  evidence: MemberEvidenceActivity[];
 }

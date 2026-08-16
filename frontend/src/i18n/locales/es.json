@@ -181,5 +181,33 @@
     "placeholder": "ej: GotaVigilante",
     "cancel": "Cancelar",
     "submit": "Generar Token y Entrar"
+  },
+  "profile": {
+    "eyebrow": "PERFIL SEUDÓNIMO DE VERIFICADOR",
+    "member_since": "Miembro desde",
+    "zero_pii_badge": "Identidad Seudónima sin PII",
+    "rigor_label": "Índice de Rigor",
+    "rigor_concept_title": "¿Cómo funciona el rigor en Current?",
+    "rigor_concept_body": "El rigor no mide seguidores ni popularidad. Se gana aportando fuentes primarias y verificaciones que se sostienen (held) o reconociendo correcciones, y disminuye si una aportación resulta revocada (overturned). El rigor pondera el peso de la aportación, pero nunca sustituye a la evidencia.",
+    "stats_contributions": "Aportaciones",
+    "stats_claims": "Bulos tratados",
+    "stats_assertions": "Afirmaciones",
+    "stats_evidence": "Evidencias",
+    "stats_held": "Aciertos (held)",
+    "history_eyebrow": "TRAZABILIDAD Y APORTACIONES",
+    "history_title": "Historial de Trabajo",
+    "tab_all": "Todas",
+    "tab_assertions": "Afirmaciones planteadas",
+    "tab_evidence": "Evidencias aportadas",
+    "type_assertion": "Afirmación",
+    "type_evidence": "Evidencia",
+    "outcome_held": "Sostenida (held)",
+    "outcome_overturned": "Revocada (overturned)",
+    "view_claim": "Ver sala →",
+    "view_claim_tooltip": "Ir a la sala de verificación de este bulo",
+    "no_activity": "Este miembro aún no ha registrado aportaciones públicas en la red.",
+    "loading": "Cargando perfil seudónimo...",
+    "error_title": "No se pudo cargar el perfil",
+    "not_found": "El miembro seudónimo solicitado no existe en el sistema."
   }
 }

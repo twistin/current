@@ -7,7 +7,7 @@ use sqlx::PgPool;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 
-use crate::handlers::{auth, claims, evidence, health, rebuttals};
+use crate::handlers::{auth, claims, evidence, health, members, rebuttals};
 
 /// Construye el router de la aplicación HTTP de Axum con soporte CORS y trazado.
 pub fn build_router(pool: PgPool) -> Router {
@@ -33,6 +33,8 @@ pub fn build_router(pool: PgPool) -> Router {
         .route("/health", get(health::health_check))
         // Auth seudónima
         .route("/auth/register", post(auth::register_member))
+        // Miembros y Perfil de Comunidad
+        .route("/members/:identifier", get(members::get_member_profile))
         // Claims
         .route("/claims", get(claims::list_claims).post(claims::create_claim))
         .route("/claims/:id", get(claims::get_claim))

@@ -6,8 +6,9 @@ import { ThemeMode } from '../theme';
 interface HeaderProps {
   memberPseudonym?: string | null;
   onRegisterClick?: () => void;
-  currentView?: 'landing' | 'queue' | 'manifesto' | 'room';
+  currentView?: 'landing' | 'queue' | 'manifesto' | 'room' | 'profile';
   onNavigate?: (view: 'landing' | 'queue' | 'manifesto') => void;
+  onSelectMember?: (pseudonym: string) => void;
   theme: ThemeMode;
   onToggleTheme: () => void;
 }
@@ -17,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   onRegisterClick,
   currentView = 'queue',
   onNavigate,
+  onSelectMember,
   theme,
   onToggleTheme,
 }) => {
@@ -172,15 +174,23 @@ export const Header: React.FC<HeaderProps> = ({
 
           {memberPseudonym ? (
             <div
+              onClick={() => onSelectMember?.(memberPseudonym)}
+              title={t('header.my_profile_tooltip', { defaultValue: 'Ver mi perfil' })}
               className="mono"
               style={{
                 fontSize: '11px',
-                color: 'var(--text-soft)',
-                maxWidth: '120px',
+                color: 'var(--text)',
+                background: currentView === 'profile' ? 'var(--surface-3)' : 'var(--surface-2)',
+                border: currentView === 'profile' ? '1px solid var(--accent)' : '1px solid var(--border)',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                maxWidth: '140px',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 flexShrink: 1,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
               }}
             >
               <span style={{ color: 'var(--accent)', fontWeight: 600 }}>@{memberPseudonym}</span>
