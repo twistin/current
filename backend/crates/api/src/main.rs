@@ -2,31 +2,29 @@ use sqlx::PgPool;
 use std::net::SocketAddr;
 
 async fn init_database(pool: &PgPool) {
-    let _ = sqlx::query("SELECT pg_advisory_unlock_all()").execute(pool).await;
+    tracing::info!("Inicializando base de datos y esquemas...");
 
-    // Intentar crear schema 'current' y otorgar permisos
+    // 1. Asegurar esquema y permisos
     let _ = sqlx::query("CREATE SCHEMA IF NOT EXISTS current").execute(pool).await;
     let _ = sqlx::query("GRANT ALL ON SCHEMA public TO CURRENT_USER").execute(pool).await;
 
-    tracing::info!("Ejecutando migraciones SQLx...");
-    match sqlx::migrate!("../../migrations").run(pool).await {
-        Ok(_) => tracing::info!("Migraciones SQLx aplicadas exitosamente"),
-        Err(err) => {
-            tracing::warn!("Aviso en sqlx::migrate: {}. Aplicando scripts DDL directamente...", err);
-            let migrations = [
-                include_str!("../../../migrations/0001_member.sql"),
-                include_str!("../../../migrations/0002_claim.sql"),
-                include_str!("../../../migrations/0003_assertion.sql"),
-                include_str!("../../../migrations/0004_source_evidence.sql"),
-                include_str!("../../../migrations/0005_rebuttal_contribution.sql"),
-            ];
-            for (idx, sql) in migrations.iter().enumerate() {
-                if let Err(e) = sqlx::raw_sql(sql).execute(pool).await {
-                    tracing::info!("Script DDL migración 000{}: {}", idx + 1, e);
-                }
-            }
+    // 2. Ejecutar DDLs idempotentes directamente (sin bloqueos advisory ni dependencias de tablas de migraciones)
+    let ddl_scripts = [
+        ("0001_member", include_str!("../../../migrations/0001_member.sql")),
+        ("0002_claim", include_str!("../../../migrations/0002_claim.sql")),
+        ("0003_assertion", include_str!("../../../migrations/0003_assertion.sql")),
+        ("0004_source_evidence", include_str!("../../../migrations/0004_source_evidence.sql")),
+        ("0005_rebuttal_contribution", include_str!("../../../migrations/0005_rebuttal_contribution.sql")),
+    ];
+
+    for (name, sql) in ddl_scripts {
+        match sqlx::raw_sql(sql).execute(pool).await {
+            Ok(_) => tracing::info!("Esquema {} verificado/aplicado", name),
+            Err(e) => tracing::warn!("Aviso en esquema {}: {}", name, e),
         }
     }
+
+    tracing::info!("Base de datos lista");
 }
 
 #[tokio::main]
@@ -46,7 +44,7 @@ async fn main() {
         .await
         .expect("No se pudo conectar a PostgreSQL");
 
-    // Inicializar y migrar la base de datos de forma segura
+    // Inicializar base de datos de manera inmediata y segura
     init_database(&pool).await;
 
     let app = current_api::router::build_router(pool);
