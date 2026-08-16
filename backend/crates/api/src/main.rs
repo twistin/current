@@ -36,8 +36,8 @@ async fn init_database(pool: &PgPool) {
         }
     }
 
-    // Limpieza de bulos generados durante pruebas automatizadas
-    let _ = sqlx::query("DELETE FROM claim WHERE summary LIKE '%dinero en efectivo%' OR id = '186f2b1e-cc00-4504-83f0-a08820b4e6a4'").execute(pool).await;
+    // Limpieza de cola de bulos para permitir pruebas desde cero
+    let _ = sqlx::query("TRUNCATE TABLE claim, claim_variant, assertion, source, evidence, rebuttal, contribution CASCADE;").execute(pool).await;
 
     tracing::info!("Base de datos lista");
 }
