@@ -132,4 +132,38 @@ impl RebuttalRepo {
             Ok(())
         }
     }
+
+    pub async fn unpublish(&self, id: Uuid) -> Result<(), PersistenceError> {
+        let result = sqlx::query(
+            r#"
+            UPDATE rebuttal
+            SET status = 'draft'::rebuttal_status,
+                published_at = NULL
+            WHERE id = $1
+            "#,
+        )
+        .bind(id)
+        .execute(&self.pool)
+        .await?;
+
+        if result.rows_affected() == 0 {
+            Err(PersistenceError::NotFound)
+        } else {
+            Ok(())
+        }
+    }
+
+    pub async fn delete_by_claim(&self, claim_id: Uuid) -> Result<(), PersistenceError> {
+        sqlx::query(
+            r#"
+            DELETE FROM rebuttal
+            WHERE claim_id = $1
+            "#,
+        )
+        .bind(claim_id)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
 }

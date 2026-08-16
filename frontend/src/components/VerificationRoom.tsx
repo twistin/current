@@ -7,7 +7,12 @@ import { AddEvidenceModal } from './AddEvidenceModal';
 import { DecomposeClaimModal } from './DecomposeClaimModal';
 import { PublishRebuttalModal } from './PublishRebuttalModal';
 import { sanitizeExternalUrl } from '../utils/url';
-import { getStoredPseudonym, retractEvidence, retractAssertion } from '../api/client';
+import {
+  getStoredPseudonym,
+  retractEvidence,
+  retractAssertion,
+  retractRebuttal,
+} from '../api/client';
 
 const CURRENT_BASE_URL =
   import.meta.env.VITE_PUBLIC_URL ||
@@ -221,6 +226,26 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
       setRetractError(err instanceof Error ? err.message : 'Error al retirar la aportación');
     } finally {
       setRetracting(false);
+    }
+  };
+
+  // Modal para retirar desmentido publicado
+  const [showRetractRebuttalModal, setShowRetractRebuttalModal] = useState<boolean>(false);
+  const [retractingRebuttal, setRetractingRebuttal] = useState<boolean>(false);
+  const [retractRebuttalError, setRetractRebuttalError] = useState<string | null>(null);
+
+  const handleConfirmRetractRebuttal = async () => {
+    setRetractingRebuttal(true);
+    setRetractRebuttalError(null);
+    try {
+      await retractRebuttal(claim.id);
+      setShowRetractRebuttalModal(false);
+      showToast(t('rebuttal.retracted_toast'));
+      onRefresh();
+    } catch (err) {
+      setRetractRebuttalError(err instanceof Error ? err.message : 'Error al retirar el desmentido');
+    } finally {
+      setRetractingRebuttal(false);
     }
   };
 
@@ -681,6 +706,29 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
                     ))
                 )}
             </div>
+          </div>
+
+          {/* Pie de acción: Retirar desmentido */}
+          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-soft)', paddingTop: '12px' }}>
+            <button
+              onClick={() => setShowRetractRebuttalModal(true)}
+              className="mono"
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--border-soft)',
+                color: 'var(--text-faint)',
+                fontSize: '11px',
+                padding: '5px 12px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+              title="Retirar este desmentido publicado para volver al estado de verificación"
+            >
+              <span>⚠️</span> {t('rebuttal.retract_button')}
+            </button>
           </div>
         </div>
       )}
@@ -1167,6 +1215,87 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
                 }}
               >
                 {retracting ? '...' : t('verification.retract_confirm_btn')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación para Retirar Desmentido Publicado */}
+      {showRetractRebuttalModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'var(--overlay-bg)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 110,
+            padding: '16px',
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '16px',
+              padding: '24px',
+              maxWidth: '480px',
+              width: '100%',
+              boxShadow: 'var(--card-shadow)',
+            }}
+          >
+            <div className="eyebrow" style={{ color: 'var(--refute)', marginBottom: '8px' }}>
+              ⚠️ {t('rebuttal.retract_modal_title')}
+            </div>
+            <p style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.55, marginBottom: '18px' }}>
+              {t('rebuttal.retract_modal_desc')}
+            </p>
+
+            {retractRebuttalError && (
+              <div className="mono" style={{ color: 'var(--refute)', fontSize: '11px', marginBottom: '14px' }}>
+                ⚠️ {retractRebuttalError}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => setShowRetractRebuttalModal(false)}
+                disabled={retractingRebuttal}
+                className="mono"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-soft)',
+                  padding: '8px 14px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                }}
+              >
+                {t('rebuttal.retract_cancel_btn')}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRetractRebuttal}
+                disabled={retractingRebuttal}
+                className="mono"
+                style={{
+                  background: 'var(--refute)',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  opacity: retractingRebuttal ? 0.7 : 1,
+                }}
+              >
+                {retractingRebuttal ? '...' : t('rebuttal.retract_confirm_btn')}
               </button>
             </div>
           </div>

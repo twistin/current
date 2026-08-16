@@ -6,6 +6,7 @@ import { ThemeMode } from '../theme';
 interface HeaderProps {
   memberPseudonym?: string | null;
   onRegisterClick?: () => void;
+  onLogout?: () => void;
   currentView?: 'landing' | 'queue' | 'manifesto' | 'room' | 'profile';
   onNavigate?: (view: 'landing' | 'queue' | 'manifesto') => void;
   onSelectMember?: (pseudonym: string) => void;
@@ -16,6 +17,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   memberPseudonym,
   onRegisterClick,
+  onLogout,
   currentView = 'queue',
   onNavigate,
   onSelectMember,
@@ -173,27 +175,49 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {memberPseudonym ? (
-            <div
-              onClick={() => onSelectMember?.(memberPseudonym)}
-              title={t('header.my_profile_tooltip', { defaultValue: 'Ver mi perfil' })}
-              className="mono"
-              style={{
-                fontSize: '11px',
-                color: 'var(--text)',
-                background: currentView === 'profile' ? 'var(--surface-3)' : 'var(--surface-2)',
-                border: currentView === 'profile' ? '1px solid var(--accent)' : '1px solid var(--border)',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                maxWidth: '140px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                flexShrink: 1,
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>@{memberPseudonym}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div
+                onClick={() => onSelectMember?.(memberPseudonym)}
+                title={t('header.my_profile_tooltip', { defaultValue: 'Ver mi perfil' })}
+                className="mono"
+                style={{
+                  fontSize: '11px',
+                  color: 'var(--text)',
+                  background: currentView === 'profile' ? 'var(--surface-3)' : 'var(--surface-2)',
+                  border: currentView === 'profile' ? '1px solid var(--accent)' : '1px solid var(--border)',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  maxWidth: '140px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 1,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <span style={{ color: 'var(--accent)', fontWeight: 600 }}>@{memberPseudonym}</span>
+              </div>
+              {onLogout && (
+                <button
+                  onClick={onLogout}
+                  title={t('header.logout')}
+                  className="mono"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--text-faint)',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    padding: '4px 5px',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  ✕
+                </button>
+              )}
             </div>
           ) : (
             <button

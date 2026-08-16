@@ -302,6 +302,16 @@ async fn test_api_validations_and_rebuttal_conflict_409() {
     assert_eq!(status, StatusCode::OK);
     assert_eq!(rebuttal_body["status"], "published");
 
+    // 8.b. Retirar desmentido publicado -> 200 OK
+    let req = Request::builder()
+        .method("POST")
+        .uri(format!("/claims/{}/rebuttal/retract", claim_id))
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .body(Body::empty())
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    assert_eq!(res.status(), StatusCode::OK);
+
     // 9. Consultar Perfil de Miembro por seudónimo -> 200 OK con estadísticas e historial
     let req = Request::builder()
         .method("GET")

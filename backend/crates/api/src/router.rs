@@ -87,7 +87,14 @@ pub fn build_router(pool: PgPool) -> Router {
         .route("/assertions/:id", axum::routing::delete(claims::retract_assertion))
         // Rebuttals
         .route("/rebuttals", get(rebuttals::list_rebuttals))
-        .route("/claims/:id/rebuttal", post(rebuttals::publish_rebuttal))
+        .route(
+            "/claims/:id/rebuttal",
+            post(rebuttals::publish_rebuttal).delete(rebuttals::retract_rebuttal),
+        )
+        .route(
+            "/claims/:id/rebuttal/retract",
+            post(rebuttals::retract_rebuttal).delete(rebuttals::retract_rebuttal),
+        )
         // Middlewares defensivos
         .layer(from_fn(move |req, next| {
             let lim = limiter.clone();

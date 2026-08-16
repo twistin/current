@@ -234,3 +234,29 @@ export async function retractAssertion(assertionId: string): Promise<RetractAsse
 
   return res.json();
 }
+
+/// Retira / Elimina un desmentido publicado (DELETE /claims/:id/rebuttal)
+export async function retractRebuttal(claimId: string): Promise<void> {
+  const token = getToken();
+  if (!token) {
+    throw new Error('UNAUTHORIZED');
+  }
+
+  const res = await fetch(`${API_BASE_URL}/claims/${claimId}/rebuttal/retract`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.details || 'Error al retirar el desmentido');
+  }
+}
+
+export function clearSession(): void {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(PSEUDONYM_KEY);
+}

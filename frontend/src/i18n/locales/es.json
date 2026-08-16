@@ -7,7 +7,9 @@
     "pseudonym": "Seudónimo",
     "generate_pseudonym": "+ Generar Seudónimo",
     "theme_light": "Cambiar a modo claro",
-    "theme_dark": "Cambiar a modo oscuro"
+    "theme_dark": "Cambiar a modo oscuro",
+    "logout": "Cerrar sesión",
+    "my_profile_tooltip": "Ver mi perfil seudónimo"
   },
   "landing": {
     "badge": "INFRAESTRUCTURA DE DISCERNIMIENTO Y VERIFICACIÓN",
@@ -124,7 +126,13 @@
     "platform_other": "Telegram / Otras",
     "x_hint": "Versión compacta ≤280 caracteres. El enlace a Current lleva a la verificación completa con fuentes. Las URLs cuentan como 23 chars en Twitter.",
     "text_label": "Texto del desmentido (editable)",
-    "canonical_link_label": "Enlace a verificación completa"
+    "canonical_link_label": "Enlace a verificación completa",
+    "retract_button": "Retirar desmentido",
+    "retract_modal_title": "Retirar Desmentido Publicado",
+    "retract_modal_desc": "¿Deseas retirar este desmentido oficial? El bulo regresará al estado 'en verificación', permitiendo rectificar afirmaciones, añadir nuevas fuentes o redactar un desmentido revisado.",
+    "retract_confirm_btn": "Sí, retirar desmentido",
+    "retract_cancel_btn": "Cancelar",
+    "retracted_toast": "Desmentido retirado correctamente"
   },
   "forms": {
     "rationale_required": "El razonamiento explicativo es obligatorio y debe tener al menos 10 caracteres.",
@@ -218,6 +226,8 @@
     "no_activity": "Este miembro aún no ha registrado aportaciones públicas en la red.",
     "loading": "Cargando perfil seudónimo...",
     "error_title": "No se pudo cargar el perfil",
-    "not_found": "El miembro seudónimo solicitado no existe en el sistema."
+    "not_found": "El miembro seudónimo solicitado no existe en el sistema.",
+    "stale_session_prompt": "Este seudónimo no figura en el registro actual de la base de datos.",
+    "re_register_button": "Crear / Cambiar Seudónimo"
   }
 }

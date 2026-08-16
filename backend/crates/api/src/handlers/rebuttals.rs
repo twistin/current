@@ -55,3 +55,25 @@ pub async fn publish_rebuttal(
         Err(e) => map_service_error(e),
     }
 }
+
+/// DELETE /claims/:id/rebuttal o POST /claims/:id/rebuttal/retract
+/// Retira o elimina un desmentido publicado. Requiere autenticación.
+pub async fn retract_rebuttal(
+    State(pool): State<PgPool>,
+    AuthenticatedMember(member): AuthenticatedMember,
+    Path(claim_id): Path<Uuid>,
+) -> Response {
+    let service = VerificationService::new(pool);
+
+    match service.retract_rebuttal(claim_id, member.id).await {
+        Ok(()) => (
+            StatusCode::OK,
+            Json(json!({
+                "status": "success",
+                "message": "Desmentido retirado correctamente"
+            })),
+        )
+            .into_response(),
+        Err(e) => map_service_error(e),
+    }
+}

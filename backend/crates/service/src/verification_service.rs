@@ -514,6 +514,33 @@ impl VerificationService {
         Ok(published)
     }
 
+    /// CASO DE USO: Retirar / Borrar un desmentido publicado para permitir corregirlo.
+    pub async fn retract_rebuttal(
+        &self,
+        claim_id: Uuid,
+        _member_id: Uuid,
+    ) -> Result<(), ServiceError> {
+        let claim = self
+            .claim_repo
+            .find_by_id(claim_id)
+            .await?
+            .ok_or(ServiceError::ClaimNotFound(claim_id))?;
+
+        // 1. Eliminar el desmentido asociado al claim
+        self.rebuttal_repo.delete_by_claim(claim_id).await?;
+
+        // 2. Si el bulo tiene veredicto definitivo, su estado pasa a InReview (no Resolved)
+        let new_status = if claim.verdict.is_some() {
+            ClaimStatus::InReview
+        } else {
+            ClaimStatus::Open
+        };
+
+        self.claim_repo.update_status(claim_id, new_status).await?;
+
+        Ok(())
+    }
+
     /// Helper para obtener un miembro o crearlo (para tests o auth)
     pub async fn get_or_create_member(
         &self,

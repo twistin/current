@@ -9,12 +9,14 @@ interface MemberProfileProps {
   identifier: string;
   onBack: () => void;
   onSelectClaim: (claimId: string) => void;
+  onRegisterClick?: () => void;
 }
 
 export const MemberProfile: React.FC<MemberProfileProps> = ({
   identifier,
   onBack,
   onSelectClaim,
+  onRegisterClick,
 }) => {
   const { t } = useTranslation();
   const [profile, setProfile] = useState<MemberProfileResponse | null>(null);
@@ -92,6 +94,29 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
           <div style={{ fontSize: '14px', marginTop: '8px', color: 'var(--text-body)' }}>
             {error || t('profile.not_found')}
           </div>
+          <div style={{ fontSize: '12.5px', color: 'var(--text-soft)', marginTop: '8px', lineHeight: 1.5 }}>
+            {t('profile.stale_session_prompt')}
+          </div>
+          {onRegisterClick && (
+            <div style={{ marginTop: '16px' }}>
+              <button
+                onClick={onRegisterClick}
+                className="mono"
+                style={{
+                  background: 'var(--surface-2)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--accent)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                }}
+              >
+                + {t('profile.re_register_button')}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );

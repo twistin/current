@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchClaims, fetchClaimDetail, registerMember, getToken, getStoredPseudonym } from './api/client';
+import {
+  fetchClaims,
+  fetchClaimDetail,
+  registerMember,
+  getToken,
+  getStoredPseudonym,
+  clearSession,
+} from './api/client';
 import { Claim, ClaimDetailResponse } from './api/types';
 import { Header } from './components/Header';
 import { ClaimCard } from './components/ClaimCard';
@@ -104,11 +111,10 @@ export const App: React.FC = () => {
   useEffect(() => {
     loadClaims();
     const storedPseudo = getStoredPseudonym();
-    const storedToken = getToken();
     if (storedPseudo) {
       setPseudonym(storedPseudo);
-    } else if (storedToken) {
-      setPseudonym('verificador_activo');
+    } else {
+      setPseudonym(null);
     }
 
     // Cargar detalle si la URL inicial apuntaba a un bulo
@@ -132,6 +138,14 @@ export const App: React.FC = () => {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  const handleLogout = () => {
+    clearSession();
+    setPseudonym(null);
+    if (selectedMemberId) {
+      handleNavigate('queue');
+    }
+  };
 
   const handleSelectClaim = (id: string, pushHistory = true) => {
     setSelectedMemberId(null);
@@ -197,6 +211,7 @@ export const App: React.FC = () => {
       <Header
         memberPseudonym={pseudonym}
         onRegisterClick={() => setShowRegisterModal(true)}
+        onLogout={handleLogout}
         currentView={selectedMemberId ? 'profile' : selectedClaimId ? 'room' : currentView}
         onNavigate={handleNavigate}
         onSelectMember={handleSelectMember}
@@ -213,6 +228,7 @@ export const App: React.FC = () => {
             onSelectClaim={(claimId) => {
               handleSelectClaim(claimId);
             }}
+            onRegisterClick={() => setShowRegisterModal(true)}
           />
         )}
 

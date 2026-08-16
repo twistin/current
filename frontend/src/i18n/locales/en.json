@@ -7,7 +7,9 @@
     "pseudonym": "Pseudonym",
     "generate_pseudonym": "+ Generate Pseudonym",
     "theme_light": "Switch to light mode",
-    "theme_dark": "Switch to dark mode"
+    "theme_dark": "Switch to dark mode",
+    "logout": "Log out",
+    "my_profile_tooltip": "View my pseudonymous profile"
   },
   "landing": {
     "badge": "INFRASTRUCTURE FOR DISCERNMENT AND VERIFICATION",
@@ -124,7 +126,13 @@
     "platform_other": "Telegram / Other",
     "x_hint": "Compact version ≤280 characters. The Current link leads to the full verification with sources. URLs count as 23 chars on Twitter.",
     "text_label": "Rebuttal text (editable)",
-    "canonical_link_label": "Link to full verification"
+    "canonical_link_label": "Link to full verification",
+    "retract_button": "Retract rebuttal",
+    "retract_modal_title": "Retract Published Rebuttal",
+    "retract_modal_desc": "Do you want to retract this official rebuttal? The claim will return to 'in review' status, allowing you to rectify assertions, add new sources, or draft a revised rebuttal.",
+    "retract_confirm_btn": "Yes, retract rebuttal",
+    "retract_cancel_btn": "Cancel",
+    "retracted_toast": "Rebuttal retracted successfully"
   },
   "forms": {
     "rationale_required": "Explanatory rationale is mandatory and must be at least 10 characters.",
@@ -218,6 +226,8 @@
     "no_activity": "This member has not yet recorded public contributions on the network.",
     "loading": "Loading pseudonymous profile...",
     "error_title": "Could not load profile",
-    "not_found": "The requested pseudonymous member does not exist in the system."
+    "not_found": "The requested pseudonymous member does not exist in the system.",
+    "stale_session_prompt": "This pseudonym does not match any active member in the database.",
+    "re_register_button": "Create / Switch Pseudonym"
   }
 }
