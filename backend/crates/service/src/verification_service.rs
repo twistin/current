@@ -88,10 +88,37 @@ impl VerificationService {
         snapshot: Option<String>,
         member_id: Uuid,
     ) -> Result<(Claim, ClaimVariant), ServiceError> {
+        let trimmed_url = origin_url.trim().to_string();
+        let trimmed_summary = summary.trim().to_string();
+
+        // 1. Deduplicación por origin_url: si la URL ya existe, devolver el bulo existente
+        if let Some(existing_variant) = self.variant_repo.find_by_origin_url(&trimmed_url).await? {
+            if let Some(existing_claim) = self.claim_repo.find_by_id(existing_variant.claim_id).await? {
+                return Ok((existing_claim, existing_variant));
+            }
+        }
+
+        // 2. Deduplicación por resumen idéntico: agrupar como nueva variante del bulo existente
+        if let Some(existing_claim) = self.claim_repo.find_by_summary(&trimmed_summary).await? {
+            let variant_id = Uuid::new_v4();
+            let variant = ClaimVariant {
+                id: variant_id,
+                claim_id: existing_claim.id,
+                origin_url: trimmed_url,
+                platform,
+                language,
+                snapshot,
+                seen_at: Utc::now(),
+            };
+            let created_variant = self.variant_repo.create(&variant).await?;
+            return Ok((existing_claim, created_variant));
+        }
+
+        // 3. Crear nuevo bulo y su primera variante
         let claim_id = Uuid::new_v4();
         let claim = Claim {
             id: claim_id,
-            summary,
+            summary: trimmed_summary,
             kind,
             detected_at: Utc::now(),
             propagation_score,
@@ -106,7 +133,7 @@ impl VerificationService {
         let variant = ClaimVariant {
             id: variant_id,
             claim_id,
-            origin_url,
+            origin_url: trimmed_url,
             platform,
             language,
             snapshot,

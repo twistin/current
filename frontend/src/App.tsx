@@ -389,7 +389,7 @@ export const App: React.FC = () => {
                     fontSize: '11px',
                   }}
                 >
-                  {t('verification.back_to_queue')}
+                  {`← ${t('verification.back_to_queue')}`}
                 </button>
               </div>
             )}

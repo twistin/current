@@ -70,7 +70,7 @@
     "report_claim_button": "+ Report Emerging Claim"
   },
   "verification": {
-    "back_to_queue": "← Back to queue",
+    "back_to_queue": "Back to queue",
     "eyebrow": "Claim under verification",
     "propagation": "propagation",
     "propagation_high": "▲ high",

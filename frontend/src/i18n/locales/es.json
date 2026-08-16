@@ -70,7 +70,7 @@
     "report_claim_button": "+ Reportar Bulo Emergente"
   },
   "verification": {
-    "back_to_queue": "← Volver a la cola",
+    "back_to_queue": "Volver a la cola",
     "eyebrow": "Bulo en verificación",
     "propagation": "propagación",
     "propagation_high": "▲ alta",

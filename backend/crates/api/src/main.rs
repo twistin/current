@@ -36,6 +36,9 @@ async fn init_database(pool: &PgPool) {
         }
     }
 
+    // Limpieza de bulos duplicados o incompletos generados durante pruebas previas de esquemas
+    let _ = sqlx::query("DELETE FROM claim WHERE id = 'a0a344f6-9253-4c46-903e-3792bceca2f4'").execute(pool).await;
+
     tracing::info!("Base de datos lista");
 }
 

@@ -105,6 +105,36 @@ impl ClaimRepo {
         }))
     }
 
+    pub async fn find_by_summary(&self, summary: &str) -> Result<Option<Claim>, PersistenceError> {
+        let row = sqlx::query(
+            r#"
+            SELECT id, summary, kind::text, detected_at, propagation_score, status::text, verdict::text, created_by
+            FROM claim
+            WHERE LOWER(TRIM(summary)) = LOWER(TRIM($1))
+            LIMIT 1
+            "#,
+        )
+        .bind(summary)
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(row.map(|r| {
+            let kind_str: String = r.get("kind");
+            let status_str: String = r.get("status");
+            let verdict_str: Option<String> = r.get("verdict");
+            Claim {
+                id: r.get("id"),
+                summary: r.get("summary"),
+                kind: str_to_claim_kind(&kind_str),
+                detected_at: r.get("detected_at"),
+                propagation_score: r.get("propagation_score"),
+                status: str_to_claim_status(&status_str),
+                verdict: opt_str_to_claim_verdict(verdict_str),
+                created_by: r.get("created_by"),
+            }
+        }))
+    }
+
     pub async fn create(&self, claim: &Claim) -> Result<Claim, PersistenceError> {
         let row = sqlx::query(
             r#"

@@ -264,7 +264,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
           gap: '6px',
         }}
       >
-        {t('verification.back_to_queue')}
+        ← {t('verification.back_to_queue')}
       </button>
 
       <div className="claimhead" style={{ padding: '10px 0 6px' }}>

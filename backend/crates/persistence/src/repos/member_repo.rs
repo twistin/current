@@ -86,14 +86,16 @@ impl MemberRepo {
     }
 
     pub async fn find_by_pseudonym(&self, pseudonym: &str) -> Result<Option<Member>, PersistenceError> {
+        let clean = pseudonym.trim().trim_start_matches('@').trim();
         let row = sqlx::query(
             r#"
             SELECT id, pseudonym, created_at, rigor_score, auth_ref
             FROM member
-            WHERE LOWER(pseudonym) = LOWER($1)
+            WHERE LOWER(TRIM(pseudonym)) = LOWER(TRIM($1))
+            LIMIT 1
             "#,
         )
-        .bind(pseudonym)
+        .bind(clean)
         .fetch_optional(&self.pool)
         .await?;
 
@@ -107,7 +109,7 @@ impl MemberRepo {
     }
 
     pub async fn find_by_identifier(&self, identifier: &str) -> Result<Option<Member>, PersistenceError> {
-        let trimmed = identifier.trim().trim_start_matches('@');
+        let trimmed = identifier.trim().trim_start_matches('@').trim();
         if let Ok(id) = Uuid::parse_str(trimmed) {
             if let Some(m) = self.find_by_id(id).await? {
                 return Ok(Some(m));
@@ -199,7 +201,7 @@ impl MemberRepo {
                    con.outcome::text AS outcome
             FROM assertion a
             JOIN claim c ON a.claim_id = c.id
-            LEFT JOIN contribution con ON con.target_type = 'assertion' AND con.target_id = a.id
+            LEFT JOIN contribution con ON con.target_type::text = 'assertion' AND con.target_id = a.id
             WHERE a.created_by = $1
             ORDER BY a.id DESC
             "#,
@@ -235,7 +237,7 @@ impl MemberRepo {
             JOIN source s ON e.source_id = s.id
             JOIN assertion a ON e.assertion_id = a.id
             JOIN claim c ON a.claim_id = c.id
-            LEFT JOIN contribution con ON con.target_type = 'evidence' AND con.target_id = e.id
+            LEFT JOIN contribution con ON con.target_type::text = 'evidence' AND con.target_id = e.id
             WHERE e.added_by = $1
             ORDER BY e.added_at DESC
             "#,

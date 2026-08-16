@@ -36,6 +36,30 @@ impl ClaimVariantRepo {
         }))
     }
 
+    pub async fn find_by_origin_url(&self, origin_url: &str) -> Result<Option<ClaimVariant>, PersistenceError> {
+        let row = sqlx::query(
+            r#"
+            SELECT id, claim_id, origin_url, platform, language, snapshot, seen_at
+            FROM claim_variant
+            WHERE LOWER(TRIM(origin_url)) = LOWER(TRIM($1))
+            LIMIT 1
+            "#,
+        )
+        .bind(origin_url)
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(row.map(|r| ClaimVariant {
+            id: r.get("id"),
+            claim_id: r.get("claim_id"),
+            origin_url: r.get("origin_url"),
+            platform: r.get("platform"),
+            language: r.get("language"),
+            snapshot: r.get("snapshot"),
+            seen_at: r.get("seen_at"),
+        }))
+    }
+
     pub async fn create(&self, variant: &ClaimVariant) -> Result<ClaimVariant, PersistenceError> {
         let row = sqlx::query(
             r#"
