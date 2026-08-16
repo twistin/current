@@ -449,4 +449,156 @@ async fn test_api_rate_limiting_registration() {
     assert_eq!(last_status, StatusCode::TOO_MANY_REQUESTS);
 }
 
+#[tokio::test]
+async fn test_api_retraction_cascade_and_authorization() {
+    let pool = create_pool(&get_db_url()).await.unwrap();
+    let app = build_router(pool);
+
+    // 1. Registrar dos usuarios distintos (Alice y Bob)
+    let pseudo_alice = format!("alice_{}", &uuid::Uuid::new_v4().to_string().replace('-', "")[0..10]);
+    let req = Request::builder()
+        .method("POST")
+        .uri("/auth/register")
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(json!({ "pseudonym": pseudo_alice }).to_string()))
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (_, body) = parse_json_response(res).await;
+    let alice_token = body["token"].as_str().unwrap();
+
+    let pseudo_bob = format!("bob_{}", &uuid::Uuid::new_v4().to_string().replace('-', "")[0..10]);
+    let req = Request::builder()
+        .method("POST")
+        .uri("/auth/register")
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(json!({ "pseudonym": pseudo_bob }).to_string()))
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (_, body) = parse_json_response(res).await;
+    let bob_token = body["token"].as_str().unwrap();
+
+    // 2. Alice crea un bulo
+    let req = Request::builder()
+        .method("POST")
+        .uri("/claims")
+        .header(header::AUTHORIZATION, format!("Bearer {}", alice_token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(json!({
+            "summary": "Bulo para test de retractacion y reversibilidad",
+            "kind": "text",
+            "propagation_score": 85,
+            "origin_url": format!("https://x.com/fake/{}", uuid::Uuid::new_v4()),
+            "platform": "X",
+            "language": "es"
+        }).to_string()))
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (status, body) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let claim_id = body["claim"]["id"].as_str().unwrap();
+
+    // 3. Alice descompone el bulo con una afirmación clave
+    let req = Request::builder()
+        .method("POST")
+        .uri(format!("/claims/{}/assertions", claim_id))
+        .header(header::AUTHORIZATION, format!("Bearer {}", alice_token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(json!({
+            "assertions": [
+                {
+                    "text": "El documento citado es una falsificación oficial completa",
+                    "is_load_bearing": true
+                }
+            ]
+        }).to_string()))
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (status, body) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::CREATED);
+    let assertion_id = body[0]["id"].as_str().unwrap();
+
+    // 4. Alice añade evidencia fuerte refutadora -> el veredicto del bulo pasa a 'false'
+    let req = Request::builder()
+        .method("POST")
+        .uri(format!("/assertions/{}/evidence", assertion_id))
+        .header(header::AUTHORIZATION, format!("Bearer {}", alice_token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(json!({
+            "source": {
+                "url": format!("https://boe.es/noticias/{}", uuid::Uuid::new_v4()),
+                "title": "Comunicado oficial de desmentido institucional",
+                "kind": "official",
+                "reliability": "high",
+                "excerpt": "El documento no figura en ningún registro."
+            },
+            "stance": "refutes",
+            "strength": "strong",
+            "rationale": "Demostrado por el registro oficial que el documento no existe."
+        }).to_string()))
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (status, body) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::CREATED);
+    assert_eq!(body["new_assertion_status"], "refuted");
+    assert_eq!(body["new_claim_verdict"], "false");
+    let evidence_id = body["evidence"]["id"].as_str().unwrap();
+
+    // 5. Bob (otro usuario) intenta retirar la evidencia de Alice -> 403 Forbidden
+    let req = Request::builder()
+        .method("POST")
+        .uri(format!("/evidence/{}/retract", evidence_id))
+        .header(header::AUTHORIZATION, format!("Bearer {}", bob_token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::empty())
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (status, body) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    assert_eq!(body["error"], "forbidden");
+
+    // 6. Alice (autora) retira su propia evidencia -> 200 OK
+    let req = Request::builder()
+        .method("POST")
+        .uri(format!("/evidence/{}/retract", evidence_id))
+        .header(header::AUTHORIZATION, format!("Bearer {}", alice_token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::empty())
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (status, body) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(body["new_assertion_status"], "unverified");
+    assert!(body["new_claim_verdict"].is_null()); // Recalculado a unproven / null
+    assert_eq!(body["new_claim_status"], "open");
+
+    // 7. Consultar la sala del bulo: la evidencia SIGUE presente (no borrada silenciosamente) con retracted_at
+    let req = Request::builder()
+        .method("GET")
+        .uri(format!("/claims/{}", claim_id))
+        .body(Body::empty())
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (status, body) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body["claim"]["verdict"].is_null());
+    assert_eq!(body["claim"]["status"], "open");
+
+    let ev_in_detail = &body["assertions"][0]["evidence"][0]["evidence"];
+    assert_eq!(ev_in_detail["id"], evidence_id);
+    assert!(ev_in_detail["retracted_at"].is_string()); // Preserva trazabilidad completa
+
+    // 8. Alice retira también su afirmación
+    let req = Request::builder()
+        .method("POST")
+        .uri(format!("/assertions/{}/retract", assertion_id))
+        .header(header::AUTHORIZATION, format!("Bearer {}", alice_token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::empty())
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (status, _) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::OK);
+}
+
+
 

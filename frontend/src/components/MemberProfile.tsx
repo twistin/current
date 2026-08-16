@@ -459,7 +459,24 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                     </span>
                   )}
 
-                  {a.outcome && (
+                  {a.retracted_at && (
+                    <span
+                      className="mono"
+                      style={{
+                        fontSize: '9.5px',
+                        textTransform: 'uppercase',
+                        padding: '2px 7px',
+                        borderRadius: '4px',
+                        background: 'rgba(232, 112, 90, 0.12)',
+                        color: 'var(--refute)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      ⚠️ {t('profile.retracted_tag')}
+                    </span>
+                  )}
+
+                  {a.outcome && !a.retracted_at && (
                     <span
                       className="mono"
                       style={{
@@ -474,7 +491,15 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                   )}
                 </div>
 
-                <div style={{ fontSize: '15px', color: 'var(--text)', lineHeight: 1.45, marginBottom: '12px' }}>
+                <div
+                  style={{
+                    fontSize: '15px',
+                    color: a.retracted_at ? 'var(--text-soft)' : 'var(--text)',
+                    textDecoration: a.retracted_at ? 'line-through' : 'none',
+                    lineHeight: 1.45,
+                    marginBottom: '12px',
+                  }}
+                >
                   {a.text}
                 </div>
 
@@ -522,6 +547,7 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                     borderRadius: '14px',
                     padding: '18px 20px',
                     boxShadow: 'var(--card-shadow-sm)',
+                    opacity: ev.retracted_at ? 0.65 : 1,
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
@@ -556,7 +582,24 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                       · {t('verification.weight')} {ev.strength}
                     </span>
 
-                    {ev.outcome && (
+                    {ev.retracted_at && (
+                      <span
+                        className="mono"
+                        style={{
+                          fontSize: '9.5px',
+                          textTransform: 'uppercase',
+                          padding: '2px 7px',
+                          borderRadius: '4px',
+                          background: 'rgba(232, 112, 90, 0.12)',
+                          color: 'var(--refute)',
+                          fontWeight: 600,
+                        }}
+                      >
+                        ⚠️ {t('profile.retracted_tag')}
+                      </span>
+                    )}
+
+                    {ev.outcome && !ev.retracted_at && (
                       <span
                         className="mono"
                         style={{

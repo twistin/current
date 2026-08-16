@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -38,4 +39,14 @@ pub struct Assertion {
     /// DERIVADO por `derive_assertion_status()`. No escribir directamente.
     pub status: AssertionStatus,
     pub created_by: Uuid,
+    /// Retractación con rastro: fecha en la que el autor retiró la afirmación de buena fe
+    pub retracted_at: Option<DateTime<Utc>>,
+    /// ID del autor que retiró la afirmación
+    pub retracted_by: Option<Uuid>,
+}
+
+impl Assertion {
+    pub fn is_retracted(&self) -> bool {
+        self.retracted_at.is_some()
+    }
 }

@@ -92,3 +92,17 @@ pub async fn add_evidence(
         Err(e) => map_service_error(e),
     }
 }
+
+/// POST /evidence/:id/retract o DELETE /evidence/:id
+/// Retracta una evidencia preservando el rastro y recalculando la cascada. Requiere ser el autor.
+pub async fn retract_evidence(
+    State(pool): State<PgPool>,
+    AuthenticatedMember(member): AuthenticatedMember,
+    Path(evidence_id): Path<Uuid>,
+) -> Response {
+    let service = VerificationService::new(pool);
+    match service.retract_evidence(evidence_id, member.id).await {
+        Ok(result) => (StatusCode::OK, Json(result)).into_response(),
+        Err(e) => map_service_error(e),
+    }
+}

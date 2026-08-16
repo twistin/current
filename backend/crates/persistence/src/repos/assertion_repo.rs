@@ -2,12 +2,10 @@ use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
 use crate::error::PersistenceError;
-use current_domain::entities::{Assertion, AssertionStatus, EvidenceStance, EvidenceStrength, SourceReliability};
+use current_domain::entities::{
+    Assertion, AssertionStatus, EvidenceStance, EvidenceStrength, SourceReliability,
+};
 use current_domain::logic::EvidenceInput;
-
-pub struct AssertionRepo {
-    pool: PgPool,
-}
 
 fn assertion_status_to_str(status: AssertionStatus) -> &'static str {
     match status {
@@ -52,6 +50,10 @@ fn str_to_source_reliability(s: &str) -> SourceReliability {
     }
 }
 
+pub struct AssertionRepo {
+    pool: PgPool,
+}
+
 impl AssertionRepo {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
@@ -60,7 +62,7 @@ impl AssertionRepo {
     pub async fn find_by_id(&self, id: Uuid) -> Result<Option<Assertion>, PersistenceError> {
         let row = sqlx::query(
             r#"
-            SELECT id, claim_id, text, is_load_bearing, status::text, created_by
+            SELECT id, claim_id, text, is_load_bearing, status::text, created_by, retracted_at, retracted_by
             FROM assertion
             WHERE id = $1
             "#,
@@ -78,6 +80,8 @@ impl AssertionRepo {
                 is_load_bearing: r.get("is_load_bearing"),
                 status: str_to_assertion_status(&status_str),
                 created_by: r.get("created_by"),
+                retracted_at: r.get("retracted_at"),
+                retracted_by: r.get("retracted_by"),
             }
         }))
     }
@@ -85,7 +89,7 @@ impl AssertionRepo {
     pub async fn list_by_claim(&self, claim_id: Uuid) -> Result<Vec<Assertion>, PersistenceError> {
         let rows = sqlx::query(
             r#"
-            SELECT id, claim_id, text, is_load_bearing, status::text, created_by
+            SELECT id, claim_id, text, is_load_bearing, status::text, created_by, retracted_at, retracted_by
             FROM assertion
             WHERE claim_id = $1
             ORDER BY id ASC
@@ -106,6 +110,8 @@ impl AssertionRepo {
                     is_load_bearing: r.get("is_load_bearing"),
                     status: str_to_assertion_status(&status_str),
                     created_by: r.get("created_by"),
+                    retracted_at: r.get("retracted_at"),
+                    retracted_by: r.get("retracted_by"),
                 }
             })
             .collect();
@@ -113,7 +119,7 @@ impl AssertionRepo {
         Ok(assertions)
     }
 
-    /// Lista solo las afirmaciones CLAVE (is_load_bearing = true) de un bulo.
+    /// Lista solo las afirmaciones CLAVE (is_load_bearing = true) y activas (no retiradas).
     /// Necesario para alimentar derive_claim_verdict().
     pub async fn list_load_bearing_by_claim(
         &self,
@@ -121,9 +127,9 @@ impl AssertionRepo {
     ) -> Result<Vec<Assertion>, PersistenceError> {
         let rows = sqlx::query(
             r#"
-            SELECT id, claim_id, text, is_load_bearing, status::text, created_by
+            SELECT id, claim_id, text, is_load_bearing, status::text, created_by, retracted_at, retracted_by
             FROM assertion
-            WHERE claim_id = $1 AND is_load_bearing = true
+            WHERE claim_id = $1 AND is_load_bearing = true AND retracted_at IS NULL
             ORDER BY id ASC
             "#,
         )
@@ -142,6 +148,8 @@ impl AssertionRepo {
                     is_load_bearing: r.get("is_load_bearing"),
                     status: str_to_assertion_status(&status_str),
                     created_by: r.get("created_by"),
+                    retracted_at: r.get("retracted_at"),
+                    retracted_by: r.get("retracted_by"),
                 }
             })
             .collect();
@@ -152,9 +160,9 @@ impl AssertionRepo {
     pub async fn create(&self, assertion: &Assertion) -> Result<Assertion, PersistenceError> {
         let row = sqlx::query(
             r#"
-            INSERT INTO assertion (id, claim_id, text, is_load_bearing, status, created_by)
-            VALUES ($1, $2, $3, $4, $5::assertion_status, $6)
-            RETURNING id, claim_id, text, is_load_bearing, status::text, created_by
+            INSERT INTO assertion (id, claim_id, text, is_load_bearing, status, created_by, retracted_at, retracted_by)
+            VALUES ($1, $2, $3, $4, $5::assertion_status, $6, $7, $8)
+            RETURNING id, claim_id, text, is_load_bearing, status::text, created_by, retracted_at, retracted_by
             "#,
         )
         .bind(assertion.id)
@@ -163,6 +171,8 @@ impl AssertionRepo {
         .bind(assertion.is_load_bearing)
         .bind(assertion_status_to_str(assertion.status))
         .bind(assertion.created_by)
+        .bind(assertion.retracted_at)
+        .bind(assertion.retracted_by)
         .fetch_one(&self.pool)
         .await?;
 
@@ -175,6 +185,8 @@ impl AssertionRepo {
             is_load_bearing: row.get("is_load_bearing"),
             status: str_to_assertion_status(&status_str),
             created_by: row.get("created_by"),
+            retracted_at: row.get("retracted_at"),
+            retracted_by: row.get("retracted_by"),
         })
     }
 
@@ -202,6 +214,28 @@ impl AssertionRepo {
         }
     }
 
+    /// Marca una afirmación como retirada por su autor preservando el rastro.
+    pub async fn retract(&self, id: Uuid, member_id: Uuid) -> Result<(), PersistenceError> {
+        let result = sqlx::query(
+            r#"
+            UPDATE assertion
+            SET retracted_at = now(), retracted_by = $2
+            WHERE id = $1 AND retracted_at IS NULL
+            "#,
+        )
+        .bind(id)
+        .bind(member_id)
+        .execute(&self.pool)
+        .await?;
+
+        if result.rows_affected() == 0 {
+            Err(PersistenceError::NotFound)
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Carga las entradas de evidencia ACTIVAS (no retiradas) para calcular el estado derivado.
     pub async fn load_evidence_inputs(
         &self,
         assertion_id: Uuid,
@@ -211,7 +245,7 @@ impl AssertionRepo {
             SELECT e.stance::text, e.strength::text, s.reliability::text
             FROM evidence e
             JOIN source s ON e.source_id = s.id
-            WHERE e.assertion_id = $1
+            WHERE e.assertion_id = $1 AND e.retracted_at IS NULL
             "#,
         )
         .bind(assertion_id)

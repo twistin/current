@@ -7,8 +7,13 @@ CREATE TABLE IF NOT EXISTS assertion (
     text            TEXT             NOT NULL,
     is_load_bearing BOOLEAN          NOT NULL DEFAULT false,
     status          assertion_status NOT NULL DEFAULT 'unverified',
-    created_by      UUID             NOT NULL REFERENCES member(id)
+    created_by      UUID             NOT NULL REFERENCES member(id),
+    retracted_at    TIMESTAMPTZ,
+    retracted_by    UUID             REFERENCES member(id)
 );
+
+ALTER TABLE assertion ADD COLUMN IF NOT EXISTS retracted_at TIMESTAMPTZ;
+ALTER TABLE assertion ADD COLUMN IF NOT EXISTS retracted_by UUID REFERENCES member(id);
 
 CREATE INDEX IF NOT EXISTS idx_assertion_claim_id       ON assertion(claim_id);
 CREATE INDEX IF NOT EXISTS idx_assertion_load_bearing   ON assertion(claim_id) WHERE is_load_bearing = true;

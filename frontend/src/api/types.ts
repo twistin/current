@@ -29,6 +29,8 @@ export interface Evidence {
   rationale: string;
   added_by: string;
   added_at: string;
+  retracted_at?: string | null;
+  retracted_by?: string | null;
 }
 
 export interface EvidenceWithSource {
@@ -45,6 +47,8 @@ export interface Assertion {
   status: AssertionStatus;
   created_by: string;
   created_by_pseudonym: string;
+  retracted_at?: string | null;
+  retracted_by?: string | null;
   evidence: EvidenceWithSource[];
 }
 
@@ -156,6 +160,7 @@ export interface MemberAssertionActivity {
   claim_summary: string;
   claim_verdict: ClaimVerdict | string | null;
   outcome: 'held' | 'overturned' | null;
+  retracted_at?: string | null;
 }
 
 export interface MemberEvidenceActivity {
@@ -173,6 +178,7 @@ export interface MemberEvidenceActivity {
   claim_summary: string;
   claim_verdict: ClaimVerdict | string | null;
   outcome: 'held' | 'overturned' | null;
+  retracted_at?: string | null;
 }
 
 export interface MemberProfileResponse {
@@ -180,4 +186,20 @@ export interface MemberProfileResponse {
   stats: MemberStats;
   assertions: MemberAssertionActivity[];
   evidence: MemberEvidenceActivity[];
+}
+
+export interface RetractEvidenceResponse {
+  evidence_id: string;
+  assertion_id: string;
+  claim_id: string;
+  new_assertion_status: AssertionStatus;
+  new_claim_verdict: ClaimVerdict | null;
+  new_claim_status: ClaimStatus;
+}
+
+export interface RetractAssertionResponse {
+  assertion_id: string;
+  claim_id: string;
+  new_claim_verdict: ClaimVerdict | null;
+  new_claim_status: ClaimStatus;
 }

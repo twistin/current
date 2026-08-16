@@ -48,7 +48,7 @@ impl EvidenceRepo {
     pub async fn find_by_id(&self, id: Uuid) -> Result<Option<Evidence>, PersistenceError> {
         let row = sqlx::query(
             r#"
-            SELECT id, assertion_id, source_id, stance::text, strength::text, rationale, added_by, added_at
+            SELECT id, assertion_id, source_id, stance::text, strength::text, rationale, added_by, added_at, retracted_at, retracted_by
             FROM evidence
             WHERE id = $1
             "#,
@@ -69,16 +69,17 @@ impl EvidenceRepo {
                 rationale: r.get("rationale"),
                 added_by: r.get("added_by"),
                 added_at: r.get("added_at"),
+                retracted_at: r.get("retracted_at"),
+                retracted_by: r.get("retracted_by"),
             }
         }))
     }
 
-    /// Carga toda la evidencia vinculada a una afirmación.
-    /// Esta lista alimenta directamente la función pura derive_assertion_status().
+    /// Carga toda la evidencia vinculada a una afirmación (incluyendo retiradas para auditoría).
     pub async fn list_by_assertion(&self, assertion_id: Uuid) -> Result<Vec<Evidence>, PersistenceError> {
         let rows = sqlx::query(
             r#"
-            SELECT id, assertion_id, source_id, stance::text, strength::text, rationale, added_by, added_at
+            SELECT id, assertion_id, source_id, stance::text, strength::text, rationale, added_by, added_at, retracted_at, retracted_by
             FROM evidence
             WHERE assertion_id = $1
             ORDER BY added_at ASC
@@ -102,6 +103,8 @@ impl EvidenceRepo {
                     rationale: r.get("rationale"),
                     added_by: r.get("added_by"),
                     added_at: r.get("added_at"),
+                    retracted_at: r.get("retracted_at"),
+                    retracted_by: r.get("retracted_by"),
                 }
             })
             .collect();
@@ -114,9 +117,9 @@ impl EvidenceRepo {
     pub async fn create(&self, evidence: &Evidence) -> Result<Evidence, PersistenceError> {
         let row = sqlx::query(
             r#"
-            INSERT INTO evidence (id, assertion_id, source_id, stance, strength, rationale, added_by, added_at)
-            VALUES ($1, $2, $3, $4::evidence_stance, $5::evidence_strength, $6, $7, $8)
-            RETURNING id, assertion_id, source_id, stance::text, strength::text, rationale, added_by, added_at
+            INSERT INTO evidence (id, assertion_id, source_id, stance, strength, rationale, added_by, added_at, retracted_at, retracted_by)
+            VALUES ($1, $2, $3, $4::evidence_stance, $5::evidence_strength, $6, $7, $8, $9, $10)
+            RETURNING id, assertion_id, source_id, stance::text, strength::text, rationale, added_by, added_at, retracted_at, retracted_by
             "#,
         )
         .bind(evidence.id)
@@ -127,6 +130,8 @@ impl EvidenceRepo {
         .bind(&evidence.rationale)
         .bind(evidence.added_by)
         .bind(evidence.added_at)
+        .bind(evidence.retracted_at)
+        .bind(evidence.retracted_by)
         .fetch_one(&self.pool)
         .await?;
 
@@ -142,7 +147,30 @@ impl EvidenceRepo {
             rationale: row.get("rationale"),
             added_by: row.get("added_by"),
             added_at: row.get("added_at"),
+            retracted_at: row.get("retracted_at"),
+            retracted_by: row.get("retracted_by"),
         })
+    }
+
+    /// Marca una evidencia como retirada por su autor preservando el rastro.
+    pub async fn retract(&self, id: Uuid, member_id: Uuid) -> Result<(), PersistenceError> {
+        let result = sqlx::query(
+            r#"
+            UPDATE evidence
+            SET retracted_at = now(), retracted_by = $2
+            WHERE id = $1 AND retracted_at IS NULL
+            "#,
+        )
+        .bind(id)
+        .bind(member_id)
+        .execute(&self.pool)
+        .await?;
+
+        if result.rows_affected() == 0 {
+            Err(PersistenceError::NotFound)
+        } else {
+            Ok(())
+        }
     }
 
     pub async fn delete(&self, id: Uuid) -> Result<(), PersistenceError> {

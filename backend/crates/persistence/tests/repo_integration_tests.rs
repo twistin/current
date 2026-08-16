@@ -235,6 +235,8 @@ async fn test_assertion_repo_crud_and_filtering() {
         is_load_bearing: true,
         status: AssertionStatus::Unverified,
         created_by: creator_id,
+        retracted_at: None,
+        retracted_by: None,
     };
 
     assertion_repo.create(&a1).await.unwrap();
@@ -290,6 +292,8 @@ async fn test_evidence_repo_chain_and_derivation_input() {
             is_load_bearing: true,
             status: AssertionStatus::Unverified,
             created_by: member_id,
+            retracted_at: None,
+            retracted_by: None,
         })
         .await
         .unwrap();
@@ -319,6 +323,8 @@ async fn test_evidence_repo_chain_and_derivation_input() {
         rationale: "El BOE demuestra que la cifra real es del 5%, desmintiendo el 50%.".to_string(),
         added_by: member_id,
         added_at: Utc::now(),
+        retracted_at: None,
+        retracted_by: None,
     };
 
     // 1. Crear evidencia con rationale obligatorio

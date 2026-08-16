@@ -97,9 +97,17 @@
     "add_evidence_subtitle": "con fuente y razonamiento explicativo obligatorio",
     "decompose_button": "+ Descomponer Bulo en Afirmación",
     "try_it_title": "PRUÉBALO",
-    "try_it_body": "El veredicto no está escrito: se calcula desde la evidencia. Conmuta las casillas de verificación arriba para simular la retirada de fuentes en tiempo real y observa la cascada sobre los medidores y el veredicto. Cada aportación lleva el nombre de quien la hizo. Nadie verifica en la sombra.",
     "loading": "Entrando a la sala de verificación...",
-    "error_title": "ERROR AL CARGAR SALA"
+    "error_title": "ERROR AL CARGAR SALA",
+    "retracted_badge": "Retirada por su autor",
+    "retracted_assertion_badge": "Afirmación retirada por su autor",
+    "retracted_notice": "Esta aportación fue retirada por su autor de buena fe y ya no computa en el veredicto actual.",
+    "retract_evidence_button": "Retirar evidencia",
+    "retract_assertion_button": "Retirar afirmación",
+    "retract_modal_title": "Retirar aportación con rastro",
+    "retract_modal_desc": "Rectificación de buena fe: Esta aportación dejará de computar para el veredicto del bulo y las afirmaciones se recalcularán en vivo. Para preservar la trazabilidad y transparencia pública de Current, la aportación permanecerá en el registro marcada como retirada por su autor.",
+    "retract_confirm_btn": "Sí, retirar aportación",
+    "retract_cancel_btn": "Cancelar"
   },
   "rebuttal": {
     "draft_button": "+ Redactar Desmentido",
@@ -204,6 +212,7 @@
     "type_evidence": "Evidencia",
     "outcome_held": "Sostenida (held)",
     "outcome_overturned": "Revocada (overturned)",
+    "retracted_tag": "Retirada por su autor",
     "view_claim": "Ver sala →",
     "view_claim_tooltip": "Ir a la sala de verificación de este bulo",
     "no_activity": "Este miembro aún no ha registrado aportaciones públicas en la red.",

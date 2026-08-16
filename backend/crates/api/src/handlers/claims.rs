@@ -54,6 +54,8 @@ pub struct AssertionWithEvidence {
     pub status: String,
     pub created_by: Uuid,
     pub created_by_pseudonym: String,
+    pub retracted_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub retracted_by: Option<Uuid>,
     pub evidence: Vec<EvidenceWithSource>,
 }
 
@@ -214,6 +216,8 @@ pub async fn get_claim(State(pool): State<PgPool>, Path(id): Path<Uuid>) -> Resp
             status: format!("{:?}", a.status).to_lowercase(),
             created_by: a.created_by,
             created_by_pseudonym: assertion_author,
+            retracted_at: a.retracted_at,
+            retracted_by: a.retracted_by,
             evidence: evidence_with_sources,
         });
     }
@@ -276,6 +280,20 @@ pub async fn decompose_claim(
     }
 }
 
+/// POST /assertions/:id/retract o DELETE /assertions/:id
+/// Retracta una afirmación preservando el rastro y recalculando el veredicto del bulo. Requiere ser el autor.
+pub async fn retract_assertion(
+    State(pool): State<PgPool>,
+    AuthenticatedMember(member): AuthenticatedMember,
+    Path(assertion_id): Path<Uuid>,
+) -> Response {
+    let service = VerificationService::new(pool);
+    match service.retract_assertion(assertion_id, member.id).await {
+        Ok(result) => (StatusCode::OK, Json(result)).into_response(),
+        Err(e) => map_service_error(e),
+    }
+}
+
 pub fn map_service_error(err: ServiceError) -> Response {
     match err {
         ServiceError::ClaimNotFound(id) => (
@@ -288,6 +306,23 @@ pub fn map_service_error(err: ServiceError) -> Response {
             Json(
                 json!({ "error": "not_found", "details": format!("Afirmación {} no encontrada", id) }),
             ),
+        )
+            .into_response(),
+        ServiceError::EvidenceNotFound(id) => (
+            StatusCode::NOT_FOUND,
+            Json(
+                json!({ "error": "not_found", "details": format!("Evidencia {} no encontrada", id) }),
+            ),
+        )
+            .into_response(),
+        ServiceError::Unauthorized(msg) => (
+            StatusCode::FORBIDDEN,
+            Json(json!({ "error": "forbidden", "details": msg })),
+        )
+            .into_response(),
+        ServiceError::AlreadyRetracted => (
+            StatusCode::BAD_REQUEST,
+            Json(json!({ "error": "already_retracted", "details": "La aportación ya ha sido retirada previamente" })),
         )
             .into_response(),
         ServiceError::CannotPublishUnprovenRebuttal => (

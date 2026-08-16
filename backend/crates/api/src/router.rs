@@ -80,6 +80,11 @@ pub fn build_router(pool: PgPool) -> Router {
         .route("/claims/:id/assertions", post(claims::decompose_claim))
         // Evidence & Cascada
         .route("/assertions/:id/evidence", post(evidence::add_evidence))
+        // Retractación con rastro (solo autor)
+        .route("/evidence/:id/retract", post(evidence::retract_evidence).delete(evidence::retract_evidence))
+        .route("/evidence/:id", axum::routing::delete(evidence::retract_evidence))
+        .route("/assertions/:id/retract", post(claims::retract_assertion).delete(claims::retract_assertion))
+        .route("/assertions/:id", axum::routing::delete(claims::retract_assertion))
         // Rebuttals
         .route("/rebuttals", get(rebuttals::list_rebuttals))
         .route("/claims/:id/rebuttal", post(rebuttals::publish_rebuttal))

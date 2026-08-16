@@ -97,9 +97,17 @@
     "add_evidence_subtitle": "with mandatory source and explanatory rationale",
     "decompose_button": "+ Decompose Claim into Assertion",
     "try_it_title": "TRY IT OUT",
-    "try_it_body": "The verdict is not hardcoded: it is calculated from evidence. Toggle the checkboxes above to simulate removing sources in real-time and observe the cascade on meters and verdict. Every contribution shows who made it. Nobody verifies in the dark.",
     "loading": "Entering verification room...",
-    "error_title": "ROOM LOADING ERROR"
+    "error_title": "ROOM LOADING ERROR",
+    "retracted_badge": "Retracted by author",
+    "retracted_assertion_badge": "Assertion retracted by author",
+    "retracted_notice": "This contribution was retracted in good faith by its author and no longer counts towards the current verdict.",
+    "retract_evidence_button": "Retract evidence",
+    "retract_assertion_button": "Retract assertion",
+    "retract_modal_title": "Retract contribution with audit trail",
+    "retract_modal_desc": "Good-faith rectification: This contribution will stop counting towards the claim verdict, and assertions will recalculate live. To preserve Current's public auditability, this entry will remain in the historical log marked as retracted by its author.",
+    "retract_confirm_btn": "Yes, retract contribution",
+    "retract_cancel_btn": "Cancel"
   },
   "rebuttal": {
     "draft_button": "+ Draft Rebuttal",
@@ -204,6 +212,7 @@
     "type_evidence": "Evidence",
     "outcome_held": "Held",
     "outcome_overturned": "Overturned",
+    "retracted_tag": "Retracted by author",
     "view_claim": "View room →",
     "view_claim_tooltip": "Go to this claim's verification room",
     "no_activity": "This member has not yet recorded public contributions on the network.",

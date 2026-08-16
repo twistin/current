@@ -26,8 +26,13 @@ CREATE TABLE IF NOT EXISTS evidence (
     strength     evidence_strength NOT NULL,
     rationale    TEXT              NOT NULL,
     added_by     UUID              NOT NULL REFERENCES member(id),
-    added_at     TIMESTAMPTZ       NOT NULL DEFAULT now()
+    added_at     TIMESTAMPTZ       NOT NULL DEFAULT now(),
+    retracted_at TIMESTAMPTZ,
+    retracted_by UUID              REFERENCES member(id)
 );
+
+ALTER TABLE evidence ADD COLUMN IF NOT EXISTS retracted_at TIMESTAMPTZ;
+ALTER TABLE evidence ADD COLUMN IF NOT EXISTS retracted_by UUID REFERENCES member(id);
 
 CREATE INDEX IF NOT EXISTS idx_evidence_assertion_id ON evidence(assertion_id);
 CREATE INDEX IF NOT EXISTS idx_evidence_source_id    ON evidence(source_id);

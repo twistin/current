@@ -17,6 +17,7 @@ pub struct MemberAssertionActivity {
     pub claim_summary: String,
     pub claim_verdict: Option<String>,
     pub outcome: Option<String>,
+    pub retracted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,6 +36,7 @@ pub struct MemberEvidenceActivity {
     pub claim_summary: String,
     pub claim_verdict: Option<String>,
     pub outcome: Option<String>,
+    pub retracted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -198,7 +200,7 @@ impl MemberRepo {
             r#"
             SELECT a.id, a.claim_id, a.text, a.is_load_bearing, a.status::text AS status,
                    c.summary AS claim_summary, c.verdict::text AS claim_verdict,
-                   con.outcome::text AS outcome
+                   con.outcome::text AS outcome, a.retracted_at
             FROM assertion a
             JOIN claim c ON a.claim_id = c.id
             LEFT JOIN contribution con ON con.target_type::text = 'assertion' AND con.target_id = a.id
@@ -221,6 +223,7 @@ impl MemberRepo {
                 claim_summary: r.get("claim_summary"),
                 claim_verdict: r.get("claim_verdict"),
                 outcome: r.get("outcome"),
+                retracted_at: r.get("retracted_at"),
             })
             .collect();
 
@@ -232,7 +235,7 @@ impl MemberRepo {
                    s.title AS source_title, s.url AS source_url, s.reliability::text AS source_reliability,
                    a.text AS assertion_text, a.claim_id,
                    c.summary AS claim_summary, c.verdict::text AS claim_verdict,
-                   con.outcome::text AS outcome
+                   con.outcome::text AS outcome, e.retracted_at
             FROM evidence e
             JOIN source s ON e.source_id = s.id
             JOIN assertion a ON e.assertion_id = a.id
@@ -263,6 +266,7 @@ impl MemberRepo {
                 claim_summary: r.get("claim_summary"),
                 claim_verdict: r.get("claim_verdict"),
                 outcome: r.get("outcome"),
+                retracted_at: r.get("retracted_at"),
             })
             .collect();
 

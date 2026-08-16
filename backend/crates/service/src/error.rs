@@ -12,6 +12,15 @@ pub enum ServiceError {
     #[error("La afirmación con ID {0} no fue encontrada")]
     AssertionNotFound(Uuid),
 
+    #[error("La evidencia con ID {0} no fue encontrada")]
+    EvidenceNotFound(Uuid),
+
+    #[error("No autorizado: {0}")]
+    Unauthorized(String),
+
+    #[error("La aportación ya ha sido retirada previamente")]
+    AlreadyRetracted,
+
     #[error("El desmentido no puede publicarse si el veredicto del bulo es 'unproven' o está incompleto")]
     CannotPublishUnprovenRebuttal,
 

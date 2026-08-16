@@ -8,6 +8,8 @@ import {
   MemberProfileResponse,
   Rebuttal,
   RegisterResponse,
+  RetractAssertionResponse,
+  RetractEvidenceResponse,
 } from './types';
 
 const TOKEN_KEY = 'current_bearer_token';
@@ -182,6 +184,52 @@ export async function publishRebuttal(
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.details || 'Error al publicar el desmentido');
+  }
+
+  return res.json();
+}
+
+/// Retracta una evidencia propia con rastro (POST /evidence/:id/retract)
+export async function retractEvidence(evidenceId: string): Promise<RetractEvidenceResponse> {
+  const token = getToken();
+  if (!token) {
+    throw new Error('UNAUTHORIZED');
+  }
+
+  const res = await fetch(`${API_BASE_URL}/evidence/${evidenceId}/retract`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.details || 'Error al retirar la evidencia');
+  }
+
+  return res.json();
+}
+
+/// Retracta una afirmación propia con rastro (POST /assertions/:id/retract)
+export async function retractAssertion(assertionId: string): Promise<RetractAssertionResponse> {
+  const token = getToken();
+  if (!token) {
+    throw new Error('UNAUTHORIZED');
+  }
+
+  const res = await fetch(`${API_BASE_URL}/assertions/${assertionId}/retract`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.details || 'Error al retirar la afirmación');
   }
 
   return res.json();

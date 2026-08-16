@@ -47,6 +47,24 @@ pub struct AddEvidenceResult {
     pub new_claim_verdict: Option<ClaimVerdict>,
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct RetractEvidenceResult {
+    pub evidence_id: Uuid,
+    pub assertion_id: Uuid,
+    pub claim_id: Uuid,
+    pub new_assertion_status: AssertionStatus,
+    pub new_claim_verdict: Option<ClaimVerdict>,
+    pub new_claim_status: ClaimStatus,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct RetractAssertionResult {
+    pub assertion_id: Uuid,
+    pub claim_id: Uuid,
+    pub new_claim_verdict: Option<ClaimVerdict>,
+    pub new_claim_status: ClaimStatus,
+}
+
 // ---------------------------------------------------------------------------
 // Servicio de Verificación Colaborativa (Orquestador principal)
 // ---------------------------------------------------------------------------
@@ -169,6 +187,8 @@ impl VerificationService {
                 is_load_bearing: input.is_load_bearing,
                 status: AssertionStatus::Unverified,
                 created_by: member_id,
+                retracted_at: None,
+                retracted_by: None,
             };
 
             let created = self.assertion_repo.create(&assertion).await?;
@@ -191,8 +211,6 @@ impl VerificationService {
     }
 
     /// CASO DE USO 1: Añadir evidencia y RECALCULAR la cascada completa (Assertion Status -> Claim Verdict).
-    ///
-    /// Este es el flujo central de Current: la cadena de evidencia moviendo el veredicto en cascada.
     pub async fn add_evidence(
         &self,
         assertion_id: Uuid,
@@ -211,6 +229,10 @@ impl VerificationService {
             .find_by_id(assertion_id)
             .await?
             .ok_or(ServiceError::AssertionNotFound(assertion_id))?;
+
+        if assertion.is_retracted() {
+            return Err(ServiceError::Unauthorized("No se puede aportar evidencia a una afirmación retirada".to_string()));
+        }
 
         // 1. Guardar la fuente
         let source_id = Uuid::new_v4();
@@ -248,6 +270,8 @@ impl VerificationService {
             rationale,
             added_by: member_id,
             added_at: Utc::now(),
+            retracted_at: None,
+            retracted_by: None,
         };
         let created_evidence = self.evidence_repo.create(&evidence).await?;
 
@@ -262,17 +286,125 @@ impl VerificationService {
         };
         self.contribution_repo.create(&evidence_contrib).await?;
 
-        // 3. CASCADA Nivel 1: Recalcular estado de la afirmación concreta con derive_assertion_status
-        let evidence_inputs = self.assertion_repo.load_evidence_inputs(assertion_id).await?;
-        let config = DerivationConfig::default();
-        let new_assertion_status = derive_assertion_status(&evidence_inputs, &config);
+        // 3. Recalcular la cascada completa
+        let (new_assertion_status, new_claim_verdict, _) =
+            self.recalculate_cascade(assertion.claim_id, Some(assertion_id)).await?;
 
-        self.assertion_repo
-            .update_status(assertion_id, new_assertion_status)
-            .await?;
+        Ok(AddEvidenceResult {
+            source: created_source,
+            evidence: created_evidence,
+            new_assertion_status: new_assertion_status.unwrap_or(AssertionStatus::Unverified),
+            new_claim_verdict,
+        })
+    }
 
-        // 4. CASCADA Nivel 2: Recalcular el veredicto del bulo con derive_claim_verdict
+    /// CASO DE USO: Retractar una evidencia con rastro y recalcular la cascada en tiempo real.
+    pub async fn retract_evidence(
+        &self,
+        evidence_id: Uuid,
+        member_id: Uuid,
+    ) -> Result<RetractEvidenceResult, ServiceError> {
+        let evidence = self
+            .evidence_repo
+            .find_by_id(evidence_id)
+            .await?
+            .ok_or(ServiceError::EvidenceNotFound(evidence_id))?;
+
+        // 1. Control de autorización: solo el autor puede retirar su propia aportación
+        if evidence.added_by != member_id {
+            return Err(ServiceError::Unauthorized(
+                "Solo el autor de la evidencia puede retirarla".to_string(),
+            ));
+        }
+
+        if evidence.is_retracted() {
+            return Err(ServiceError::AlreadyRetracted);
+        }
+
+        // 2. Marcar como retirada en BD preservando el rastro
+        self.evidence_repo.retract(evidence_id, member_id).await?;
+
+        let assertion = self
+            .assertion_repo
+            .find_by_id(evidence.assertion_id)
+            .await?
+            .ok_or(ServiceError::AssertionNotFound(evidence.assertion_id))?;
+
         let claim_id = assertion.claim_id;
+
+        // 3. Recalcular la cascada completa
+        let (new_assertion_status, new_claim_verdict, new_claim_status) =
+            self.recalculate_cascade(claim_id, Some(assertion.id)).await?;
+
+        Ok(RetractEvidenceResult {
+            evidence_id,
+            assertion_id: assertion.id,
+            claim_id,
+            new_assertion_status: new_assertion_status.unwrap_or(AssertionStatus::Unverified),
+            new_claim_verdict,
+            new_claim_status,
+        })
+    }
+
+    /// CASO DE USO: Retractar una afirmación con rastro y recalcular el veredicto del bulo.
+    pub async fn retract_assertion(
+        &self,
+        assertion_id: Uuid,
+        member_id: Uuid,
+    ) -> Result<RetractAssertionResult, ServiceError> {
+        let assertion = self
+            .assertion_repo
+            .find_by_id(assertion_id)
+            .await?
+            .ok_or(ServiceError::AssertionNotFound(assertion_id))?;
+
+        // 1. Control de autorización: solo el autor puede retirar su propia afirmación
+        if assertion.created_by != member_id {
+            return Err(ServiceError::Unauthorized(
+                "Solo el autor de la afirmación puede retirarla".to_string(),
+            ));
+        }
+
+        if assertion.is_retracted() {
+            return Err(ServiceError::AlreadyRetracted);
+        }
+
+        // 2. Marcar como retirada en BD
+        self.assertion_repo.retract(assertion_id, member_id).await?;
+
+        let claim_id = assertion.claim_id;
+
+        // 3. Recalcular el veredicto del bulo
+        let (_, new_claim_verdict, new_claim_status) =
+            self.recalculate_cascade(claim_id, None).await?;
+
+        Ok(RetractAssertionResult {
+            assertion_id,
+            claim_id,
+            new_claim_verdict,
+            new_claim_status,
+        })
+    }
+
+    /// Recalcula en vivo la cascada completa (afirmación -> veredicto -> estado del bulo)
+    async fn recalculate_cascade(
+        &self,
+        claim_id: Uuid,
+        assertion_id_to_update: Option<Uuid>,
+    ) -> Result<(Option<AssertionStatus>, Option<ClaimVerdict>, ClaimStatus), ServiceError> {
+        let config = DerivationConfig::default();
+
+        let mut updated_assertion_status = None;
+
+        // 1. Recalcular la afirmación específica si se indicó
+        if let Some(a_id) = assertion_id_to_update {
+            let ev_inputs = self.assertion_repo.load_evidence_inputs(a_id).await?;
+            let new_status = derive_assertion_status(&ev_inputs, &config);
+            self.assertion_repo.update_status(a_id, new_status).await?;
+            updated_assertion_status = Some(new_status);
+        }
+
+        // 2. Cargar afirmaciones clave ACTIVAS (no retiradas)
         let key_assertions = self
             .assertion_repo
             .list_load_bearing_by_claim(claim_id)
@@ -289,43 +421,37 @@ impl VerificationService {
                 .iter()
                 .any(|input| input.is_solid_contextualization());
 
-            // Estado recién recalculado de esta clave
             let key_status = derive_assertion_status(&key_ev_inputs, &config);
-
             key_assertion_inputs.push(KeyAssertionInput::new(key_status, has_solid_context));
         }
 
-        let new_claim_verdict = derive_claim_verdict(&key_assertion_inputs);
-
-        let final_verdict = if new_claim_verdict == ClaimVerdict::Unproven {
+        let derived_verdict = derive_claim_verdict(&key_assertion_inputs);
+        let final_verdict = if derived_verdict == ClaimVerdict::Unproven {
             None
         } else {
-            Some(new_claim_verdict)
+            Some(derived_verdict)
         };
 
-        // Persistir el nuevo veredicto derivado en la BD
-        self.claim_repo
-            .update_verdict(claim_id, final_verdict)
-            .await?;
+        // 3. Determinar y persistir el estado del bulo
+        let claim = self
+            .claim_repo
+            .find_by_id(claim_id)
+            .await?
+            .ok_or(ServiceError::ClaimNotFound(claim_id))?;
 
-        // Si el bulo pasa a tener veredicto definitivo, actualizar estado a InReview / Resolved
-        if final_verdict.is_some() {
-            self.claim_repo
-                .update_status(claim_id, ClaimStatus::InReview)
-                .await?;
-        }
+        let new_status = match (&final_verdict, claim.status) {
+            (Some(_), ClaimStatus::Resolved) => ClaimStatus::Resolved,
+            (Some(_), _) => ClaimStatus::InReview,
+            (None, _) => ClaimStatus::Open,
+        };
 
-        Ok(AddEvidenceResult {
-            source: created_source,
-            evidence: created_evidence,
-            new_assertion_status,
-            new_claim_verdict: final_verdict,
-        })
+        self.claim_repo.update_verdict(claim_id, final_verdict).await?;
+        self.claim_repo.update_status(claim_id, new_status).await?;
+
+        Ok((updated_assertion_status, final_verdict, new_status))
     }
 
     /// CASO DE USO 4: Publicar desmentido aplicando el invariante de seguridad.
-    ///
-    /// Rechaza la publicación si el veredicto del claim es 'unproven' o no tiene veredicto.
     pub async fn publish_rebuttal(
         &self,
         claim_id: Uuid,

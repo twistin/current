@@ -48,4 +48,14 @@ pub struct Evidence {
     pub rationale: String,
     pub added_by: Uuid,
     pub added_at: DateTime<Utc>,
+    /// Retractación con rastro: fecha en la que el autor retiró la evidencia de buena fe
+    pub retracted_at: Option<DateTime<Utc>>,
+    /// ID del autor que retiró la evidencia
+    pub retracted_by: Option<Uuid>,
+}
+
+impl Evidence {
+    pub fn is_retracted(&self) -> bool {
+        self.retracted_at.is_some()
+    }
 }
