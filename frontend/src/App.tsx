@@ -13,6 +13,41 @@ import { useTheme } from './theme';
 
 type AppView = 'landing' | 'queue' | 'manifesto';
 
+function parseRouteFromUrl(): { view: AppView; claimId: string | null; memberId: string | null } {
+  const pathname = window.location.pathname;
+
+  if (pathname.startsWith('/claims/')) {
+    const claimId = pathname.replace('/claims/', '').split('/')[0].trim();
+    if (claimId) {
+      return { view: 'queue', claimId, memberId: null };
+    }
+  }
+
+  if (pathname.startsWith('/members/')) {
+    const memberId = decodeURIComponent(pathname.replace('/members/', '').split('/')[0].trim());
+    if (memberId) {
+      return { view: 'queue', claimId: null, memberId };
+    }
+  }
+
+  if (pathname.startsWith('/@')) {
+    const memberId = decodeURIComponent(pathname.replace('/@', '').split('/')[0].trim());
+    if (memberId) {
+      return { view: 'queue', claimId: null, memberId };
+    }
+  }
+
+  if (pathname === '/manifesto' || pathname === '/manifiesto') {
+    return { view: 'manifesto', claimId: null, memberId: null };
+  }
+
+  if (pathname === '/queue' || pathname === '/cola') {
+    return { view: 'queue', claimId: null, memberId: null };
+  }
+
+  return { view: getToken() ? 'queue' : 'landing', claimId: null, memberId: null };
+}
+
 export const App: React.FC = () => {
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
@@ -28,19 +63,14 @@ export const App: React.FC = () => {
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registering, setRegistering] = useState<boolean>(false);
 
-  // Navegación principal de vistas
-  const [currentView, setCurrentView] = useState<AppView>(() => {
-    return getToken() ? 'queue' : 'landing';
-  });
-
-  // Navegación a Sala de Verificación
-  const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
+  // Navegación sincronizada con la URL
+  const initialRoute = parseRouteFromUrl();
+  const [currentView, setCurrentView] = useState<AppView>(() => initialRoute.view);
+  const [selectedClaimId, setSelectedClaimId] = useState<string | null>(() => initialRoute.claimId);
   const [claimDetail, setClaimDetail] = useState<ClaimDetailResponse | null>(null);
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
   const [detailError, setDetailError] = useState<string | null>(null);
-
-  // Navegación a Perfil de Miembro
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(() => initialRoute.memberId);
 
   // Modal Reportar Bulo
   const [showReportClaimModal, setShowReportClaimModal] = useState<boolean>(false);
@@ -58,19 +88,7 @@ export const App: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    loadClaims();
-    const storedPseudo = getStoredPseudonym();
-    const storedToken = getToken();
-    if (storedPseudo) {
-      setPseudonym(storedPseudo);
-    } else if (storedToken) {
-      setPseudonym('verificador_activo');
-    }
-  }, []);
-
-  const handleSelectClaim = async (id: string) => {
-    setSelectedClaimId(id);
+  const loadClaimDetail = async (id: string) => {
     setLoadingDetail(true);
     setDetailError(null);
     try {
@@ -83,23 +101,74 @@ export const App: React.FC = () => {
     }
   };
 
-  const refreshCurrentRoom = () => {
-    if (selectedClaimId) {
-      handleSelectClaim(selectedClaimId);
+  useEffect(() => {
+    loadClaims();
+    const storedPseudo = getStoredPseudonym();
+    const storedToken = getToken();
+    if (storedPseudo) {
+      setPseudonym(storedPseudo);
+    } else if (storedToken) {
+      setPseudonym('verificador_activo');
+    }
+
+    // Cargar detalle si la URL inicial apuntaba a un bulo
+    if (initialRoute.claimId) {
+      loadClaimDetail(initialRoute.claimId);
+    }
+
+    // Escuchar botones Atrás/Adelante del navegador
+    const handlePopState = () => {
+      const route = parseRouteFromUrl();
+      setSelectedMemberId(route.memberId);
+      setSelectedClaimId(route.claimId);
+      setCurrentView(route.view);
+      if (route.claimId) {
+        loadClaimDetail(route.claimId);
+      } else {
+        setClaimDetail(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleSelectClaim = (id: string, pushHistory = true) => {
+    setSelectedMemberId(null);
+    setSelectedClaimId(id);
+    loadClaimDetail(id);
+    if (pushHistory) {
+      window.history.pushState(null, '', `/claims/${id}`);
     }
   };
 
-  const handleNavigate = (view: AppView) => {
+  const refreshCurrentRoom = () => {
+    if (selectedClaimId) {
+      loadClaimDetail(selectedClaimId);
+    }
+  };
+
+  const handleNavigate = (view: AppView, pushHistory = true) => {
     setSelectedMemberId(null);
     setSelectedClaimId(null);
     setClaimDetail(null);
     setCurrentView(view);
+    if (pushHistory) {
+      if (view === 'manifesto') {
+        window.history.pushState(null, '', '/manifesto');
+      } else {
+        window.history.pushState(null, '', '/');
+      }
+    }
   };
 
-  const handleSelectMember = (identifier: string) => {
+  const handleSelectMember = (identifier: string, pushHistory = true) => {
     setSelectedClaimId(null);
     setClaimDetail(null);
     setSelectedMemberId(identifier);
+    if (pushHistory) {
+      window.history.pushState(null, '', `/members/${encodeURIComponent(identifier)}`);
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -140,9 +209,8 @@ export const App: React.FC = () => {
         {selectedMemberId && (
           <MemberProfile
             identifier={selectedMemberId}
-            onBack={() => setSelectedMemberId(null)}
+            onBack={() => handleNavigate('queue')}
             onSelectClaim={(claimId) => {
-              setSelectedMemberId(null);
               handleSelectClaim(claimId);
             }}
           />
@@ -308,7 +376,7 @@ export const App: React.FC = () => {
                 </div>
                 <div style={{ fontSize: '13px', marginTop: '6px', color: 'var(--text-body)' }}>{detailError}</div>
                 <button
-                  onClick={() => setSelectedClaimId(null)}
+                  onClick={() => handleNavigate('queue')}
                   className="mono"
                   style={{
                     marginTop: '12px',
@@ -329,7 +397,7 @@ export const App: React.FC = () => {
             {!loadingDetail && !detailError && claimDetail && (
               <VerificationRoom
                 detail={claimDetail}
-                onBack={() => setSelectedClaimId(null)}
+                onBack={() => handleNavigate('queue')}
                 onRefresh={refreshCurrentRoom}
                 onRequestAuth={() => setShowRegisterModal(true)}
                 onSelectMember={handleSelectMember}
