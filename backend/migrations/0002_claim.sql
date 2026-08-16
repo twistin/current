@@ -1,6 +1,6 @@
 -- Migration 0002: claim y claim_variant
--- claim.verdict es DERIVADO: el sistema lo recalcula; no se escribe a mano.
--- Priorización por propagation_score, no por indignación (principio 5 del maestro).
+CREATE SCHEMA IF NOT EXISTS current;
+SET search_path TO current, public;
 
 DO $$ BEGIN CREATE TYPE claim_kind AS ENUM ('text', 'image', 'video', 'mixed'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 DO $$ BEGIN CREATE TYPE claim_status AS ENUM ('open', 'in_review', 'resolved'); EXCEPTION WHEN duplicate_object THEN null; END $$;

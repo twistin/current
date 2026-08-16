@@ -1,7 +1,6 @@
 -- Migration 0005: rebuttal y contribution
--- rebuttal es el desmentido oficial estructurado.
--- INVARIANTE CRÍTICO: solo puede existir/publicarse cuando el claim NO es 'unproven'.
--- contribution es el log de trazabilidad que alimenta el rigor_score (Principio 4).
+CREATE SCHEMA IF NOT EXISTS current;
+SET search_path TO current, public;
 
 DO $$ BEGIN CREATE TYPE rebuttal_status AS ENUM ('draft', 'published', 'archived'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 

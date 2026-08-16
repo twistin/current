@@ -1,7 +1,6 @@
 -- Migration 0003: assertion
--- La afirmación cuelga de CLAIM (no de rebuttal).
--- Es la descomposición verificable del bulo.
--- assertion.status es DERIVADO: lo recalcula derive_assertion_status().
+CREATE SCHEMA IF NOT EXISTS current;
+SET search_path TO current, public;
 
 DO $$ BEGIN CREATE TYPE assertion_status AS ENUM ('unverified', 'supported', 'refuted', 'contested'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 
