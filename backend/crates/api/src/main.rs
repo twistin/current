@@ -36,9 +36,6 @@ async fn init_database(pool: &PgPool) {
         }
     }
 
-    // Limpieza de cola de bulos para permitir pruebas desde cero
-    let _ = sqlx::query("TRUNCATE TABLE claim, claim_variant, assertion, source, evidence, rebuttal, contribution CASCADE;").execute(pool).await;
-
     tracing::info!("Base de datos lista");
 }
 
