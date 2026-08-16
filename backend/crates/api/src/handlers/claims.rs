@@ -17,6 +17,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::auth::AuthenticatedMember;
+use crate::validation::{validate_assertion_text, validate_claim_summary, validate_url};
 
 // ---------------------------------------------------------------------------
 // DTOs
@@ -78,10 +79,26 @@ pub async fn create_claim(
     let origin_url = payload.origin_url.trim();
     let platform = payload.platform.trim();
 
-    if summary.is_empty() || origin_url.is_empty() || platform.is_empty() {
+    if let Err(err_msg) = validate_claim_summary(summary) {
         let body = Json(json!({
             "error": "validation_error",
-            "details": "Los campos 'summary', 'origin_url' y 'platform' son obligatorios"
+            "details": err_msg
+        }));
+        return (StatusCode::BAD_REQUEST, body).into_response();
+    }
+
+    if let Err(err_msg) = validate_url(origin_url) {
+        let body = Json(json!({
+            "error": "validation_error",
+            "details": format!("URL de origen inválida: {}", err_msg)
+        }));
+        return (StatusCode::BAD_REQUEST, body).into_response();
+    }
+
+    if platform.is_empty() {
+        let body = Json(json!({
+            "error": "validation_error",
+            "details": "El campo 'platform' es obligatorio"
         }));
         return (StatusCode::BAD_REQUEST, body).into_response();
     }
@@ -234,10 +251,10 @@ pub async fn decompose_claim(
     }
 
     for a in &payload.assertions {
-        if a.text.trim().is_empty() {
+        if let Err(err_msg) = validate_assertion_text(&a.text) {
             let body = Json(json!({
                 "error": "validation_error",
-                "details": "El texto de cada afirmación no puede estar vacío"
+                "details": err_msg
             }));
             return (StatusCode::BAD_REQUEST, body).into_response();
         }

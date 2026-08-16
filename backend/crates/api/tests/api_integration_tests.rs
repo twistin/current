@@ -32,7 +32,7 @@ async fn test_api_auth_and_pseudonymity() {
         .uri("/claims")
         .header(header::CONTENT_TYPE, "application/json")
         .body(Body::from(json!({
-            "summary": "Sin auth",
+            "summary": "Bulo de prueba sin autenticación",
             "kind": "text",
             "origin_url": "https://x.com/post",
             "platform": "X",
@@ -319,4 +319,134 @@ async fn test_api_validations_and_rebuttal_conflict_409() {
     assert_eq!(profile_body["assertions"].as_array().unwrap().len(), 1);
     assert_eq!(profile_body["evidence"].as_array().unwrap().len(), 1);
 }
+
+#[tokio::test]
+async fn test_api_security_headers() {
+    let pool = create_pool(&get_db_url()).await.unwrap();
+    let app = build_router(pool);
+
+    let req = Request::builder()
+        .method("GET")
+        .uri("/health")
+        .body(Body::empty())
+        .unwrap();
+
+    let res = app.oneshot(req).await.unwrap();
+    assert_eq!(res.status(), StatusCode::OK);
+
+    let headers = res.headers();
+    assert!(headers.contains_key("content-security-policy"));
+    assert_eq!(headers.get("x-frame-options").unwrap(), "DENY");
+    assert_eq!(headers.get("x-content-type-options").unwrap(), "nosniff");
+    assert_eq!(headers.get("referrer-policy").unwrap(), "strict-origin-when-cross-origin");
+}
+
+#[tokio::test]
+async fn test_api_validation_rejections() {
+    let pool = create_pool(&get_db_url()).await.unwrap();
+    let app = build_router(pool);
+
+    // 1. Registro con seudónimo inválido (< 3 caracteres) -> 400
+    let req = Request::builder()
+        .method("POST")
+        .uri("/auth/register")
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(json!({ "pseudonym": "ab" }).to_string()))
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (status, body) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["error"], "validation_error");
+
+    // 2. Registro con seudónimo con caracteres inválidos (scripts/HTML) -> 400
+    let req = Request::builder()
+        .method("POST")
+        .uri("/auth/register")
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(json!({ "pseudonym": "<script>alert(1)</script>" }).to_string()))
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (status, body) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["error"], "validation_error");
+
+    // 3. Registro válido para obtener token
+    let pseudo = format!("valid_user_{}", uuid::Uuid::new_v4().to_string().replace('-', ""));
+    let pseudo = &pseudo[0..20];
+    let req = Request::builder()
+        .method("POST")
+        .uri("/auth/register")
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(json!({ "pseudonym": pseudo }).to_string()))
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (_, body) = parse_json_response(res).await;
+    let token = body["token"].as_str().unwrap();
+
+    // 4. Bulo con summary demasiado corto (< 10 caracteres) -> 400
+    let req = Request::builder()
+        .method("POST")
+        .uri("/claims")
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(json!({
+            "summary": "Corto",
+            "kind": "text",
+            "origin_url": "https://x.com/valid",
+            "platform": "X",
+            "language": "es"
+        }).to_string()))
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (status, body) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["error"], "validation_error");
+
+    // 5. Bulo con URL maliciosa (javascript:) -> 400
+    let req = Request::builder()
+        .method("POST")
+        .uri("/claims")
+        .header(header::AUTHORIZATION, format!("Bearer {}", token))
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(json!({
+            "summary": "Resumen de bulo completamente válido y descriptivo",
+            "kind": "text",
+            "origin_url": "javascript:alert(document.cookie)",
+            "platform": "X",
+            "language": "es"
+        }).to_string()))
+        .unwrap();
+    let res = app.clone().oneshot(req).await.unwrap();
+    let (status, body) = parse_json_response(res).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(body["error"], "validation_error");
+    assert!(body["details"].as_str().unwrap().contains("URL de origen"));
+}
+
+#[tokio::test]
+async fn test_api_rate_limiting_registration() {
+    let pool = create_pool(&get_db_url()).await.unwrap();
+    let app = build_router(pool);
+
+    // Intentamos 6 registros consecutivos desde la misma IP (127.0.0.1)
+    // El límite es 5 peticiones cada 10 min -> la 6ª debe devolver 429 TOO_MANY_REQUESTS
+    let mut last_status = StatusCode::OK;
+    for _ in 0..6 {
+        let pseudo = format!("rate_{}", uuid::Uuid::new_v4().to_string().replace('-', ""));
+        let pseudo = &pseudo[0..20];
+        let req = Request::builder()
+            .method("POST")
+            .uri("/auth/register")
+            .header(header::CONTENT_TYPE, "application/json")
+            .header("x-forwarded-for", "198.51.100.42")
+            .body(Body::from(json!({ "pseudonym": pseudo }).to_string()))
+            .unwrap();
+
+        let res = app.clone().oneshot(req).await.unwrap();
+        last_status = res.status();
+    }
+
+    assert_eq!(last_status, StatusCode::TOO_MANY_REQUESTS);
+}
+
 

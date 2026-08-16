@@ -8,6 +8,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::auth::hash_token;
+use crate::validation::validate_pseudonym;
 
 #[derive(Debug, Deserialize)]
 pub struct RegisterMemberPayload {
@@ -29,10 +30,10 @@ pub async fn register_member(
     Json(payload): Json<RegisterMemberPayload>,
 ) -> impl IntoResponse {
     let pseudonym = payload.pseudonym.trim();
-    if pseudonym.is_empty() {
+    if let Err(err_msg) = validate_pseudonym(pseudonym) {
         let body = Json(json!({
             "error": "validation_error",
-            "details": "El seudónimo no puede estar vacío"
+            "details": err_msg
         }));
         return (StatusCode::BAD_REQUEST, body).into_response();
     }

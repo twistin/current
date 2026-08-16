@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { fetchMemberProfile } from '../api/client';
 import { MemberProfileResponse } from '../api/types';
 import { getMemberAvatarColor } from './AuthorChip';
+import { sanitizeExternalUrl } from '../utils/url';
 
 interface MemberProfileProps {
   identifier: string;
@@ -589,14 +590,21 @@ export const MemberProfile: React.FC<MemberProfileProps> = ({
                     }}
                   >
                     <span>{t('verification.source_registered')}:</span>
-                    <a
-                      href={ev.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: 'var(--accent)', textDecoration: 'underline' }}
-                    >
-                      {ev.source_title}
-                    </a>
+                    {(() => {
+                      const safeUrl = sanitizeExternalUrl(ev.source_url);
+                      return safeUrl ? (
+                        <a
+                          href={safeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: 'var(--accent)', textDecoration: 'underline' }}
+                        >
+                          {ev.source_title}
+                        </a>
+                      ) : (
+                        <span style={{ color: 'var(--text-soft)' }}>{ev.source_title}</span>
+                      );
+                    })()}
                     <span>({ev.source_reliability})</span>
                   </div>
 

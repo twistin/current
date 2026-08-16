@@ -13,6 +13,7 @@ use uuid::Uuid;
 
 use crate::auth::AuthenticatedMember;
 use crate::handlers::claims::map_service_error;
+use crate::validation::{validate_evidence_rationale, validate_url};
 
 #[derive(Debug, Deserialize)]
 pub struct AddEvidencePayload {
@@ -43,10 +44,26 @@ pub async fn add_evidence(
     let url = payload.source.url.trim();
     let title = payload.source.title.trim();
 
-    if rationale.is_empty() || url.is_empty() || title.is_empty() {
+    if title.is_empty() {
         let body = Json(json!({
             "error": "validation_error",
-            "details": "Los campos 'rationale', 'source.url' y 'source.title' son obligatorios"
+            "details": "El título de la fuente no puede estar vacío"
+        }));
+        return (StatusCode::BAD_REQUEST, body).into_response();
+    }
+
+    if let Err(err_msg) = validate_evidence_rationale(rationale) {
+        let body = Json(json!({
+            "error": "validation_error",
+            "details": err_msg
+        }));
+        return (StatusCode::BAD_REQUEST, body).into_response();
+    }
+
+    if let Err(err_msg) = validate_url(url) {
+        let body = Json(json!({
+            "error": "validation_error",
+            "details": format!("URL de la fuente inválida: {}", err_msg)
         }));
         return (StatusCode::BAD_REQUEST, body).into_response();
     }

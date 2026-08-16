@@ -6,6 +6,7 @@ import { MeterBar, calcWeight } from './MeterBar';
 import { AddEvidenceModal } from './AddEvidenceModal';
 import { DecomposeClaimModal } from './DecomposeClaimModal';
 import { PublishRebuttalModal } from './PublishRebuttalModal';
+import { sanitizeExternalUrl } from '../utils/url';
 
 const CURRENT_BASE_URL =
   import.meta.env.VITE_PUBLIC_URL ||
@@ -550,14 +551,21 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
                     }}
                   >
                     <span style={{ color: 'var(--accent)' }}>•</span>
-                    <a
-                      href={ev.source?.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: 'var(--text)', textDecoration: 'underline' }}
-                    >
-                      {ev.source?.title || 'Fuente'}
-                    </a>
+                    {(() => {
+                      const safeUrl = sanitizeExternalUrl(ev.source?.url);
+                      return safeUrl ? (
+                        <a
+                          href={safeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: 'var(--text)', textDecoration: 'underline' }}
+                        >
+                          {ev.source?.title || 'Fuente'}
+                        </a>
+                      ) : (
+                        <span style={{ color: 'var(--text)' }}>{ev.source?.title || 'Fuente'}</span>
+                      );
+                    })()}
                     <span>({ev.source?.reliability})</span>
                     <AuthorChip pseudonym={ev.added_by_pseudonym} onSelectMember={onSelectMember} />
                   </div>
