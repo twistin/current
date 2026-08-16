@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS rebuttal (
 CREATE INDEX IF NOT EXISTS idx_rebuttal_claim_id ON rebuttal(claim_id);
 
 DO $$ BEGIN CREATE TYPE contribution_target AS ENUM ('assertion', 'source', 'evidence', 'rebuttal'); EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN CREATE TYPE contribution_target_type AS ENUM ('assertion', 'source', 'evidence', 'rebuttal'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 DO $$ BEGIN CREATE TYPE contribution_outcome AS ENUM ('held', 'overturned'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 CREATE TABLE IF NOT EXISTS contribution (
