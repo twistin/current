@@ -2,7 +2,7 @@
 -- Persona seudónima. SIN PII en el núcleo (principio innegociable del documento maestro).
 -- Sin real_name, sin phone, sin email obligatorio.
 
-CREATE TABLE member (
+CREATE TABLE IF NOT EXISTS member (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     pseudonym    TEXT        NOT NULL UNIQUE,
     created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -12,4 +12,4 @@ CREATE TABLE member (
     auth_ref     TEXT
 );
 
-CREATE INDEX idx_member_pseudonym ON member(pseudonym);
+CREATE INDEX IF NOT EXISTS idx_member_pseudonym ON member(pseudonym);
