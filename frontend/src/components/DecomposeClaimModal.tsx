@@ -113,6 +113,25 @@ export const DecomposeClaimModal: React.FC<DecomposeClaimModalProps> = ({
                 marginTop: '4px',
               }}
             />
+            <div
+              className="mono"
+              style={{
+                fontSize: '10.5px',
+                color: 'var(--text-faint)',
+                marginTop: '6px',
+                lineHeight: 1.45,
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '6px',
+                background: 'var(--surface-2)',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-soft)',
+              }}
+            >
+              <span style={{ color: 'var(--accent)', flexShrink: 0 }}>💡</span>
+              <span>{t('forms.assertion_guidance')}</span>
+            </div>
           </div>
 
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>

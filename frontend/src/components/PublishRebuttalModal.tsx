@@ -30,7 +30,7 @@ interface PublishRebuttalModalProps {
   onRequestAuth: () => void;
 }
 
-// Genera el borrador CORTO para X: emoji + veredicto + resumen truncado + enlace
+// Genera el borrador CORTO para X: emoji + veredicto + resumen truncado + dato clave (desmentido o contexto) + enlace
 function generateShortDraft(
   claimId: string,
   claimSummary: string,
@@ -41,22 +41,38 @@ function generateShortDraft(
   const claimUrl = `${CURRENT_BASE_URL}/claims/${claimId}`;
   const emoji = VERDICT_EMOJI[verdictKey] ?? '🔍';
 
-  // Dato clave: primera afirmación refutada/apoyada con evidencia
-  const keyAssertion = assertions.find((a) => a.is_load_bearing && a.evidence.length > 0);
-  const keyFact = keyAssertion
-    ? keyAssertion.text.slice(0, 80).trimEnd() + (keyAssertion.text.length > 80 ? '…' : '')
-    : '';
+  // Buscar evidencias según su postura para no mezclar refutación directa con contexto
+  const allEvidences = assertions.flatMap((a) => a.evidence);
+  const refutingEv = allEvidences.find((e) => e.evidence.stance === 'refutes');
+  const contextualizingEv = allEvidences.find((e) => e.evidence.stance === 'contextualizes');
+  const supportingEv = allEvidences.find((e) => e.evidence.stance === 'supports');
 
-  // Construimos el tweet con margen para el enlace (Twitter cuenta t.co = 23 chars)
-  // URL real puede ser más larga, pero Twitter la acorta a 23 chars automáticamente.
+  let keyFact = '';
+  if (verdictKey === 'false' && refutingEv) {
+    const raw = refutingEv.evidence.rationale.trim();
+    keyFact = `Dato clave: ${raw.slice(0, 90).trimEnd()}${raw.length > 90 ? '…' : ''}`;
+  } else if (verdictKey === 'misleading' && contextualizingEv) {
+    const raw = contextualizingEv.evidence.rationale.trim();
+    keyFact = `Contexto real: ${raw.slice(0, 90).trimEnd()}${raw.length > 90 ? '…' : ''}`;
+  } else if (verdictKey === 'true' && supportingEv) {
+    const raw = supportingEv.evidence.rationale.trim();
+    keyFact = `Dato verificado: ${raw.slice(0, 90).trimEnd()}${raw.length > 90 ? '…' : ''}`;
+  } else {
+    const keyAssertion = assertions.find((a) => a.is_load_bearing && a.evidence.length > 0);
+    if (keyAssertion) {
+      keyFact = keyAssertion.text.slice(0, 80).trimEnd() + (keyAssertion.text.length > 80 ? '…' : '');
+    }
+  }
+
+  // Margen para el enlace (Twitter cuenta t.co = 23 chars)
   const urlPlaceholderLen = 23;
-  const suffix = ` Verificación completa: ${claimUrl}`;
-  const suffixDisplayLen = ` Verificación completa: `.length + urlPlaceholderLen;
+  const suffix = ` Verificación con fuentes: ${claimUrl}`;
+  const suffixDisplayLen = ` Verificación con fuentes: `.length + urlPlaceholderLen;
 
   // Línea del veredicto
   const verdictLine = `${emoji} ${verdictLabel.toUpperCase()}`;
 
-  // Resumen del bulo — lo truncamos para que quepa todo
+  // Resumen del bulo truncado para que quepa dentro de los 280 caracteres
   const budgetForSummary = X_LIMIT - verdictLine.length - 2 - (keyFact ? keyFact.length + 2 : 0) - suffixDisplayLen;
   const truncatedSummary = claimSummary.slice(0, Math.max(budgetForSummary, 20)).trimEnd() +
     (claimSummary.length > Math.max(budgetForSummary, 20) ? '…' : '');
@@ -71,7 +87,7 @@ function generateShortDraft(
   return parts.join('\n');
 }
 
-// Genera el borrador LARGO completo con todas las fuentes
+// Genera el borrador LARGO completo distinguiendo refutación vs contexto vs apoyo
 function generateLongDraft(
   claimSummary: string,
   verdictLabel: string,
@@ -80,23 +96,57 @@ function generateLongDraft(
 ): string {
   const emoji = VERDICT_EMOJI[verdictKey] ?? '🔍';
   const lines: string[] = [];
-  lines.push(`${emoji} DESMENTIDO OFICIAL — Current`);
-  lines.push(`Bulo: "${claimSummary}"`);
-  lines.push(`Veredicto: ${verdictLabel.toUpperCase()}`);
+  lines.push(`${emoji} DESMENTIDO Y VERIFICACIÓN — Current`);
+  lines.push(`Bulo reportado: "${claimSummary}"`);
+  lines.push(`Veredicto general: ${verdictLabel.toUpperCase()}`);
   lines.push('');
-  lines.push('Evidencias recopiladas:');
+  lines.push('Desglose de afirmaciones y evidencias:');
+  lines.push('----------------------------------------');
 
   assertions.forEach((a, idx) => {
-    lines.push(`${String(idx + 1).padStart(2, '0')}. "${a.text}" [${a.status ?? 'sin estado'}]`);
-    a.evidence.forEach((ev) => {
-      if (ev.source) {
-        lines.push(`   • ${ev.source.title} (${ev.source.url})`);
-      }
-    });
+    lines.push(`\n[Afirmación 0${idx + 1}] "${a.text}" (${a.status ? a.status.toUpperCase() : 'EN REVISIÓN'})`);
+
+    const refuting = a.evidence.filter((e) => e.evidence.stance === 'refutes');
+    const contextualizing = a.evidence.filter((e) => e.evidence.stance === 'contextualizes');
+    const supporting = a.evidence.filter((e) => e.evidence.stance === 'supports');
+
+    if (refuting.length > 0) {
+      lines.push('  ❌ EVIDENCIA QUE REFUTA (desmiente directamente):');
+      refuting.forEach((ev) => {
+        lines.push(`     • ${ev.evidence.rationale}`);
+        if (ev.source) {
+          lines.push(`       Fuente: ${ev.source.title} (${ev.source.url})`);
+        }
+      });
+    }
+
+    if (contextualizing.length > 0) {
+      lines.push('  ⚠️ MATIZ Y CONTEXTO (no niega, pero rectifica la interpretación):');
+      contextualizing.forEach((ev) => {
+        lines.push(`     • ${ev.evidence.rationale}`);
+        if (ev.source) {
+          lines.push(`       Fuente: ${ev.source.title} (${ev.source.url})`);
+        }
+      });
+    }
+
+    if (supporting.length > 0) {
+      lines.push('  ✅ EVIDENCIA QUE RESPALDA:');
+      supporting.forEach((ev) => {
+        lines.push(`     • ${ev.evidence.rationale}`);
+        if (ev.source) {
+          lines.push(`       Fuente: ${ev.source.title} (${ev.source.url})`);
+        }
+      });
+    }
+
+    if (a.evidence.length === 0) {
+      lines.push('  ⏳ Sin evidencias aportadas todavía.');
+    }
   });
 
-  lines.push('');
-  lines.push('Verificación transparente y sin filtros — Current.');
+  lines.push('\n----------------------------------------');
+  lines.push('Cadena de fuentes verificables y trazabilidad completa en Current.');
   return lines.join('\n');
 }
 

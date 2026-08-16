@@ -27,12 +27,31 @@ function buildShortTweet(
 ): string {
   const claimUrl = `${CURRENT_BASE_URL}/claims/${claimId}`;
   const emoji = VERDICT_EMOJI[verdictKey] ?? '🔍';
-  const keyAssertion = assertions.find((a) => a.is_load_bearing && a.evidence.length > 0);
-  const keyFact = keyAssertion
-    ? keyAssertion.text.slice(0, 80).trimEnd() + (keyAssertion.text.length > 80 ? '…' : '')
-    : '';
-  const suffix = ` Verificación completa: ${claimUrl}`;
-  const suffixDisplayLen = ' Verificación completa: '.length + 23; // Twitter acorta URLs a 23
+
+  const allEvidences = assertions.flatMap((a) => a.evidence);
+  const refutingEv = allEvidences.find((e) => e.evidence.stance === 'refutes');
+  const contextualizingEv = allEvidences.find((e) => e.evidence.stance === 'contextualizes');
+  const supportingEv = allEvidences.find((e) => e.evidence.stance === 'supports');
+
+  let keyFact = '';
+  if (verdictKey === 'false' && refutingEv) {
+    const raw = refutingEv.evidence.rationale.trim();
+    keyFact = `Dato clave: ${raw.slice(0, 90).trimEnd()}${raw.length > 90 ? '…' : ''}`;
+  } else if (verdictKey === 'misleading' && contextualizingEv) {
+    const raw = contextualizingEv.evidence.rationale.trim();
+    keyFact = `Contexto real: ${raw.slice(0, 90).trimEnd()}${raw.length > 90 ? '…' : ''}`;
+  } else if (verdictKey === 'true' && supportingEv) {
+    const raw = supportingEv.evidence.rationale.trim();
+    keyFact = `Dato verificado: ${raw.slice(0, 90).trimEnd()}${raw.length > 90 ? '…' : ''}`;
+  } else {
+    const keyAssertion = assertions.find((a) => a.is_load_bearing && a.evidence.length > 0);
+    if (keyAssertion) {
+      keyFact = keyAssertion.text.slice(0, 80).trimEnd() + (keyAssertion.text.length > 80 ? '…' : '');
+    }
+  }
+
+  const suffix = ` Verificación con fuentes: ${claimUrl}`;
+  const suffixDisplayLen = ' Verificación con fuentes: '.length + 23; // Twitter acorta URLs a 23
   const verdictLine = `${emoji} ${verdictLabel.toUpperCase()}:`;
   const budgetForSummary = 280 - verdictLine.length - 2 - (keyFact ? keyFact.length + 2 : 0) - suffixDisplayLen;
   const truncated = claimSummary.slice(0, Math.max(budgetForSummary, 20)).trimEnd() +
