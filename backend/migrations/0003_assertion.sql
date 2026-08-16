@@ -1,7 +1,4 @@
 -- Migration 0003: assertion
-CREATE SCHEMA IF NOT EXISTS current;
-SET search_path TO current, public;
-
 DO $$ BEGIN CREATE TYPE assertion_status AS ENUM ('unverified', 'supported', 'refuted', 'contested'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 CREATE TABLE IF NOT EXISTS assertion (

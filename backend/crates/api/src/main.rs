@@ -2,13 +2,8 @@ use sqlx::PgPool;
 use std::net::SocketAddr;
 
 async fn init_database(pool: &PgPool) {
-    tracing::info!("Inicializando base de datos y esquemas...");
+    tracing::info!("Inicializando base de datos...");
 
-    // 1. Asegurar esquema y permisos
-    let _ = sqlx::query("CREATE SCHEMA IF NOT EXISTS current").execute(pool).await;
-    let _ = sqlx::query("GRANT ALL ON SCHEMA public TO CURRENT_USER").execute(pool).await;
-
-    // 2. Ejecutar DDLs idempotentes directamente (sin bloqueos advisory ni dependencias de tablas de migraciones)
     let ddl_scripts = [
         ("0001_member", include_str!("../../../migrations/0001_member.sql")),
         ("0002_claim", include_str!("../../../migrations/0002_claim.sql")),
@@ -19,8 +14,8 @@ async fn init_database(pool: &PgPool) {
 
     for (name, sql) in ddl_scripts {
         match sqlx::raw_sql(sql).execute(pool).await {
-            Ok(_) => tracing::info!("Esquema {} verificado/aplicado", name),
-            Err(e) => tracing::warn!("Aviso en esquema {}: {}", name, e),
+            Ok(_) => tracing::info!("Migración {} lista", name),
+            Err(e) => tracing::warn!("Aviso en migración {}: {}", name, e),
         }
     }
 
@@ -44,7 +39,6 @@ async fn main() {
         .await
         .expect("No se pudo conectar a PostgreSQL");
 
-    // Inicializar base de datos de manera inmediata y segura
     init_database(&pool).await;
 
     let app = current_api::router::build_router(pool);

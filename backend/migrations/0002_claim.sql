@@ -1,7 +1,4 @@
 -- Migration 0002: claim y claim_variant
-CREATE SCHEMA IF NOT EXISTS current;
-SET search_path TO current, public;
-
 DO $$ BEGIN CREATE TYPE claim_kind AS ENUM ('text', 'image', 'video', 'mixed'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 DO $$ BEGIN CREATE TYPE claim_status AS ENUM ('open', 'in_review', 'resolved'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 DO $$ BEGIN CREATE TYPE claim_verdict AS ENUM ('false', 'true', 'misleading', 'unproven'); EXCEPTION WHEN duplicate_object THEN null; END $$;

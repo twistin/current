@@ -1,7 +1,4 @@
 -- Migration 0005: rebuttal y contribution
-CREATE SCHEMA IF NOT EXISTS current;
-SET search_path TO current, public;
-
 DO $$ BEGIN CREATE TYPE rebuttal_status AS ENUM ('draft', 'published', 'archived'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 CREATE TABLE IF NOT EXISTS rebuttal (

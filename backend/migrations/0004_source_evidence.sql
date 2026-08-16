@@ -1,7 +1,4 @@
 -- Migration 0004: source y evidence
-CREATE SCHEMA IF NOT EXISTS current;
-SET search_path TO current, public;
-
 DO $$ BEGIN CREATE TYPE source_kind AS ENUM ('primary', 'secondary', 'official', 'press', 'academic', 'other'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 DO $$ BEGIN CREATE TYPE source_reliability AS ENUM ('high', 'medium', 'low', 'disputed'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 

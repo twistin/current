@@ -1,7 +1,4 @@
 -- Migration 0001: member
-CREATE SCHEMA IF NOT EXISTS current;
-SET search_path TO current, public;
-
 CREATE TABLE IF NOT EXISTS member (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     pseudonym    TEXT        NOT NULL UNIQUE,
