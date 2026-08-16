@@ -4,9 +4,8 @@ use std::net::SocketAddr;
 async fn init_database(pool: &PgPool) {
     let _ = sqlx::query("SELECT pg_advisory_unlock_all()").execute(pool).await;
 
-    // Crear esquema 'current' dedicado para evitar conflictos de permisos con 'public' en PostgreSQL gestionado
+    // Intentar crear schema 'current' y otorgar permisos
     let _ = sqlx::query("CREATE SCHEMA IF NOT EXISTS current").execute(pool).await;
-    let _ = sqlx::query("SET search_path TO current, public").execute(pool).await;
     let _ = sqlx::query("GRANT ALL ON SCHEMA public TO CURRENT_USER").execute(pool).await;
 
     tracing::info!("Ejecutando migraciones SQLx...");
@@ -47,7 +46,7 @@ async fn main() {
         .await
         .expect("No se pudo conectar a PostgreSQL");
 
-    // Inicializar y migrar la base de datos sincrónicamente antes de abrir el puerto HTTP
+    // Inicializar y migrar la base de datos de forma segura
     init_database(&pool).await;
 
     let app = current_api::router::build_router(pool);
