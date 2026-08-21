@@ -78,7 +78,7 @@ export const ManifestoPage: React.FC<ManifestoPageProps> = ({
         <p>{t('manifesto.long.intro_p2')}</p>
       </div>
 
-      {/* CALLOUT: UN CAUCE */}
+      {/* CALLOUT: SECAR EL PANTANO */}
       <div
         style={{
           background: 'linear-gradient(145deg, var(--surface-2), var(--surface))',
@@ -88,7 +88,7 @@ export const ManifestoPage: React.FC<ManifestoPageProps> = ({
           borderBottom: '1px solid var(--border)',
           borderRadius: '0 16px 16px 0',
           padding: '20px 24px',
-          marginBottom: '48px',
+          marginBottom: '24px',
         }}
       >
         <p
@@ -102,6 +102,19 @@ export const ManifestoPage: React.FC<ManifestoPageProps> = ({
         >
           {t('manifesto.long.riverbed_highlight')}
         </p>
+      </div>
+
+      {/* IDENTIDAD CURRENT */}
+      <div
+        style={{
+          fontSize: '16.5px',
+          lineHeight: 1.7,
+          color: 'var(--text)',
+          fontWeight: 500,
+          marginBottom: '48px',
+        }}
+      >
+        <p>{t('manifesto.long.identity_highlight')}</p>
       </div>
 
       {/* SECCIÓN: LO QUE CREEMOS */}

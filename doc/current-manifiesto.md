@@ -1,104 +1,105 @@
 # Current — Manifiesto
 
-## ES · Versión corta (portada)
+## ES · Versión corta (portada y onboarding)
 
-**La mentira viaja sola. La verdad necesita que alguien la lleve.**
+**La desinformación no es un accidente. Es una industria.**
 
-Cada día, redes diseñadas para premiar la indignación inundan tu mundo de bulos. No es un accidente: es un negocio, y a veces un arma. Solo, no puedes con el algoritmo. Nadie puede.
+Medios seudoperiodísticos y redes de cuentas coordinadas operan a diario para intoxicar el debate público. El fact-checking tradicional ha fracasado: desmentir bulos uno a uno es intentar vaciar el mar con un vaso de agua.
 
-Pero juntos sí.
+*Ya no basta con aplastar al topo cada vez que asoma. Es hora de secar el pantano.*
 
-Current no te pide que creas. Te da las herramientas para comprobar. Aquí no hay un árbitro que dicta la verdad: hay personas que la construyen a la vista de todos, con las fuentes delante, para que cualquiera pueda rehacer el camino.
+Current es una infraestructura comunitaria de inteligencia asimétrica. Rastrear la red, exponer los patrones y desarmar la impunidad con pruebas irrefutables.
 
-No venimos a gritar más fuerte. Venimos a verificar mejor.
+No es un trabajo de verificación. Es ciberdefensa ciudadana.
 
-**Únete. Verifica. Que la verdad también tenga quien la lleve.**
+**Únete. Conecta los nodos. Desactiva la red.**
 
 ---
 
 ## ES · Versión larga
 
-### La mentira viaja sola. La verdad necesita que alguien la lleve.
+### MANIFIESTO CURRENT
+#### La desinformación no es un accidente. Es una industria.
 
-Vivimos rodeados de mentiras que se propagan más rápido que cualquier desmentido. No porque la gente sea tonta: porque el terreno está diseñado así. Las redes premian lo que indigna, no lo que es cierto. Y sobre ese diseño operan quienes tienen interés en confundirnos: para vender, para ganar poder, para convertir ciudadanos en súbditos de una mentira que les conviene.
+Vivimos asumiendo que los bulos son fallos del sistema o fruto de la ignorancia. Es falso. La mentira digital es un modelo de negocio altamente lucrativo y un arma de manipulación política diseñada al milímetro. Medios seudoperiodísticos y redes de cuentas coordinadas operan a diario para intoxicar el debate público, sabiendo que el escándalo monetiza y la polarización da poder.
 
-Contra eso, una persona sola no puede nada. Puedes desmentir un bulo y mañana hay mil más. Es como vaciar el mar con un vaso.
+Frente a esto, el fact-checking tradicional ha fracasado. Desmentir bulos uno a uno es como intentar vaciar el mar con un vaso de agua. Te obliga a jugar siempre a la defensiva, a rebufo de su maquinaria, agotando tus energías mientras ellos fabrican cien mentiras más.
 
-**Por eso Current no es una persona. Es un cauce.**
+**Ya no basta con aplastar al topo cada vez que asoma. Es hora de secar el pantano.**
 
-### Lo que creemos
+Por eso nace Current. No somos un tribunal de la verdad ni un periódico digital. Somos una infraestructura comunitaria de inteligencia asimétrica.
 
-**La verdad no se acata, se comprueba.** No te pedimos que confíes en nosotros. Cualquiera que diga "esto es falso, créeme" es solo una autoridad más, y las autoridades se equivocan y se compran. Nosotros hacemos lo contrario: enseñamos la cadena completa de evidencia, con sus fuentes, para que la compruebes sin fiarte de nadie. El instrumento, no el veredicto.
+### Lo que defendemos y cómo operamos
 
-**Nadie dicta el veredicto. Emerge.** En Current un bulo se descompone en afirmaciones concretas, y cada afirmación se sostiene o cae según las pruebas que la respaldan o la refutan. El veredicto no lo firma un jefe: lo deriva la evidencia, a la vista de todos, y cambia si aparecen pruebas nuevas. Nada es dogma cerrado.
+1. **El objetivo no es el texto, es la red.**
+No nos conformamos con decir "este titular es falso". Rastrearemos quién lo financia, de qué canal oscuro de mensajería salió y qué enjambre de cuentas lo amplificó artificialmente en sus primeros minutos de vida. Hacemos visible lo invisible.
 
-**El rigor empieza por uno mismo.** El bulo más peligroso es el que te gusta, el que confirma lo que ya querías creer. Aquí no se trata de tener razón contra el otro bando: se trata de exigirte a ti primero la prueba que le exiges a los demás. Quien combate la mentira tiene que ser el más honesto de la sala.
+2. **Exponer el patrón, destruir la impunidad.**
+La desinformación funciona porque sus autores se esconden tras la amnesia de las redes sociales. En Current, cada mentira tiene un coste. Documentamos el historial histórico y matemático de toxicidad de cada medio, periodista y cuenta amplificadora. Si su esencia es el engaño sistemático, su expediente público lo reflejará para siempre.
 
-**Somos muchos, y distintos, y eso es la fuerza.** No queremos un ejército de voces idénticas repitiendo la misma consigna: eso es lo que hacen las granjas de bots que combatimos. Queremos personas reales, cada una con su voz, cada aportación con su nombre. Un río no es agua uniforme: son mil corrientes que comparten un cauce. Distintos y unidos.
+3. **Inteligencia colectiva, no mártires individuales.**
+Las plataformas digitales premian a los intoxicadores y castigan a quienes los denuncian. No venimos a gritar en su plaza pública para que sus algoritmos nos silencien. Venimos a organizarnos fuera de su radar. Current es nuestro centro de mando: aquí analizamos los patrones, blindamos las pruebas y preparamos la respuesta antes de devolverla a la red.
 
-### Lo que hacemos
+4. **El rigor es nuestra única métrica.**
+No buscamos "me gusta", retuits ni seguidores. Nuestra moneda de cambio es el rigor comprobable. En un ecosistema donde cualquiera puede comprar influencia, la reputación en Current solo se gana aportando pruebas irrefutables, revelando conexiones ocultas y auditando con honestidad.
 
-Detectamos el bulo donde vive. Lo verificamos juntos, con fuentes. Y devolvemos el desmentido a donde nació, para que cada quien lo lleve a su gente con sus propias palabras.
+---
 
-No venimos a saturar, ni a colapsar, ni a gritar más fuerte que ellos: en ese juego siempre ganan los que tienen más bots y más dinero. Venimos a hacer algo que ellos no pueden comprar: verdad comprobable, construida entre personas que se atreven a pensar.
+No venimos a pedirle a las grandes tecnológicas que limpien su propia basura. Venimos a dotar a los ciudadanos de las herramientas tecnológicas para auditar el ecosistema informativo por sí mismos.
 
-### Por qué importa
-
-Compartimos el mismo mundo frágil. Las mismas necesidades, los mismos miedos, el mismo tiempo breve. La mentira nos divide porque a la mentira le conviene un mundo de gente sola, asustada y enfrentada. La verdad compartida hace lo contrario: nos reúne.
-
-No es una tarea pequeña y no termina nunca. Pero el poco tiempo que tenemos se gasta mejor construyendo que destruyendo.
-
-**Únete. Verifica. Que la verdad también tenga quien la lleve.**
+**No es un trabajo de verificación. Es ciberdefensa ciudadana.**
+**Únete. Conecta los nodos. Desactiva la red.**
 
 ---
 ---
 
-## EN · Short version (landing)
+## EN · Short version (landing & onboarding)
 
-**Lies travel alone. The truth needs someone to carry it.**
+**Disinformation is not an accident. It is an industry.**
 
-Every day, networks built to reward outrage flood your world with falsehoods. It's not an accident: it's a business, and sometimes a weapon. Alone, you can't beat the algorithm. No one can.
+Pseudo-journalistic outlets and coordinated account networks operate daily to poison public debate. Traditional fact-checking has failed: debunking hoaxes one by one is like trying to empty the ocean with a glass of water.
 
-But together, we can.
+*Whack-a-mole is no longer enough. It is time to drain the swamp.*
 
-Current doesn't ask you to believe. It gives you the tools to check. There's no arbiter here handing down the truth: there are people building it in the open, with the sources in plain sight, so anyone can retrace the path.
+Current is a community infrastructure for asymmetric intelligence. Tracing the network, exposing patterns, and dismantling impunity with irrefutable evidence.
 
-We're not here to shout louder. We're here to verify better.
+This is not standard fact-checking. This is citizen cyberdefense.
 
-**Join. Verify. Let the truth have someone to carry it too.**
+**Join. Connect the nodes. Disable the network.**
 
 ---
 
 ## EN · Long version
 
-### Lies travel alone. The truth needs someone to carry it.
+### CURRENT MANIFESTO
+#### Disinformation is not an accident. It is an industry.
 
-We live surrounded by lies that spread faster than any correction. Not because people are foolish: because the ground is built that way. Networks reward what enrages, not what's true. And on top of that design work those who profit from our confusion: to sell, to seize power, to turn citizens into subjects of a lie that suits them.
+We live assuming falsehoods are system glitches or mere ignorance. That is false. Digital deception is a highly lucrative business model and a precisely calibrated weapon of political manipulation. Pseudo-journalistic outlets and coordinated account networks operate daily to poison public debate, knowing that outrage monetizes and polarization grants power.
 
-Against that, one person alone can do nothing. You debunk one hoax and tomorrow there are a thousand more. It's like emptying the sea with a glass.
+Faced with this, traditional fact-checking has failed. Debunking hoaxes one by one is like trying to empty the ocean with a glass of water. It forces you to play constant defense in the wake of their machinery, draining your energy while they manufacture a hundred more lies.
 
-**That's why Current isn't a person. It's a riverbed.**
+**Whack-a-mole is no longer enough. It is time to drain the swamp.**
 
-### What we believe
+That is why Current was born. We are not a ministry of truth or a digital newspaper. We are a community infrastructure for asymmetric intelligence.
 
-**Truth isn't obeyed, it's checked.** We don't ask you to trust us. Anyone who says "this is false, believe me" is just one more authority, and authorities are wrong and can be bought. We do the opposite: we show the full chain of evidence, with its sources, so you can check it without trusting anyone. The instrument, not the verdict.
+### What we defend and how we operate
 
-**No one dictates the verdict. It emerges.** In Current a hoax is broken down into concrete claims, and each claim stands or falls on the evidence that supports or refutes it. The verdict isn't signed by a boss: it's derived from the evidence, in the open, and it changes if new proof appears. Nothing is settled dogma.
+1. **The target is not just the text, it is the network.**
+We don't settle for saying "this headline is false". We trace who funds it, which dark messaging channel it came from, and which swarm of accounts artificially amplified it in its first minutes of life. We make the invisible visible.
 
-**Rigor begins with yourself.** The most dangerous hoax is the one you like, the one that confirms what you already wanted to believe. This isn't about being right against the other side: it's about demanding of yourself first the proof you demand of others. Whoever fights lies must be the most honest person in the room.
+2. **Expose the pattern, destroy impunity.**
+Disinformation works because its authors hide behind the amnesia of social networks. In Current, every lie has a cost. We document the historical and mathematical toxicity record of each outlet, journalist, and amplifying account. If systematic deception is their trade, their public record will show it forever.
 
-**We are many, and different, and that's the strength.** We don't want an army of identical voices repeating the same slogan: that's what the bot farms we fight already do. We want real people, each with their own voice, each contribution signed with a name. A river isn't uniform water: it's a thousand currents sharing one bed. Distinct, and united.
+3. **Collective intelligence, not lone martyrs.**
+Digital platforms reward bad actors and penalize those who call them out. We are not here to shout in their town square only to be silenced by their algorithms. We organize outside their radar. Current is our command center: here we analyze patterns, lock down evidence, and prepare the response before bringing it back to the network.
 
-### What we do
+4. **Rigor is our only metric.**
+We do not seek likes, retweets, or followers. Our currency is verifiable rigor. In an ecosystem where anyone can buy influence, reputation in Current is earned only by submitting irrefutable proof, uncovering hidden connections, and auditing with honesty.
 
-We spot the hoax where it lives. We verify it together, with sources. And we bring the correction back to where it was born, so each of us can carry it to our own people in our own words.
+---
 
-We're not here to flood, or to crash, or to shout louder than them: in that game the side with more bots and more money always wins. We're here to do something they can't buy: checkable truth, built among people who dare to think.
+We are not here to ask Big Tech to clean up their own trash. We are here to give citizens the technological tools to audit the information ecosystem for themselves.
 
-### Why it matters
+**This is not standard fact-checking. This is citizen cyberdefense.**
+**Join. Connect the nodes. Disable the network.**
 
-We share the same fragile world. The same needs, the same fears, the same brief time. Lies divide us because lies thrive on a world of people who are alone, afraid and set against each other. Shared truth does the opposite: it brings us together.
-
-It's no small task and it never ends. But the little time we have is better spent building than tearing down.
-
-**Join. Verify. Let the truth have someone to carry it too.**
