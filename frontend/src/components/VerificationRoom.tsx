@@ -33,7 +33,7 @@ function buildShortTweet(
   assertions: Assertion[]
 ): string {
   const claimUrl = `${CURRENT_BASE_URL}/claims/${claimId}`;
-  const emoji = VERDICT_EMOJI[verdictKey] ?? '🔍';
+  const emoji = VERDICT_EMOJI[verdictKey] ?? '❌';
 
   const allEvidences = assertions
     .filter((a) => !a.retracted_at)
@@ -47,29 +47,27 @@ function buildShortTweet(
   let keyFact = '';
   if (verdictKey === 'false' && refutingEv) {
     const raw = refutingEv.evidence.rationale.trim();
-    keyFact = `Dato clave: ${raw.slice(0, 90).trimEnd()}${raw.length > 90 ? '…' : ''}`;
+    keyFact = raw.length > 70 ? raw.slice(0, 68).trimEnd() + '…' : raw;
   } else if (verdictKey === 'misleading' && contextualizingEv) {
     const raw = contextualizingEv.evidence.rationale.trim();
-    keyFact = `Contexto real: ${raw.slice(0, 90).trimEnd()}${raw.length > 90 ? '…' : ''}`;
+    keyFact = raw.length > 70 ? raw.slice(0, 68).trimEnd() + '…' : raw;
   } else if (verdictKey === 'true' && supportingEv) {
     const raw = supportingEv.evidence.rationale.trim();
-    keyFact = `Dato verificado: ${raw.slice(0, 90).trimEnd()}${raw.length > 90 ? '…' : ''}`;
-  } else {
-    const keyAssertion = assertions.find(
-      (a) => !a.retracted_at && a.is_load_bearing && a.evidence.some((e) => !e.evidence.retracted_at)
-    );
-    if (keyAssertion) {
-      keyFact = keyAssertion.text.slice(0, 80).trimEnd() + (keyAssertion.text.length > 80 ? '…' : '');
-    }
+    keyFact = raw.length > 70 ? raw.slice(0, 68).trimEnd() + '…' : raw;
   }
 
-  const suffix = ` Verificación con fuentes: ${claimUrl}`;
-  const suffixDisplayLen = ' Verificación con fuentes: '.length + 23; // Twitter acorta URLs a 23
   const verdictLine = `${emoji} ${verdictLabel.toUpperCase()}:`;
-  const budgetForSummary = 280 - verdictLine.length - 2 - (keyFact ? keyFact.length + 2 : 0) - suffixDisplayLen;
-  const truncated = claimSummary.slice(0, Math.max(budgetForSummary, 20)).trimEnd() +
-    (claimSummary.length > Math.max(budgetForSummary, 20) ? '…' : '');
-  return [verdictLine, `"${truncated}"`, keyFact ? keyFact + '.' : '', suffix].filter(Boolean).join('\n');
+  const shortSummary = claimSummary.length > 65
+    ? `"${claimSummary.slice(0, 62).trimEnd()}…"`
+    : `"${claimSummary}"`;
+
+  const lines = [verdictLine, shortSummary];
+  if (keyFact) {
+    lines.push(`🔍 ${keyFact}`);
+  }
+  lines.push(`Pruebas: ${claimUrl}`);
+
+  return lines.join('\n');
 }
 
 interface VerificationRoomProps {
