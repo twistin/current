@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Current // Escudo Táctico",
+  "version": "1.0.0",
+  "description": "Radar de inteligencia ciudadana y auditoría de actores desinformadores en redes sociales.",
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://current-app-qg6pp.ondigitalocean.app/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://twitter.com/*",
+        "https://x.com/*"
+      ],
+      "js": ["content_script.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

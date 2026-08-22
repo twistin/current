@@ -16,6 +16,7 @@
     "react-i18next": "^17.0.11"
   },
   "devDependencies": {
+    "@types/chrome": "^0.2.7",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
