@@ -16,43 +16,61 @@ import { MemberProfile } from './components/MemberProfile';
 import { ReportClaimModal } from './components/ReportClaimModal';
 import { ManifestoLanding } from './components/ManifestoLanding';
 import { ManifestoPage } from './components/ManifestoPage';
+import { ToxicityRadar } from './components/ToxicityRadar';
+import { ActorDossier } from './components/ActorDossier';
 import { useTheme } from './theme';
 
-type AppView = 'landing' | 'queue' | 'manifesto';
+type AppView = 'landing' | 'queue' | 'manifesto' | 'radar';
 
-function parseRouteFromUrl(): { view: AppView; claimId: string | null; memberId: string | null } {
+function parseRouteFromUrl(): {
+  view: AppView;
+  claimId: string | null;
+  memberId: string | null;
+  actorId: string | null;
+} {
   const pathname = window.location.pathname;
 
   if (pathname.startsWith('/claims/')) {
     const claimId = pathname.replace('/claims/', '').split('/')[0].trim();
     if (claimId) {
-      return { view: 'queue', claimId, memberId: null };
+      return { view: 'queue', claimId, memberId: null, actorId: null };
+    }
+  }
+
+  if (pathname.startsWith('/actor/') || pathname.startsWith('/actors/')) {
+    const actorId = pathname.replace(/^\/actors?\//, '').split('/')[0].trim();
+    if (actorId) {
+      return { view: 'radar', claimId: null, memberId: null, actorId };
     }
   }
 
   if (pathname.startsWith('/members/')) {
     const memberId = decodeURIComponent(pathname.replace('/members/', '').split('/')[0].trim());
     if (memberId) {
-      return { view: 'queue', claimId: null, memberId };
+      return { view: 'queue', claimId: null, memberId, actorId: null };
     }
   }
 
   if (pathname.startsWith('/@')) {
     const memberId = decodeURIComponent(pathname.replace('/@', '').split('/')[0].trim());
     if (memberId) {
-      return { view: 'queue', claimId: null, memberId };
+      return { view: 'queue', claimId: null, memberId, actorId: null };
     }
   }
 
+  if (pathname === '/radar' || pathname === '/actors') {
+    return { view: 'radar', claimId: null, memberId: null, actorId: null };
+  }
+
   if (pathname === '/manifesto' || pathname === '/manifiesto') {
-    return { view: 'manifesto', claimId: null, memberId: null };
+    return { view: 'manifesto', claimId: null, memberId: null, actorId: null };
   }
 
   if (pathname === '/queue' || pathname === '/cola') {
-    return { view: 'queue', claimId: null, memberId: null };
+    return { view: 'queue', claimId: null, memberId: null, actorId: null };
   }
 
-  return { view: getToken() ? 'queue' : 'landing', claimId: null, memberId: null };
+  return { view: getToken() ? 'queue' : 'landing', claimId: null, memberId: null, actorId: null };
 }
 
 export const App: React.FC = () => {
@@ -74,6 +92,7 @@ export const App: React.FC = () => {
   const initialRoute = parseRouteFromUrl();
   const [currentView, setCurrentView] = useState<AppView>(() => initialRoute.view);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(() => initialRoute.claimId);
+  const [selectedActorId, setSelectedActorId] = useState<string | null>(() => initialRoute.actorId);
   const [claimDetail, setClaimDetail] = useState<ClaimDetailResponse | null>(null);
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
   const [detailError, setDetailError] = useState<string | null>(null);
@@ -127,6 +146,7 @@ export const App: React.FC = () => {
       const route = parseRouteFromUrl();
       setSelectedMemberId(route.memberId);
       setSelectedClaimId(route.claimId);
+      setSelectedActorId(route.actorId);
       setCurrentView(route.view);
       if (route.claimId) {
         loadClaimDetail(route.claimId);
@@ -149,10 +169,21 @@ export const App: React.FC = () => {
 
   const handleSelectClaim = (id: string, pushHistory = true) => {
     setSelectedMemberId(null);
+    setSelectedActorId(null);
     setSelectedClaimId(id);
     loadClaimDetail(id);
     if (pushHistory) {
       window.history.pushState(null, '', `/claims/${id}`);
+    }
+  };
+
+  const handleSelectActor = (actorId: string, pushHistory = true) => {
+    setSelectedMemberId(null);
+    setSelectedClaimId(null);
+    setClaimDetail(null);
+    setSelectedActorId(actorId);
+    if (pushHistory) {
+      window.history.pushState(null, '', `/actor/${actorId}`);
     }
   };
 
@@ -165,11 +196,16 @@ export const App: React.FC = () => {
   const handleNavigate = (view: AppView, pushHistory = true) => {
     setSelectedMemberId(null);
     setSelectedClaimId(null);
+    setSelectedActorId(null);
     setClaimDetail(null);
     setCurrentView(view);
     if (pushHistory) {
       if (view === 'manifesto') {
         window.history.pushState(null, '', '/manifesto');
+      } else if (view === 'radar') {
+        window.history.pushState(null, '', '/radar');
+      } else if (view === 'queue') {
+        window.history.pushState(null, '', '/queue');
       } else {
         window.history.pushState(null, '', '/');
       }
@@ -178,6 +214,7 @@ export const App: React.FC = () => {
 
   const handleSelectMember = (identifier: string, pushHistory = true) => {
     setSelectedClaimId(null);
+    setSelectedActorId(null);
     setClaimDetail(null);
     setSelectedMemberId(identifier);
     if (pushHistory) {
@@ -212,7 +249,7 @@ export const App: React.FC = () => {
         memberPseudonym={pseudonym}
         onRegisterClick={() => setShowRegisterModal(true)}
         onLogout={handleLogout}
-        currentView={selectedMemberId ? 'profile' : selectedClaimId ? 'room' : currentView}
+        currentView={selectedActorId ? 'actor' : selectedMemberId ? 'profile' : selectedClaimId ? 'room' : currentView}
         onNavigate={handleNavigate}
         onSelectMember={handleSelectMember}
         theme={theme}
@@ -220,8 +257,22 @@ export const App: React.FC = () => {
       />
 
       <main className="wrap" style={{ paddingTop: '28px' }}>
+        {/* VISTA F: Expediente del Actor Auditado */}
+        {selectedActorId && (
+          <ActorDossier
+            actorId={selectedActorId}
+            onBack={() => handleNavigate('radar')}
+            onSelectClaim={(claimId) => handleSelectClaim(claimId)}
+          />
+        )}
+
+        {/* VISTA G: Radar Táctico de Toxicidad y Actores */}
+        {!selectedActorId && !selectedMemberId && !selectedClaimId && currentView === 'radar' && (
+          <ToxicityRadar onSelectActor={(actorId) => handleSelectActor(actorId)} />
+        )}
+
         {/* VISTA E: Perfil Seudónimo de Miembro */}
-        {selectedMemberId && (
+        {!selectedActorId && selectedMemberId && (
           <MemberProfile
             identifier={selectedMemberId}
             onBack={() => handleNavigate('queue')}
@@ -233,7 +284,7 @@ export const App: React.FC = () => {
         )}
 
         {/* VISTA A: Portada con Manifiesto Corto */}
-        {!selectedMemberId && !selectedClaimId && currentView === 'landing' && (
+        {!selectedActorId && !selectedMemberId && !selectedClaimId && currentView === 'landing' && (
           <ManifestoLanding
             onEnterQueue={() => setCurrentView('queue')}
             onRegister={() => setShowRegisterModal(true)}
@@ -243,7 +294,7 @@ export const App: React.FC = () => {
         )}
 
         {/* VISTA B: Manifiesto Largo Completo (Qué es Current) */}
-        {!selectedMemberId && !selectedClaimId && currentView === 'manifesto' && (
+        {!selectedActorId && !selectedMemberId && !selectedClaimId && currentView === 'manifesto' && (
           <ManifestoPage
             onBackToQueue={() => setCurrentView('queue')}
             onRegister={() => setShowRegisterModal(true)}
@@ -252,7 +303,7 @@ export const App: React.FC = () => {
         )}
 
         {/* VISTA C: Cola de Verificación */}
-        {!selectedMemberId && !selectedClaimId && currentView === 'queue' && (
+        {!selectedActorId && !selectedMemberId && !selectedClaimId && currentView === 'queue' && (
           <div>
             <div
               style={{

@@ -7,8 +7,8 @@ interface HeaderProps {
   memberPseudonym?: string | null;
   onRegisterClick?: () => void;
   onLogout?: () => void;
-  currentView?: 'landing' | 'queue' | 'manifesto' | 'room' | 'profile';
-  onNavigate?: (view: 'landing' | 'queue' | 'manifesto') => void;
+  currentView?: 'landing' | 'queue' | 'manifesto' | 'room' | 'profile' | 'radar' | 'actor';
+  onNavigate?: (view: 'landing' | 'queue' | 'manifesto' | 'radar') => void;
   onSelectMember?: (pseudonym: string) => void;
   theme: ThemeMode;
   onToggleTheme: () => void;
@@ -47,6 +47,27 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Navegación Principal */}
           {onNavigate && (
             <nav style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button
+                onClick={() => onNavigate('radar')}
+                className="mono"
+                style={{
+                  background: currentView === 'radar' || currentView === 'actor' ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
+                  color: currentView === 'radar' || currentView === 'actor' ? '#60a5fa' : 'var(--text-soft)',
+                  border: currentView === 'radar' || currentView === 'actor' ? '1px solid #3b82f6' : '1px solid transparent',
+                  padding: '5px 10px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  fontWeight: currentView === 'radar' || currentView === 'actor' ? 700 : 400,
+                  transition: 'all 0.15s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <span>📡</span> Radar de Actores
+              </button>
+
               <button
                 onClick={() => onNavigate('queue')}
                 className="mono"
