@@ -259,7 +259,21 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
     );
     navigator.clipboard?.writeText(tweetText).catch(() => {});
     showToast(t('rebuttal.x_opened_toast'));
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+
+    // Buscar si hay una variante con URL de tuit para responder directamente al hilo
+    let tweetId: string | null = null;
+    if (variants && variants.length > 0) {
+      for (const v of variants) {
+        const match = v.origin_url.match(/(?:twitter\.com|x\.com)\/[^/]+\/status\/(\d+)/i);
+        if (match && match[1]) {
+          tweetId = match[1];
+          break;
+        }
+      }
+    }
+
+    const replyParam = tweetId ? `&in_reply_to=${tweetId}` : '';
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}${replyParam}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
