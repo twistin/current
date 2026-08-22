@@ -10,7 +10,7 @@ use sqlx::PgPool;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 
-use crate::handlers::{auth, claims, evidence, health, members, rebuttals};
+use crate::handlers::{actors, auth, claims, evidence, health, members, rebuttals};
 use crate::ratelimit::{self, RateLimiter};
 
 /// Middleware para inyectar cabeceras defensivas de seguridad HTTP (CSP, nosniff, DENY, etc.)
@@ -95,6 +95,11 @@ pub fn build_router(pool: PgPool) -> Router {
             "/claims/:id/rebuttal/retract",
             post(rebuttals::retract_rebuttal).delete(rebuttals::retract_rebuttal),
         )
+        // Radar de Actores y Expedientes Forenses
+        .route("/api/actors/radar", get(actors::get_radar_actors))
+        .route("/api/actors/:id", get(actors::get_actor_dossier))
+        .route("/actors/radar", get(actors::get_radar_actors))
+        .route("/actors/:id", get(actors::get_actor_dossier))
         // Middlewares defensivos
         .layer(from_fn(move |req, next| {
             let lim = limiter.clone();
