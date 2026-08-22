@@ -6,6 +6,7 @@ import { MeterBar, calcWeight } from './MeterBar';
 import { AddEvidenceModal } from './AddEvidenceModal';
 import { DecomposeClaimModal } from './DecomposeClaimModal';
 import { PublishRebuttalModal } from './PublishRebuttalModal';
+import { PropagationTree } from './PropagationTree';
 import { sanitizeExternalUrl } from '../utils/url';
 import {
   getStoredPseudonym,
@@ -1117,6 +1118,9 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
           {t('verification.try_it_body')}
         </p>
       </div>
+
+      {/* Árbol de Linaje y Propagación Genealógica */}
+      <PropagationTree claimId={claim.id} />
 
       {addEvidenceTarget && (
         <AddEvidenceModal
