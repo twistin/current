@@ -23,18 +23,6 @@ export function getThreatLevel(score: number): ThreatLevel {
   return 'CONFIABLE';
 }
 
-export function getActorTypeBadge(type: ActorType) {
-  switch (type) {
-    case 'media':
-      return { label: 'MEDIO DIGITAL', icon: '📰', style: 'border-blue-500/40 text-blue-400 bg-blue-500/10' };
-    case 'telegram_channel':
-      return { label: 'CANAL TELEGRAM', icon: '✈️', style: 'border-purple-500/40 text-purple-400 bg-purple-500/10' };
-    case 'social_account':
-    default:
-      return { label: 'CUENTA SOCIAL', icon: '⚡', style: 'border-amber-500/40 text-amber-400 bg-amber-500/10' };
-  }
-}
-
 export const FALLBACK_RADAR_ACTORS: ActorSummary[] = [
   {
     id: '11111111-1111-1111-1111-111111111111',
@@ -81,12 +69,9 @@ export const FALLBACK_RADAR_ACTORS: ActorSummary[] = [
 export const RadarDashboard: React.FC<RadarDashboardProps> = ({ onSelectActor }) => {
   const navigate = useNavigate();
   const [actors, setActors] = useState<ActorSummary[]>(FALLBACK_RADAR_ACTORS);
-  const [isLoading, setIsLoading] = useState(true);
-
   const [filterType, setFilterType] = useState<ActorType | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  // Sincronización en vivo con el Backend
   useEffect(() => {
     const fetchRadar = async () => {
       try {
@@ -101,10 +86,7 @@ export const RadarDashboard: React.FC<RadarDashboardProps> = ({ onSelectActor })
           }
         }
       } catch (err: any) {
-        // En caso de fallo de red puntual, mantenemos los actores base
         console.warn('Usando datos de radar iniciales:', err.message);
-      } finally {
-        setIsLoading(false);
       }
     };
     fetchRadar();
@@ -124,52 +106,251 @@ export const RadarDashboard: React.FC<RadarDashboardProps> = ({ onSelectActor })
     return matchesType && matchesSearch;
   });
 
-  if (isLoading && actors.length === 0) {
+  const renderVectorBadge = (type: ActorType) => {
+    switch (type) {
+      case 'media':
+        return (
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '3px 9px',
+            borderRadius: '6px',
+            background: 'rgba(59, 130, 246, 0.12)',
+            border: '1px solid rgba(59, 130, 246, 0.35)',
+            color: '#60a5fa',
+            fontFamily: 'monospace',
+            fontSize: '11px',
+            fontWeight: 600,
+            whiteSpace: 'nowrap'
+          }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+            MEDIO DIGITAL
+          </span>
+        );
+      case 'telegram_channel':
+        return (
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '3px 9px',
+            borderRadius: '6px',
+            background: 'rgba(168, 85, 247, 0.12)',
+            border: '1px solid rgba(168, 85, 247, 0.35)',
+            color: '#c084fc',
+            fontFamily: 'monospace',
+            fontSize: '11px',
+            fontWeight: 600,
+            whiteSpace: 'nowrap'
+          }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            TELEGRAM
+          </span>
+        );
+      case 'social_account':
+      default:
+        return (
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '3px 9px',
+            borderRadius: '6px',
+            background: 'rgba(245, 158, 11, 0.12)',
+            border: '1px solid rgba(245, 158, 11, 0.35)',
+            color: '#fbbf24',
+            fontFamily: 'monospace',
+            fontSize: '11px',
+            fontWeight: 600,
+            whiteSpace: 'nowrap'
+          }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            CUENTA SOCIAL
+          </span>
+        );
+    }
+  };
+
+  const renderThreatBadge = (threat: ThreatLevel) => {
+    if (threat === 'CRÍTICO') {
+      return (
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '4px 10px',
+          borderRadius: '6px',
+          background: 'rgba(239, 68, 68, 0.15)',
+          border: '1px solid rgba(239, 68, 68, 0.5)',
+          color: '#f87171',
+          fontFamily: 'monospace',
+          fontSize: '11.5px',
+          fontWeight: 700,
+          letterSpacing: '0.04em',
+          boxShadow: '0 0 10px rgba(239, 68, 68, 0.15)',
+          whiteSpace: 'nowrap'
+        }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
+          CRÍTICO
+        </span>
+      );
+    }
+    if (threat === 'ALTO') {
+      return (
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '4px 10px',
+          borderRadius: '6px',
+          background: 'rgba(245, 158, 11, 0.15)',
+          border: '1px solid rgba(245, 158, 11, 0.4)',
+          color: '#fbbf24',
+          fontFamily: 'monospace',
+          fontSize: '11.5px',
+          fontWeight: 700,
+          letterSpacing: '0.04em',
+          whiteSpace: 'nowrap'
+        }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />
+          ALTO
+        </span>
+      );
+    }
     return (
-      <div className="w-full max-w-7xl mx-auto px-4 py-20 bg-[#0f172a] text-[#f8fafc] font-mono text-sm text-center flex flex-col items-center justify-center gap-3">
-        <span className="w-4 h-4 rounded-full bg-red-500 animate-ping shadow-[0_0_12px_#ef4444]" />
-        <span className="text-red-400 font-bold uppercase tracking-widest">[ Sincronizando Radar de Inteligencia... ]</span>
-      </div>
+      <span style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: '4px 10px',
+        borderRadius: '6px',
+        background: 'rgba(16, 185, 129, 0.15)',
+        border: '1px solid rgba(16, 185, 129, 0.35)',
+        color: '#34d399',
+        fontFamily: 'monospace',
+        fontSize: '11.5px',
+        fontWeight: 700,
+        letterSpacing: '0.04em',
+        whiteSpace: 'nowrap'
+      }}>
+        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+        CONFIABLE
+      </span>
     );
-  }
+  };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8 bg-[#0f172a] text-[#f8fafc] font-sans antialiased min-h-screen">
-      {/* CABECERA TÁCTICA */}
-      <header className="border-b border-slate-800 pb-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div style={{
+      width: '100%',
+      maxWidth: '1240px',
+      margin: '0 auto',
+      padding: '24px 20px 60px',
+      color: '#f8fafc',
+      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
+      {/* CABECERA */}
+      <header style={{
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        paddingBottom: '24px',
+        marginBottom: '28px',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        flexWrap: 'wrap',
+        gap: '20px'
+      }}>
         <div>
-          <div className="inline-flex items-center gap-2 font-mono text-xs font-bold text-red-500 uppercase tracking-widest mb-2">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]" />
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontFamily: 'monospace',
+            fontSize: '11px',
+            fontWeight: 700,
+            color: '#ef4444',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            marginBottom: '8px'
+          }}>
+            <span style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: '#ef4444',
+              display: 'inline-block',
+              boxShadow: '0 0 8px #ef4444'
+            }} />
             SISTEMA DE AUDITORÍA EN TIEMPO REAL
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">
+          <h1 style={{
+            fontSize: '30px',
+            fontWeight: 800,
+            letterSpacing: '-0.02em',
+            color: '#ffffff',
+            margin: '0 0 6px'
+          }}>
             Radar de Actores y Vectores
           </h1>
-          <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-            Monitorización comunitaria de nodos y desinformación recurrente. Los índices de confianza se recalculan dinámicamente con rastro forense.
+          <p style={{
+            fontSize: '13.5px',
+            color: '#94a3b8',
+            margin: 0,
+            maxWidth: '650px',
+            lineHeight: 1.5
+          }}>
+            Monitorización comunitaria de nodos emisores y desinformación recurrente. Los índices de confianza se recalculan con rastro forense.
           </p>
         </div>
 
         {/* FILTROS Y BÚSQUEDA */}
-        <div className="flex flex-wrap items-center gap-3">
-          <input
-            type="text"
-            placeholder="Buscar por @handle..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-red-500 font-mono"
-          />
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Buscar actor o @handle..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                background: '#0f172a',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: '8px',
+                padding: '9px 14px 9px 34px',
+                color: '#ffffff',
+                fontSize: '13px',
+                fontFamily: 'monospace',
+                outline: 'none',
+                width: '240px'
+              }}
+            />
+            <svg style={{ position: 'absolute', left: '11px', top: '11px', color: '#64748b' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
 
-          <div className="flex rounded-lg bg-slate-900 p-1 border border-slate-800 font-mono text-xs">
+          <div style={{
+            display: 'flex',
+            background: '#0b1120',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: '8px',
+            padding: '3px',
+            gap: '2px'
+          }}>
             {(['all', 'media', 'social_account', 'telegram_channel'] as const).map((type) => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
-                className={`px-3 py-1.5 rounded-md transition-all ${
-                  filterType === type
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/40 font-bold'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
+                style={{
+                  background: filterType === type ? 'rgba(239, 68, 68, 0.18)' : 'transparent',
+                  border: filterType === type ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid transparent',
+                  color: filterType === type ? '#f87171' : '#94a3b8',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontFamily: 'monospace',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
               >
                 {type === 'all' ? 'TODOS' : type === 'media' ? 'MEDIOS' : type === 'social_account' ? 'CUENTAS' : 'TELEGRAM'}
               </button>
@@ -178,108 +359,153 @@ export const RadarDashboard: React.FC<RadarDashboardProps> = ({ onSelectActor })
         </div>
       </header>
 
-      {/* TABLA DE AUDITORÍA DE ACTORES */}
-      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur-md shadow-2xl">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-800 bg-slate-950/70 font-mono text-xs text-slate-400 uppercase tracking-wider">
-              <th className="py-4 px-5">Actor / Nodo Emisor</th>
-              <th className="py-4 px-5">Vector</th>
-              <th className="py-4 px-5">Índice de Confianza</th>
-              <th className="py-4 px-5">Nivel de Amenaza</th>
-              <th className="py-4 px-5 text-right">Trazas Auditadas</th>
-              <th className="py-4 px-5 text-right">Acción</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800/60 font-sans text-sm">
-            {filteredActors.map((actor, idx) => {
-              const threat = getThreatLevel(actor.reputation_score);
-              const typeBadge = getActorTypeBadge(actor.actor_type);
-              const isCritical = threat === 'CRÍTICO';
+      {/* TABLA PRINCIPAL DE ALTA DENSIDAD */}
+      <div style={{
+        background: '#0b1120',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.7)'
+      }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{
+                background: 'rgba(15, 23, 42, 0.85)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                fontFamily: 'monospace',
+                fontSize: '11px',
+                color: '#64748b',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em'
+              }}>
+                <th style={{ padding: '16px 20px', width: '38%' }}>Actor / Nodo Emisor</th>
+                <th style={{ padding: '16px 18px', width: '16%' }}>Vector</th>
+                <th style={{ padding: '16px 18px', width: '20%' }}>Índice de Confianza</th>
+                <th style={{ padding: '16px 18px', width: '13%' }}>Nivel de Amenaza</th>
+                <th style={{ padding: '16px 18px', width: '13%', textAlign: 'right' }}>Auditoría</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredActors.map((actor, idx) => {
+                const threat = getThreatLevel(actor.reputation_score);
+                const isCritical = threat === 'CRÍTICO';
 
-              return (
-                <tr
-                  key={actor.id}
-                  onClick={() => handleRowClick(actor.id)}
-                  className="hover:bg-slate-800/40 cursor-pointer transition-colors group"
-                >
-                  <td className="py-4 px-5">
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-xs text-slate-500 font-bold">
-                        #{String(idx + 1).padStart(2, '0')}
-                      </span>
-                      <div>
-                        <div className="font-bold text-slate-100 group-hover:text-red-400 transition-colors">
-                          {actor.name}
-                        </div>
-                        <div className="font-mono text-[11px] text-slate-500">
-                          ID: {actor.id.slice(0, 13)}...
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-semibold border ${typeBadge.style}`}>
-                      <span>{typeBadge.icon}</span> {typeBadge.label}
-                    </span>
-                  </td>
-
-                  <td className="py-4 px-5">
-                    <div className="flex flex-col gap-1.5 w-44">
-                      <div className="flex justify-between items-baseline font-mono text-xs">
-                        <span className={`font-bold text-sm ${isCritical ? 'text-red-400' : threat === 'ALTO' ? 'text-amber-400' : 'text-emerald-400'}`}>
-                          {actor.reputation_score.toFixed(1)}
+                return (
+                  <tr
+                    key={actor.id}
+                    onClick={() => handleRowClick(actor.id)}
+                    style={{
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s ease',
+                      background: 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    {/* Columna 1: Actor */}
+                    <td style={{ padding: '18px 20px', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <span style={{
+                          fontFamily: 'monospace',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: '#475569',
+                          width: '24px'
+                        }}>
+                          #{String(idx + 1).padStart(2, '0')}
                         </span>
-                        <span className="text-slate-500 text-[10px]">/ 100.0</span>
+                        <div>
+                          <div style={{
+                            fontSize: '15px',
+                            fontWeight: 700,
+                            color: '#f8fafc',
+                            marginBottom: '3px'
+                          }}>
+                            {actor.name}
+                          </div>
+                          <div style={{
+                            fontFamily: 'monospace',
+                            fontSize: '11px',
+                            color: '#64748b'
+                          }}>
+                            ID: {actor.id.slice(0, 18)}... · {actor.total_traces} {actor.total_traces === 1 ? 'traza' : 'trazas'}
+                          </div>
+                        </div>
                       </div>
-                      <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                        <div
-                          style={{ width: `${Math.min(100, Math.max(0, actor.reputation_score))}%` }}
-                          className={`h-full transition-all duration-500 ${
-                            isCritical
-                              ? 'bg-red-500 shadow-[0_0_8px_#ef4444]'
+                    </td>
+
+                    {/* Columna 2: Vector */}
+                    <td style={{ padding: '18px 18px', verticalAlign: 'middle' }}>
+                      {renderVectorBadge(actor.actor_type)}
+                    </td>
+
+                    {/* Columna 3: Índice de Confianza con Barra */}
+                    <td style={{ padding: '18px 18px', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxWidth: '170px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: 'monospace' }}>
+                          <span style={{
+                            fontSize: '14px',
+                            fontWeight: 700,
+                            color: isCritical ? '#f87171' : threat === 'ALTO' ? '#fbbf24' : '#34d399'
+                          }}>
+                            {actor.reputation_score.toFixed(1)}
+                          </span>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>/ 100.0</span>
+                        </div>
+                        <div style={{
+                          height: '6px',
+                          width: '100%',
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          borderRadius: '999px',
+                          overflow: 'hidden'
+                        }}>
+                          <div style={{
+                            height: '100%',
+                            width: `${Math.min(100, Math.max(0, actor.reputation_score))}%`,
+                            background: isCritical
+                              ? '#ef4444'
                               : threat === 'ALTO'
-                              ? 'bg-amber-500'
-                              : 'bg-emerald-500'
-                          }`}
-                        />
+                              ? '#f59e0b'
+                              : '#10b981',
+                            boxShadow: isCritical ? '0 0 8px #ef4444' : 'none',
+                            transition: 'width 0.4s ease'
+                          }} />
+                        </div>
                       </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  <td className="py-4 px-5">
-                    {isCritical ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono font-bold bg-red-950/60 text-red-400 border border-red-600/70 shadow-[0_0_12px_rgba(239,68,68,0.2)]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
-                        CRÍTICO
-                      </span>
-                    ) : threat === 'ALTO' ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono font-bold bg-amber-950/40 text-amber-400 border border-amber-500/40">
-                        ALTO
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono font-bold bg-emerald-950/30 text-emerald-400 border border-emerald-500/30">
-                        CONFIABLE
-                      </span>
-                    )}
-                  </td>
+                    {/* Columna 4: Nivel de Amenaza */}
+                    <td style={{ padding: '18px 18px', verticalAlign: 'middle' }}>
+                      {renderThreatBadge(threat)}
+                    </td>
 
-                  <td className="py-4 px-5 text-right font-mono text-sm text-slate-300">
-                    <span className="font-bold">{actor.total_traces}</span>
-                    <span className="text-xs text-slate-500 ml-1">trazas</span>
-                  </td>
-
-                  <td className="py-4 px-5 text-right">
-                    <span className="font-mono text-xs text-blue-400 group-hover:text-blue-300 group-hover:underline">
-                      Expediente →
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    {/* Columna 5: Acción */}
+                    <td style={{ padding: '18px 20px', verticalAlign: 'middle', textAlign: 'right' }}>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontFamily: 'monospace',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: '#60a5fa',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        Expediente →
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
