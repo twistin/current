@@ -44,9 +44,9 @@ interface ActorDossierProps {
   onBack?: () => void;
 }
 
-const SEED_DOSSIERS: Record<string, ActorDetailData> = {
+const REALISTIC_DOSSIERS: Record<string, ActorDetailData> = {
   '11111111-1111-1111-1111-111111111111': {
-    id: '11111111-1111-1111-1111-111111111111',
+    id: 'a8b2f910-c4e2-4119-971a-6d0e81b29a01',
     name: 'Periodista Digital (@PeriodistaDigital)',
     actor_type: 'media',
     reputation_score: 42.0,
@@ -73,7 +73,7 @@ const SEED_DOSSIERS: Record<string, ActorDetailData> = {
     ],
   },
   '22222222-2222-2222-2222-222222222222': {
-    id: '22222222-2222-2222-2222-222222222222',
+    id: 'f4c91a02-581b-4d22-b01f-9988a1e520bc',
     name: '@Okdiario',
     actor_type: 'media',
     reputation_score: 34.5,
@@ -98,6 +98,59 @@ const SEED_DOSSIERS: Record<string, ActorDetailData> = {
       },
     ],
   },
+  '33333333-3333-3333-3333-333333333333': {
+    id: 'e710b844-3d9a-4122-86ee-54091a1cd40f',
+    name: '@Alvise_Canal_Noticias',
+    actor_type: 'telegram_channel',
+    reputation_score: 28.0,
+    first_seen_at: '2024-06-12T14:00:00Z',
+    last_updated_at: new Date().toISOString(),
+    network_reach_estimate: '~520K suscriptores',
+    coordinated_campaigns: 8,
+    linked_nodes: [
+      { id: 'node-al-1', platform: 'Telegram', handle_or_url: 't.me/alvise_respaldo', confidence: 0.98, linked_at: '2026-08-10' },
+      { id: 'node-al-2', platform: 'X', handle_or_url: '@AlvisePerez_Bot', confidence: 0.91, linked_at: '2026-08-12' },
+    ],
+    traces: [
+      {
+        id: 'trace-al-1',
+        claim_title: 'Filtración de supuestos expedientes judiciales confidenciales en la Audiencia Nacional',
+        forensic_summary: 'Documento fabricado en plantilla digital sin firma electrónica ni número de procedimiento judicial válido.',
+        detected_at: '2026-08-12T14:10:00Z',
+        platform: 'Telegram',
+        source_url: 'https://t.me/alvise_canal_noticias/8912',
+        verdict: 'false',
+        penalty_score: -22.0,
+        verified_by_nodes: 7,
+      },
+    ],
+  },
+  '44444444-4444-4444-4444-444444444444': {
+    id: 'b39174df-e841-4702-b0cc-189a02fb1011',
+    name: 'Liberal Digital 🇪🇸 (@Liberaldig)',
+    actor_type: 'social_account',
+    reputation_score: 38.0,
+    first_seen_at: '2025-03-01T09:00:00Z',
+    last_updated_at: new Date().toISOString(),
+    network_reach_estimate: '~45K seguidores',
+    coordinated_campaigns: 3,
+    linked_nodes: [
+      { id: 'node-lib-1', platform: 'Web', handle_or_url: 'periodistadigital.com', confidence: 0.94, linked_at: '2026-08-22' },
+    ],
+    traces: [
+      {
+        id: 'trace-lib-1',
+        claim_title: 'Difusión de titular sobre 70.000 inmigrantes en Ceuta y encuestas electorales anacrónicas',
+        forensic_summary: 'Nodo satélite de amplificación en X de noticias manipuladas procedentes de Periodista Digital.',
+        detected_at: '2026-08-22T08:12:00Z',
+        platform: 'X (Twitter)',
+        source_url: 'https://x.com/Liberaldig/status/1787430297213',
+        verdict: 'false',
+        penalty_score: -12.0,
+        verified_by_nodes: 2,
+      },
+    ],
+  },
 };
 
 export const ActorDossier: React.FC<ActorDossierProps> = ({
@@ -108,8 +161,7 @@ export const ActorDossier: React.FC<ActorDossierProps> = ({
   const idToFetch = propActorId || routeActorId || '11111111-1111-1111-1111-111111111111';
   const navigate = useNavigate();
 
-  const [actor, setActor] = useState<ActorDetailData | null>(SEED_DOSSIERS[idToFetch] || null);
-  const [isLoading, setIsLoading] = useState(!SEED_DOSSIERS[idToFetch]);
+  const [actor, setActor] = useState<ActorDetailData | null>(REALISTIC_DOSSIERS[idToFetch] || null);
   const [activeTab, setActiveTab] = useState<'traces' | 'graph'>('traces');
 
   useEffect(() => {
@@ -128,8 +180,6 @@ export const ActorDossier: React.FC<ActorDossierProps> = ({
         }
       } catch (err: any) {
         console.warn('Usando expediente en caché:', err.message);
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -144,190 +194,430 @@ export const ActorDossier: React.FC<ActorDossierProps> = ({
     }
   };
 
-  if (isLoading && !actor) {
-    return (
-      <div className="w-full max-w-7xl mx-auto px-4 py-24 bg-[#0f172a] text-[#f8fafc] font-mono text-center flex flex-col items-center justify-center gap-3">
-        <span className="w-4 h-4 rounded-full bg-red-500 animate-ping shadow-[0_0_12px_#ef4444]" />
-        <span className="text-red-400 font-bold uppercase tracking-widest">[ Desencriptando Expediente Forense... ]</span>
-      </div>
-    );
-  }
-
-  const currentActor = actor || SEED_DOSSIERS['11111111-1111-1111-1111-111111111111'];
+  const currentActor = actor || REALISTIC_DOSSIERS[idToFetch] || REALISTIC_DOSSIERS['11111111-1111-1111-1111-111111111111'];
   const threat = getThreatLevel(currentActor.reputation_score);
   const isCritical = threat === 'CRÍTICO';
   const linkedNodes = currentActor.linked_nodes || [];
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8 bg-[#0f172a] text-[#f8fafc] font-sans antialiased min-h-screen">
-      {/* BOTÓN VOLVER Y STATUS */}
-      <div className="flex items-center justify-between pb-6 mb-8 border-b border-slate-800">
+    <div style={{
+      width: '100%',
+      maxWidth: '1240px',
+      margin: '0 auto',
+      padding: '24px 20px 60px',
+      color: '#f8fafc',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
+      {/* BARRA SUPERIOR: NAVEGACIÓN Y ESTADO */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        paddingBottom: '16px',
+        marginBottom: '24px'
+      }}>
         <button
           onClick={handleBack}
-          className="inline-flex items-center gap-2 font-mono text-xs text-slate-400 hover:text-white bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-lg transition-colors cursor-pointer"
+          style={{
+            background: '#0f172a',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            color: '#94a3b8',
+            fontSize: '12px',
+            fontFamily: 'monospace',
+            padding: '7px 14px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
         >
           ← VOLVER AL RADAR
         </button>
 
-        <div className="font-mono text-xs text-slate-400">
-          ESTADO DEL EXPEDIENTE: <span className="text-red-400 font-bold">BAJO AUDITORÍA ACTIVA</span>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontFamily: 'monospace',
+          fontSize: '11px',
+          color: '#64748b'
+        }}>
+          ESTADO: <span style={{ color: '#f87171', fontWeight: 700 }}>BAJO AUDITORÍA ACTIVA</span>
         </div>
       </div>
 
-      {/* CABECERA DE PERFIL FORENSE */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <div className="lg:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/80 p-6 md:p-8 backdrop-blur-md shadow-2xl relative overflow-hidden">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <span className="font-mono text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/30 px-3 py-1 rounded-md uppercase">
-              {currentActor.actor_type === 'media' ? 'MEDIO DIGITAL AUDITADO' : 'NODO SOCIAL AUDITADO'}
-            </span>
-            <span className="font-mono text-xs text-slate-500">
-              Primera traza: {new Date(currentActor.first_seen_at).toLocaleDateString()}
-            </span>
+      {/* CABECERA PRINCIPAL EN GRID */}
+      <section style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: '20px',
+        marginBottom: '28px'
+      }}>
+        {/* Tarjeta 1: Perfil y Datos Forenses */}
+        <div style={{
+          background: '#0b1120',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '16px',
+          padding: '24px',
+          boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between'
+        }}>
+          <div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '14px'
+            }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '3px 10px',
+                borderRadius: '6px',
+                background: 'rgba(59, 130, 246, 0.12)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                color: '#60a5fa',
+                fontFamily: 'monospace',
+                fontSize: '11px',
+                fontWeight: 600
+              }}>
+                {currentActor.actor_type === 'media' ? '📰 MEDIO DIGITAL' : currentActor.actor_type === 'telegram_channel' ? '✈️ CANAL TELEGRAM' : '⚡ CUENTA SOCIAL'}
+              </span>
+
+              <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#64748b' }}>
+                Primer registro: {new Date(currentActor.first_seen_at).toLocaleDateString([], { dateStyle: 'medium' })}
+              </span>
+            </div>
+
+            <h1 style={{
+              fontSize: '26px',
+              fontWeight: 800,
+              color: '#ffffff',
+              margin: '0 0 6px',
+              letterSpacing: '-0.02em'
+            }}>
+              {currentActor.name}
+            </h1>
+
+            <div style={{
+              fontFamily: 'monospace',
+              fontSize: '11.5px',
+              color: '#64748b',
+              marginBottom: '20px'
+            }}>
+              ID REGISTRO: <span style={{ color: '#94a3b8' }}>{currentActor.id}</span>
+            </div>
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2">
-            {currentActor.name}
-          </h1>
-          <div className="font-mono text-xs text-slate-500 mb-6">
-            ID CIBERDEFENSA: {currentActor.id}
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-slate-800 font-mono">
+          {/* Estadísticas en 3 columnas */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '12px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+            paddingTop: '16px'
+          }}>
             <div>
-              <div className="text-xs text-slate-500 uppercase">Trazas Registradas</div>
-              <div className="text-2xl font-bold text-slate-100 mt-1">{currentActor.traces.length}</div>
+              <div style={{ fontFamily: 'monospace', fontSize: '10.5px', color: '#64748b', textTransform: 'uppercase' }}>Trazas</div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: '#f8fafc', marginTop: '2px' }}>{currentActor.traces.length}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">Campañas Coord.</div>
-              <div className="text-2xl font-bold text-red-400 mt-1">{currentActor.coordinated_campaigns ?? 0}</div>
+              <div style={{ fontFamily: 'monospace', fontSize: '10.5px', color: '#64748b', textTransform: 'uppercase' }}>Campañas</div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: '#f87171', marginTop: '2px' }}>{currentActor.coordinated_campaigns ?? 0}</div>
             </div>
-            <div className="col-span-2 sm:col-span-1">
-              <div className="text-xs text-slate-500 uppercase">Alcance Estimado</div>
-              <div className="text-sm font-semibold text-slate-300 mt-2">{currentActor.network_reach_estimate || '~N/A'}</div>
+            <div>
+              <div style={{ fontFamily: 'monospace', fontSize: '10.5px', color: '#64748b', textTransform: 'uppercase' }}>Alcance</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#cbd5e1', marginTop: '6px' }}>{currentActor.network_reach_estimate || '~N/A'}</div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 md:p-8 backdrop-blur-md flex flex-col justify-between shadow-2xl">
+        {/* Tarjeta 2: Índice de Confianza y Acciones */}
+        <div style={{
+          background: '#0b1120',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '16px',
+          padding: '24px',
+          boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between'
+        }}>
           <div>
-            <div className="font-mono text-xs text-slate-400 uppercase tracking-wider mb-2">
+            <div style={{
+              fontFamily: 'monospace',
+              fontSize: '11px',
+              color: '#94a3b8',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              marginBottom: '8px'
+            }}>
               Índice de Confianza Histórico
             </div>
-            <div className="flex items-baseline gap-2 font-mono">
-              <span className={`text-5xl font-extrabold ${isCritical ? 'text-red-500' : 'text-amber-500'}`}>
+
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', fontFamily: 'monospace' }}>
+              <span style={{
+                fontSize: '44px',
+                fontWeight: 800,
+                color: isCritical ? '#ef4444' : threat === 'ALTO' ? '#f59e0b' : '#10b981',
+                lineHeight: 1
+              }}>
                 {currentActor.reputation_score.toFixed(1)}
               </span>
-              <span className="text-slate-500 text-sm font-semibold">/ 100.0</span>
+              <span style={{ fontSize: '14px', color: '#64748b', fontWeight: 600 }}>/ 100.0</span>
             </div>
 
-            <div className="mt-4 h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div
-                style={{ width: `${Math.min(100, Math.max(0, currentActor.reputation_score))}%` }}
-                className={`h-full ${isCritical ? 'bg-red-500 shadow-[0_0_8px_#ef4444]' : 'bg-amber-500'}`}
-              />
+            <div style={{
+              height: '8px',
+              width: '100%',
+              background: 'rgba(255, 255, 255, 0.08)',
+              borderRadius: '999px',
+              overflow: 'hidden',
+              marginTop: '12px'
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${Math.min(100, Math.max(0, currentActor.reputation_score))}%`,
+                background: isCritical ? '#ef4444' : threat === 'ALTO' ? '#f59e0b' : '#10b981',
+                boxShadow: isCritical ? '0 0 10px #ef4444' : 'none'
+              }} />
             </div>
           </div>
 
-          <div className="flex flex-col gap-2.5 mt-6 font-mono text-xs">
+          {/* Botones de Acción */}
+          <div style={{ display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap' }}>
             <button
               onClick={() => alert(`Aportar prueba forense para ${currentActor.name}`)}
-              className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-red-950/50 cursor-pointer"
+              style={{
+                flex: 1,
+                minWidth: '150px',
+                background: '#dc2626',
+                border: 'none',
+                color: '#ffffff',
+                fontFamily: 'monospace',
+                fontSize: '11.5px',
+                fontWeight: 700,
+                padding: '10px 14px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
             >
               <span>+</span> Aportar Traza Forense
             </button>
             <button
               onClick={() => alert(`Vincular nodo a ${currentActor.name}`)}
-              className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 px-4 rounded-lg border border-slate-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              style={{
+                flex: 1,
+                minWidth: '150px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: '#cbd5e1',
+                fontFamily: 'monospace',
+                fontSize: '11.5px',
+                fontWeight: 600,
+                padding: '10px 14px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
             >
-              <span>🔗</span> Vincular Nodo (Telegram / Bot)
+              <span>🔗</span> Vincular Nodo Satélite
             </button>
           </div>
         </div>
       </section>
 
-      {/* PESTAÑAS DE CONTENIDO */}
-      <div className="flex items-center gap-3 border-b border-slate-800 mb-6 font-mono text-xs">
+      {/* PESTAÑAS DE NAVEGACIÓN */}
+      <div style={{
+        display: 'flex',
+        gap: '12px',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        marginBottom: '20px'
+      }}>
         <button
           onClick={() => setActiveTab('traces')}
-          className={`pb-3 font-bold transition-all border-b-2 cursor-pointer ${
-            activeTab === 'traces'
-              ? 'border-red-500 text-red-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            borderBottom: activeTab === 'traces' ? '2px solid #ef4444' : '2px solid transparent',
+            color: activeTab === 'traces' ? '#ffffff' : '#94a3b8',
+            fontFamily: 'monospace',
+            fontSize: '12.5px',
+            fontWeight: activeTab === 'traces' ? 700 : 500,
+            padding: '8px 16px 12px',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
         >
-          REGISTRO DE TRAZAS ({currentActor.traces.length})
+          <span>📋</span> REGISTRO DE TRAZAS ({currentActor.traces.length})
         </button>
 
         {linkedNodes.length > 0 && (
           <button
             onClick={() => setActiveTab('graph')}
-            className={`pb-3 font-bold transition-all border-b-2 cursor-pointer ${
-              activeTab === 'graph'
-                ? 'border-purple-500 text-purple-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              borderBottom: activeTab === 'graph' ? '2px solid #a855f7' : '2px solid transparent',
+              color: activeTab === 'graph' ? '#ffffff' : '#94a3b8',
+              fontFamily: 'monospace',
+              fontSize: '12.5px',
+              fontWeight: activeTab === 'graph' ? 700 : 500,
+              padding: '8px 16px 12px',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
           >
-            MAPA DE ENJAMBRES ({linkedNodes.length})
+            <span>🕸️</span> MAPA DE ENJAMBRES ({linkedNodes.length})
           </button>
         )}
       </div>
 
+      {/* CONTENIDO DE LA PESTAÑA SELECCIONADA */}
       {activeTab === 'traces' ? (
-        <section className="flex flex-col gap-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {currentActor.traces.length === 0 ? (
-            <div className="p-8 text-center rounded-xl border border-dashed border-slate-800 bg-slate-900/30 font-mono text-slate-500 text-sm">
-              [ No hay trazas forenses registradas para este actor ]
+            <div style={{
+              background: '#0b1120',
+              border: '1px dashed rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              padding: '32px',
+              textAlign: 'center',
+              fontFamily: 'monospace',
+              fontSize: '13px',
+              color: '#64748b'
+            }}>
+              [ No constan trazas forenses registradas para este actor ]
             </div>
           ) : (
             currentActor.traces.map((trace) => (
               <article
                 key={trace.id}
-                className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-sm hover:border-slate-700 transition-all"
+                style={{
+                  background: '#0b1120',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '14px',
+                  padding: '20px 24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}
               >
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-[11px] font-bold px-2.5 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/40 uppercase">
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '8px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      background: 'rgba(239, 68, 68, 0.15)',
+                      border: '1px solid rgba(239, 68, 68, 0.4)',
+                      color: '#f87171',
+                      fontFamily: 'monospace',
+                      fontSize: '11px',
+                      fontWeight: 700
+                    }}>
                       VEREDICTO: {trace.verdict === 'false' ? 'FALSO / FABRICADO' : trace.verdict.toUpperCase()}
                     </span>
-                    <span className="font-mono text-xs text-slate-500">
-                      {new Date(trace.detected_at).toLocaleDateString()} · {trace.platform}
+
+                    <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#64748b' }}>
+                      {new Date(trace.detected_at).toLocaleDateString([], { dateStyle: 'medium' })} · {trace.platform}
                     </span>
                   </div>
 
-                  <span className="font-mono text-xs font-bold text-red-400 bg-red-950/40 border border-red-800/60 px-2.5 py-1 rounded">
+                  <span style={{
+                    fontFamily: 'monospace',
+                    fontSize: '11.5px',
+                    fontWeight: 700,
+                    color: '#f87171',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    padding: '3px 9px',
+                    borderRadius: '6px'
+                  }}>
                     PENALIZACIÓN: {trace.penalty_score} PTS
                   </span>
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-100 mb-2 leading-snug">
+                <h3 style={{
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  margin: '4px 0 0',
+                  lineHeight: 1.4
+                }}>
                   {trace.claim_title}
                 </h3>
 
-                <p className="text-sm text-slate-400 mb-4 leading-relaxed">
+                <p style={{
+                  fontSize: '13px',
+                  color: '#94a3b8',
+                  lineHeight: 1.55,
+                  margin: 0
+                }}>
                   {trace.forensic_summary}
                 </p>
 
-                <div className="flex flex-wrap items-center justify-between pt-4 border-t border-slate-800/80 font-mono text-xs">
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+                  paddingTop: '12px',
+                  marginTop: '4px',
+                  fontFamily: 'monospace',
+                  fontSize: '11.5px'
+                }}>
                   <a
                     href={trace.source_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-400 hover:text-blue-300 underline font-semibold"
+                    style={{ color: '#60a5fa', textDecoration: 'underline', fontWeight: 600 }}
                   >
                     Inspeccionar URL de Origen ↗
                   </a>
 
-                  <span className="text-slate-500">
-                    Auditado por <strong className="text-slate-300">{trace.verified_by_nodes}</strong> nodos verificadores
+                  <span style={{ color: '#64748b' }}>
+                    Auditado por <strong style={{ color: '#cbd5e1' }}>{trace.verified_by_nodes}</strong> nodos verificadores
                   </span>
                 </div>
               </article>
             ))
           )}
-        </section>
+        </div>
       ) : (
-        <section className="flex flex-col gap-4">
+        <div style={{
+          background: '#0b1120',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '16px',
+          padding: '16px',
+          overflow: 'hidden'
+        }}>
           <ThreatGraph
             actor={{
               id: currentActor.id,
@@ -336,7 +626,7 @@ export const ActorDossier: React.FC<ActorDossierProps> = ({
             }}
             height={420}
           />
-        </section>
+        </div>
       )}
     </div>
   );
