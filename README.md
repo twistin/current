@@ -162,3 +162,9 @@ sqlx migrate info
 - [ ] Repos de persistencia (sqlx queries)
 - [ ] Endpoints de API (claims, assertions, evidence, rebuttals)
 - [ ] WebSockets para sala de verificación colaborativa
+
+## Licencia
+
+Este proyecto está protegido bajo los términos de la **GNU Affero General Public License v3.0 (AGPL-3.0)**. Consulta el archivo [`LICENSE`](./LICENSE) para más detalles.
+
+Cualquier servicio derivado o modificación que opere en red debe mantener el código 100 % abierto, transparente y accesible para la comunidad.
