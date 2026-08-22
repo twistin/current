@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 // ---------------------------------------------------------------------------
-// Tipos del Linaje Genealógico de la Desinformación
+// Tipos del Linaje Genealógico
 // ---------------------------------------------------------------------------
 
 export type NodeStage = 'origin_source' | 'mutation_factory' | 'amplifier_node' | 'viral_impact';
@@ -14,7 +14,7 @@ export interface PropagationNode {
   timestamp: string;
   title_or_post: string;
   url: string;
-  mutation_type?: string; // ej. 'Anacronismo deliberado', 'Cifras infladas 70.000', 'Amplificación coordinada'
+  mutation_type?: string;
   reach_estimate?: string;
   notes: string;
   parent_id?: string | null;
@@ -22,139 +22,76 @@ export interface PropagationNode {
 
 interface PropagationTreeProps {
   claimId: string;
+  claimSummary?: string;
   initialNodes?: PropagationNode[];
   onAddLink?: () => void;
 }
 
-function getStageMeta(stage: NodeStage) {
+function getStageBadge(stage: NodeStage) {
   switch (stage) {
     case 'origin_source':
       return {
         label: 'NIVEL 0 · FUENTE CITADA',
-        badgeColor: 'border-blue-500/40 text-blue-400 bg-blue-500/10',
-        cardBorder: 'border-blue-500/50 hover:border-blue-400',
-        glowColor: 'shadow-[0_0_15px_rgba(59,130,246,0.2)]',
-        headerBg: 'bg-blue-950/40',
-        dotColor: 'bg-blue-500',
+        bg: 'rgba(59, 130, 246, 0.12)',
+        border: 'rgba(59, 130, 246, 0.35)',
+        color: '#60a5fa',
         icon: '🌱',
       };
     case 'mutation_factory':
       return {
-        label: 'NIVEL 1 · FÁBRICA / MUTACIÓN',
-        badgeColor: 'border-red-500/50 text-red-400 bg-red-950/40 shadow-[0_0_12px_rgba(239,68,68,0.2)]',
-        cardBorder: 'border-red-500/60 hover:border-red-400',
-        glowColor: 'shadow-[0_0_20px_rgba(239,68,68,0.25)]',
-        headerBg: 'bg-red-950/50',
-        dotColor: 'bg-red-500 animate-pulse',
+        label: 'NIVEL 1 · LA FÁBRICA / MUTACIÓN',
+        bg: 'rgba(239, 68, 68, 0.15)',
+        border: 'rgba(239, 68, 68, 0.45)',
+        color: '#f87171',
         icon: '🏭',
       };
     case 'amplifier_node':
       return {
         label: 'NIVEL 2 · NODO AMPLIFICADOR',
-        badgeColor: 'border-purple-500/40 text-purple-400 bg-purple-500/10',
-        cardBorder: 'border-purple-500/50 hover:border-purple-400',
-        glowColor: 'shadow-[0_0_15px_rgba(168,85,247,0.2)]',
-        headerBg: 'bg-purple-950/40',
-        dotColor: 'bg-purple-500',
+        bg: 'rgba(168, 85, 247, 0.12)',
+        border: 'rgba(168, 85, 247, 0.35)',
+        color: '#c084fc',
         icon: '📡',
       };
     case 'viral_impact':
     default:
       return {
         label: 'NIVEL 3 · IMPACTO EN FEED',
-        badgeColor: 'border-amber-500/40 text-amber-400 bg-amber-500/10',
-        cardBorder: 'border-amber-500/50 hover:border-amber-400',
-        glowColor: 'shadow-[0_0_15px_rgba(245,158,11,0.2)]',
-        headerBg: 'bg-amber-950/40',
-        dotColor: 'bg-amber-500',
+        bg: 'rgba(245, 158, 11, 0.12)',
+        border: 'rgba(245, 158, 11, 0.35)',
+        color: '#fbbf24',
         icon: '👥',
       };
   }
 }
 
-const DEFAULT_NODES: PropagationNode[] = [
-  {
-    id: 'node-0',
-    stage: 'origin_source',
-    actor_name: 'El Mundo (Marta Belver)',
-    actor_type: 'media',
-    timestamp: '2026-08-21T01:15:00Z',
-    title_or_post: 'El Gobierno en alerta ante el rédito para Vox de la crisis en Ceuta',
-    url: 'https://www.elmundo.es/espana/2026/08/21/6a873531e9cf4a6c0c8b456e.html',
-    mutation_type: 'Análisis político cualitativo',
-    reach_estimate: 'Lectorado general',
-    notes: 'Cita la encuesta de Sigma Dos realizada en FEBRERO de 2026 (hace 6 meses) sobre la regularización de extranjeros.',
-    parent_id: null,
-  },
-  {
-    id: 'node-1',
-    stage: 'mutation_factory',
-    actor_name: 'Periodista Digital (Mario Lima)',
-    actor_type: 'media',
-    timestamp: '2026-08-22T07:55:00Z',
-    title_or_post: 'VOX se dispara en las encuestas impulsado por la ‘traición’ de Sánchez en Ceuta',
-    url: 'https://www.periodistadigital.com/politica/20260822/noticia-vox-ceuta-encuestas/',
-    mutation_type: '⚠️ Anacronismo (recicla fecha) + Cifras infladas 70.000',
-    reach_estimate: '~480K visitas potenciales',
-    notes: 'Recicla la encuesta de febrero vendiéndola como sondeo actual de agosto e infla la cifra migratoria.',
-    parent_id: 'node-0',
-  },
-  {
-    id: 'node-2',
-    stage: 'amplifier_node',
-    actor_name: 'Liberal Digital 🇪🇸 (@Liberaldig)',
-    actor_type: 'social_account',
-    timestamp: '2026-08-22T08:12:00Z',
-    title_or_post: '🔴 VOX se dispara en las encuestas impulsado por la ‘traición’ de Sánchez en Ceuta y la sensación de que España va a la deriva',
-    url: 'https://x.com/Liberaldig/status/1787430297213',
-    mutation_type: '⚡ Amplificación sensacionalista en X',
-    reach_estimate: '~12.000 visualizaciones',
-    notes: 'Enlaza a periodistadigital.com sin verificar la fecha de la encuesta.',
-    parent_id: 'node-1',
-  },
-  {
-    id: 'node-3',
-    stage: 'amplifier_node',
-    actor_name: 'Canal Noticias Inmediatas (Telegram)',
-    actor_type: 'telegram_channel',
-    timestamp: '2026-08-22T08:28:00Z',
-    title_or_post: 'URGENTE: Encuestas dan 63 diputados a Vox tras el caos en Ceuta',
-    url: 'https://t.me/alertas_esp_noticias',
-    mutation_type: '📲 Reenvío masivo en canales',
-    reach_estimate: '~35.000 suscriptores',
-    notes: 'Reenvía el enlace recortado a la web con titulares de clickbait intercalados.',
-    parent_id: 'node-1',
-  },
-  {
-    id: 'node-4',
-    stage: 'viral_impact',
-    actor_name: 'Audiencia y Cuentas Espejo',
-    actor_type: 'social_account',
-    timestamp: '2026-08-22T09:00:00Z',
-    title_or_post: 'Replicación en hilos y retuits con enlaces a Periodista Digital',
-    url: '#',
-    mutation_type: '👥 Impacto no verificado en el feed',
-    reach_estimate: '~50K impactos agregados',
-    notes: 'Los usuarios asumen como real una encuesta de febrero pensando que es de hoy.',
-    parent_id: 'node-2',
-  },
-];
-
 export const PropagationTree: React.FC<PropagationTreeProps> = ({
-  initialNodes = DEFAULT_NODES,
+  claimId,
+  claimSummary,
+  initialNodes,
   onAddLink,
 }) => {
-  const [nodes, setNodes] = useState<PropagationNode[]>(initialNodes);
+  // Generar nodos contextuales si no se pasan por props
+  const defaultNodesForClaim: PropagationNode[] = initialNodes || [
+    {
+      id: `node-${claimId}-1`,
+      stage: 'mutation_factory',
+      actor_name: 'Nodo Emisor de la Noticia',
+      actor_type: 'media',
+      timestamp: new Date().toISOString(),
+      title_or_post: claimSummary || 'Contenido detectado en auditoría',
+      url: '#',
+      mutation_type: '⚠️ Publicación sin verificación de fuentes primarias',
+      reach_estimate: '~Alcance inicial en redes',
+      notes: 'Origen reportado y registrado en la sala de ciberdefensa.',
+      parent_id: null,
+    },
+  ];
+
+  const [nodes, setNodes] = useState<PropagationNode[]>(defaultNodesForClaim);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<'tree' | 'timeline'>('tree');
 
-  // Separar nodos por niveles de linaje para el diagrama de árbol
-  const level0 = nodes.filter((n) => n.stage === 'origin_source');
-  const level1 = nodes.filter((n) => n.stage === 'mutation_factory');
-  const level2 = nodes.filter((n) => n.stage === 'amplifier_node');
-  const level3 = nodes.filter((n) => n.stage === 'viral_impact');
-
-  // Estado del formulario
+  // Form state
   const [newActor, setNewActor] = useState<string>('');
   const [newStage, setNewStage] = useState<NodeStage>('amplifier_node');
   const [newTitle, setNewTitle] = useState<string>('');
@@ -175,7 +112,7 @@ export const PropagationTree: React.FC<PropagationTreeProps> = ({
       title_or_post: newTitle.trim(),
       url: newUrl.trim() || '#',
       mutation_type: newMutation.trim() || undefined,
-      notes: newNotes.trim() || 'Aportado por la comunidad en la auditoría forense.',
+      notes: newNotes.trim() || 'Aportado por la comunidad en la auditoría.',
       parent_id: nodes[nodes.length - 1]?.id || null,
     };
 
@@ -188,221 +125,249 @@ export const PropagationTree: React.FC<PropagationTreeProps> = ({
     setNewNotes('');
   };
 
-  const renderNodeCard = (node: PropagationNode) => {
-    const meta = getStageMeta(node.stage);
-
-    return (
-      <div
-        key={node.id}
-        className={`rounded-xl border ${meta.cardBorder} bg-slate-950/80 p-4 md:p-5 backdrop-blur-md transition-all ${meta.glowColor} text-left flex flex-col justify-between`}
-      >
-        <div>
-          {/* Header de la tarjeta */}
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-            <span className={`inline-flex items-center gap-1.5 font-mono text-[10.5px] font-bold px-2 py-0.5 rounded border ${meta.badgeColor}`}>
-              <span>{meta.icon}</span> {meta.label}
-            </span>
-            <span className="font-mono text-[11px] text-slate-500">
-              {new Date(node.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {new Date(node.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-            </span>
-          </div>
-
-          {/* Actor & Titular */}
-          <div className="font-mono text-xs text-slate-400 mb-1">
-            Actor: <strong className="text-slate-100">{node.actor_name}</strong>
-          </div>
-          <h4 className="text-sm font-bold text-slate-200 leading-snug mb-2.5">
-            “{node.title_or_post}”
-          </h4>
-
-          {/* Mutación */}
-          {node.mutation_type && (
-            <div className="mb-2.5">
-              <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-950/40 border border-amber-500/40 px-2 py-0.5 rounded inline-block">
-                {node.mutation_type}
-              </span>
-            </div>
-          )}
-
-          {/* Explicación forense */}
-          <p className="text-xs text-slate-400 bg-slate-900/90 border border-slate-800/80 rounded-lg p-2.5 leading-relaxed mb-3">
-            {node.notes}
-          </p>
-        </div>
-
-        {/* Footer */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-slate-800/80 font-mono text-[11px]">
-          {node.url && node.url !== '#' ? (
-            <a
-              href={node.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 underline font-semibold"
-            >
-              Ver fuente original ↗
-            </a>
-          ) : (
-            <span className="text-slate-600">Sin URL externa</span>
-          )}
-
-          {node.reach_estimate && (
-            <span className="text-slate-500">
-              Alcance: <strong className="text-slate-300">{node.reach_estimate}</strong>
-            </span>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 md:p-8 backdrop-blur-md shadow-2xl mt-8 font-sans text-[#f8fafc]">
+    <div style={{
+      background: 'var(--surface)',
+      border: '1px solid var(--border)',
+      borderRadius: '16px',
+      padding: '24px 28px',
+      marginTop: '24px',
+      boxShadow: 'var(--card-shadow)',
+      color: 'var(--text)',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
       {/* CABECERA */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800 mb-8">
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        flexWrap: 'wrap',
+        gap: '16px',
+        borderBottom: '1px solid var(--border-soft)',
+        paddingBottom: '18px',
+        marginBottom: '24px'
+      }}>
         <div>
-          <div className="inline-flex items-center gap-2 font-mono text-xs font-bold text-red-500 uppercase tracking-widest mb-1.5">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]" />
-            TRAZABILIDAD GENEALÓGICA FORENSE
+          <div className="mono" style={{
+            fontSize: '10.5px',
+            fontWeight: 700,
+            color: 'var(--accent)',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            marginBottom: '6px'
+          }}>
+            🌳 TRAZABILIDAD GENEALÓGICA FORENSE
           </div>
-          <h3 className="text-2xl font-extrabold text-white tracking-tight">
-            Esquema de Árbol de Propagación
+          <h3 className="serif" style={{
+            fontSize: '22px',
+            fontWeight: 600,
+            margin: '0 0 6px',
+            color: 'var(--text)'
+          }}>
+            Árbol de Linaje y Propagación
           </h3>
-          <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-            Estructura jerárquica de la desinformación: cómo muta desde el documento original hasta la fábrica de noticias y sus enjambres de difusión.
+          <p style={{
+            fontSize: '12.5px',
+            color: 'var(--text-soft)',
+            margin: 0,
+            maxWidth: '650px',
+            lineHeight: 1.5
+          }}>
+            Mapeo estructural de la desinformación: documenta la cadena de actores, desde la tergiversación inicial hasta las cuentas satélite que amplificaron el contenido.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Selector de Vista */}
-          <div className="flex rounded-lg bg-slate-950 p-1 border border-slate-800 font-mono text-xs">
-            <button
-              onClick={() => setViewMode('tree')}
-              className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
-                viewMode === 'tree'
-                  ? 'bg-blue-600/30 text-blue-400 border border-blue-500/50 font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              🌳 ÁRBOL JERÁRQUICO
-            </button>
-            <button
-              onClick={() => setViewMode('timeline')}
-              className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
-                viewMode === 'timeline'
-                  ? 'bg-blue-600/30 text-blue-400 border border-blue-500/50 font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              ⏱️ LÍNEA TEMPORAL
-            </button>
-          </div>
-
-          <button
-            onClick={() => (onAddLink ? onAddLink() : setShowAddModal(true))}
-            className="inline-flex items-center justify-center gap-2 font-mono text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-lg transition-colors shadow-lg shadow-blue-950/50 cursor-pointer"
-          >
-            <span>+</span> Añadir Eslabón
-          </button>
-        </div>
+        <button
+          onClick={() => (onAddLink ? onAddLink() : setShowAddModal(true))}
+          className="mono"
+          style={{
+            background: 'var(--accent)',
+            border: 'none',
+            color: '#ffffff',
+            fontSize: '11.5px',
+            fontWeight: 600,
+            padding: '8px 14px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <span>+</span> Añadir Eslabón al Linaje
+        </button>
       </div>
 
-      {/* VISTA 1: ESQUEMA DE ÁRBOL JERÁRQUICO */}
-      {viewMode === 'tree' ? (
-        <div className="space-y-6">
-          {/* NIVEL 0: FUENTE ORIGINAL */}
-          <div className="flex flex-col items-center">
-            <div className="w-full max-w-xl">
-              {level0.map(renderNodeCard)}
-            </div>
-            
-            {/* Conector Nivel 0 -> Nivel 1 */}
-            <div className="flex flex-col items-center my-2">
-              <div className="w-0.5 h-8 bg-gradient-to-b from-blue-500 to-red-500" />
-              <div className="font-mono text-[10px] text-red-400 bg-red-950/80 border border-red-500/40 px-2.5 py-0.5 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.3)]">
-                ⚠️ Tergiversación de fecha y cifras
-              </div>
-              <div className="w-0.5 h-8 bg-gradient-to-b from-red-500 to-red-500" />
-              <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-            </div>
-          </div>
+      {/* LISTA ESTRUCTURADA DE NODOS DEL LINAJE */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {nodes.map((node, idx) => {
+          const badge = getStageBadge(node.stage);
 
-          {/* NIVEL 1: LA FÁBRICA / MUTACIÓN */}
-          <div className="flex flex-col items-center">
-            <div className="w-full max-w-xl">
-              {level1.map(renderNodeCard)}
+          return (
+            <div
+              key={node.id}
+              style={{
+                position: 'relative',
+                background: 'var(--surface-2)',
+                border: '1px solid var(--border-soft)',
+                borderRadius: '12px',
+                padding: '16px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
+              }}
+            >
+              {/* Header de la tarjeta */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '8px'
+              }}>
+                <span className="mono" style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  background: badge.bg,
+                  border: `1px solid ${badge.border}`,
+                  color: badge.color,
+                  fontSize: '10.5px',
+                  fontWeight: 600
+                }}>
+                  <span>{badge.icon}</span> {badge.label}
+                </span>
+
+                <span className="mono" style={{ fontSize: '11px', color: 'var(--text-faint)' }}>
+                  Eslabón #{idx + 1} · {new Date(node.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                </span>
+              </div>
+
+              {/* Actor & Titular */}
+              <div>
+                <div className="mono" style={{ fontSize: '11.5px', color: 'var(--text-soft)', marginBottom: '3px' }}>
+                  Actor: <strong style={{ color: 'var(--text)' }}>{node.actor_name}</strong>
+                </div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', lineHeight: 1.4 }}>
+                  “{node.title_or_post}”
+                </div>
+              </div>
+
+              {/* Mutación */}
+              {node.mutation_type && (
+                <div>
+                  <span className="mono" style={{
+                    display: 'inline-block',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    background: 'rgba(245, 158, 11, 0.12)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    color: '#fbbf24',
+                    fontSize: '11px',
+                    fontWeight: 600
+                  }}>
+                    {node.mutation_type}
+                  </span>
+                </div>
+              )}
+
+              {/* Notas */}
+              {node.notes && (
+                <p style={{
+                  fontSize: '12px',
+                  color: 'var(--text-soft)',
+                  background: 'var(--surface-3)',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  margin: 0,
+                  lineHeight: 1.5
+                }}>
+                  {node.notes}
+                </p>
+              )}
+
+              {/* Footer */}
+              <div className="mono" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: '11px',
+                borderTop: '1px solid var(--border-soft)',
+                paddingTop: '8px',
+                marginTop: '4px'
+              }}>
+                {node.url && node.url !== '#' ? (
+                  <a
+                    href={node.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--accent)', textDecoration: 'underline' }}
+                  >
+                    Inspeccionar URL de prueba ↗
+                  </a>
+                ) : (
+                  <span style={{ color: 'var(--text-faint)' }}>Registro interno</span>
+                )}
+
+                {node.reach_estimate && (
+                  <span style={{ color: 'var(--text-faint)' }}>
+                    Alcance: <strong style={{ color: 'var(--text-soft)' }}>{node.reach_estimate}</strong>
+                  </span>
+                )}
+              </div>
             </div>
+          );
+        })}
+      </div>
 
-            {/* Conector Ramificado Nivel 1 -> Nivel 2 */}
-            <div className="w-full max-w-3xl flex flex-col items-center my-3">
-              <div className="w-0.5 h-6 bg-red-500" />
-              <div className="font-mono text-[10px] text-purple-400 bg-purple-950/80 border border-purple-500/40 px-3 py-0.5 rounded-full">
-                🔗 Ramificación en redes y canales satélite
-              </div>
-              <div className="w-full border-t-2 border-purple-500/60 mt-3 relative">
-                <div className="absolute left-1/4 -top-1 w-2 h-2 rounded-full bg-purple-500" />
-                <div className="absolute right-1/4 -top-1 w-2 h-2 rounded-full bg-purple-500" />
-              </div>
-              <div className="w-full flex justify-around">
-                <div className="w-0.5 h-6 bg-purple-500" />
-                <div className="w-0.5 h-6 bg-purple-500" />
-              </div>
-            </div>
-          </div>
-
-          {/* NIVEL 2: NODOS SATÉLITE EN PARALELO */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {level2.map(renderNodeCard)}
-          </div>
-
-          {/* Conector Nivel 2 -> Nivel 3 */}
-          {level3.length > 0 && (
-            <div className="flex flex-col items-center my-2">
-              <div className="w-full max-w-3xl border-t-2 border-amber-500/40 mb-3" />
-              <div className="w-0.5 h-6 bg-gradient-to-b from-purple-500 to-amber-500" />
-              <div className="font-mono text-[10px] text-amber-400 bg-amber-950/80 border border-amber-500/40 px-3 py-0.5 rounded-full mb-3">
-                👥 Dispersión masiva en el feed de los usuarios
-              </div>
-              <div className="w-full max-w-xl">
-                {level3.map(renderNodeCard)}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* VISTA 2: TIMELINE VERTICAL CLÁSICA */
-        <div className="relative pl-6 md:pl-8 space-y-6 before:absolute before:left-2.5 md:before:left-3.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-gradient-to-b before:from-blue-500 before:via-red-500 before:to-purple-500">
-          {nodes.map((node) => {
-            const meta = getStageMeta(node.stage);
-            return (
-              <div key={node.id} className="relative">
-                <div
-                  className={`absolute -left-[29px] md:-left-[37px] top-4 w-4 h-4 rounded-full border-2 border-slate-900 ${meta.dotColor || 'bg-blue-500'}`}
-                />
-                {renderNodeCard(node)}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* MODAL PARA AÑADIR NUEVO ESLABÓN */}
+      {/* MODAL */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-2 font-mono">
-              [ + Añadir Eslabón al Árbol Genealógico ]
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}>
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '16px',
+            padding: '24px',
+            maxWidth: '520px',
+            width: '100%',
+            boxShadow: 'var(--card-shadow)'
+          }}>
+            <h3 className="mono" style={{ fontSize: '15px', color: 'var(--text)', margin: '0 0 8px' }}>
+              [ + Añadir Eslabón al Linaje ]
             </h3>
-            <p className="text-xs text-slate-400 mb-6">
-              Registra un nuevo nodo de difusión (post de X, canal de Telegram o réplica en web) para expandir el árbol.
+            <p style={{ fontSize: '12px', color: 'var(--text-soft)', margin: '0 0 16px', lineHeight: 1.5 }}>
+              Registra una cuenta de X, canal de Telegram o réplica web que haya participado en la cadena de propagación.
             </p>
 
-            <form onSubmit={handleAddNode} className="space-y-4 font-mono text-xs">
+            <form onSubmit={handleAddNode} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label className="block text-slate-400 mb-1.5">Nivel / Rol en la Cadena:</label>
+                <label className="mono" style={{ fontSize: '11px', color: 'var(--text-soft)', display: 'block', marginBottom: '4px' }}>
+                  Nivel / Rol en la Cadena:
+                </label>
                 <select
                   value={newStage}
                   onChange={(e) => setNewStage(e.target.value as NodeStage)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500"
+                  style={{
+                    width: '100%',
+                    background: 'var(--surface-2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    padding: '8px 10px',
+                    color: 'var(--text)',
+                    fontSize: '12px'
+                  }}
                 >
                   <option value="origin_source">Nivel 0: Fuente de referencia citada</option>
                   <option value="mutation_factory">Nivel 1: Fábrica / Mutación de la noticia</option>
@@ -412,73 +377,119 @@ export const PropagationTree: React.FC<PropagationTreeProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1.5">Nombre del Actor / Cuenta:</label>
+                <label className="mono" style={{ fontSize: '11px', color: 'var(--text-soft)', display: 'block', marginBottom: '4px' }}>
+                  Nombre del Actor / Cuenta:
+                </label>
                 <input
                   type="text"
-                  placeholder="ej. @Liberaldig o Canal Alertas"
+                  placeholder="ej. @Okdiario, @Liberaldig, Canal Alertas..."
                   value={newActor}
                   onChange={(e) => setNewActor(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500"
+                  style={{
+                    width: '100%',
+                    background: 'var(--surface-2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    padding: '8px 10px',
+                    color: 'var(--text)',
+                    fontSize: '12px'
+                  }}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1.5">Titular o Texto del Post:</label>
+                <label className="mono" style={{ fontSize: '11px', color: 'var(--text-soft)', display: 'block', marginBottom: '4px' }}>
+                  Titular o Texto del Post:
+                </label>
                 <input
                   type="text"
-                  placeholder="Texto literal difundido por este nodo..."
+                  placeholder="Texto literal difundido..."
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500"
+                  style={{
+                    width: '100%',
+                    background: 'var(--surface-2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    padding: '8px 10px',
+                    color: 'var(--text)',
+                    fontSize: '12px'
+                  }}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1.5">URL de la Prueba / Post:</label>
+                <label className="mono" style={{ fontSize: '11px', color: 'var(--text-soft)', display: 'block', marginBottom: '4px' }}>
+                  URL de la Prueba:
+                </label>
                 <input
                   type="url"
-                  placeholder="https://x.com/... o https://t.me/..."
+                  placeholder="https://x.com/... o https://..."
                   value={newUrl}
                   onChange={(e) => setNewUrl(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500"
+                  style={{
+                    width: '100%',
+                    background: 'var(--surface-2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    padding: '8px 10px',
+                    color: 'var(--text)',
+                    fontSize: '12px'
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1.5">Tipo de Mutación / Tergiversación (Opcional):</label>
+                <label className="mono" style={{ fontSize: '11px', color: 'var(--text-soft)', display: 'block', marginBottom: '4px' }}>
+                  Tipo de Mutación (Opcional):
+                </label>
                 <input
                   type="text"
-                  placeholder="ej. Reciclaje de fecha de encuesta, Cifra inflada..."
+                  placeholder="ej. Vídeo descontextualizado, Reciclaje de fecha..."
                   value={newMutation}
                   onChange={(e) => setNewMutation(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500"
+                  style={{
+                    width: '100%',
+                    background: 'var(--surface-2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    padding: '8px 10px',
+                    color: 'var(--text)',
+                    fontSize: '12px'
+                  }}
                 />
               </div>
 
-              <div>
-                <label className="block text-slate-400 mb-1.5">Notas Forenses / Razonamiento:</label>
-                <textarea
-                  placeholder="Explica cómo conecta este nodo con el eslabón anterior..."
-                  value={newNotes}
-                  onChange={(e) => setNewNotes(e.target.value)}
-                  rows={3}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="bg-transparent border border-slate-700 text-slate-400 px-4 py-2 rounded-lg hover:text-white"
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-soft)',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-lg"
+                  style={{
+                    background: 'var(--accent)',
+                    border: 'none',
+                    color: '#ffffff',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
                 >
                   Guardar Eslabón
                 </button>

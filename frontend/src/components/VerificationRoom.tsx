@@ -125,6 +125,7 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
   const [showDecomposeModal, setShowDecomposeModal] = useState(false);
   const [showRebuttalModal, setShowRebuttalModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [roomTab, setRoomTab] = useState<'verification' | 'tree'>('verification');
 
   // Modal de confirmación de retractación
   const [retractTarget, setRetractTarget] = useState<{
@@ -746,31 +747,86 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
         </div>
       )}
 
-      {/* Sección Afirmaciones */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '32px 0 14px', flexWrap: 'wrap' }}>
-        <span className="eyebrow">{t('verification.assertions_title')}</span>
-        <small style={{ fontSize: '12px', color: 'var(--text-faint)' }}>{t('verification.assertions_subtitle')}</small>
-        <span style={{ height: '1px', background: 'var(--border)', flex: 1, minWidth: '20px' }} />
+      {/* Pestañas de Navegación de la Sala */}
+      <div style={{
+        display: 'flex',
+        gap: '12px',
+        borderBottom: '1px solid var(--border-soft)',
+        marginTop: '28px',
+        marginBottom: '22px'
+      }}>
         <button
-          onClick={() => setShowDecomposeModal(true)}
+          onClick={() => setRoomTab('verification')}
           className="mono"
           style={{
-            background: 'var(--surface-2)',
-            border: '1px solid var(--border)',
-            color: 'var(--accent)',
-            fontSize: '11px',
-            padding: '7px 12px',
-            borderRadius: '6px',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: roomTab === 'verification' ? '2px solid var(--accent)' : '2px solid transparent',
+            color: roomTab === 'verification' ? 'var(--text)' : 'var(--text-soft)',
+            fontWeight: roomTab === 'verification' ? 700 : 500,
+            fontSize: '12.5px',
+            padding: '8px 14px 12px',
             cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.15s ease'
           }}
         >
-          {t('verification.decompose_button')}
+          <span>🔬</span> DESCOMPOSICIÓN Y EVIDENCIAS ({assertions.length})
+        </button>
+
+        <button
+          onClick={() => setRoomTab('tree')}
+          className="mono"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            borderBottom: roomTab === 'tree' ? '2px solid var(--accent)' : '2px solid transparent',
+            color: roomTab === 'tree' ? 'var(--text)' : 'var(--text-soft)',
+            fontWeight: roomTab === 'tree' ? 700 : 500,
+            fontSize: '12.5px',
+            padding: '8px 14px 12px',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.15s ease'
+          }}
+        >
+          <span>🌳</span> LINAJE Y ÁRBOL DE PROPAGACIÓN
         </button>
       </div>
 
-      {assertions.map((a, idx) => {
+      {roomTab === 'tree' ? (
+        <PropagationTree claimId={claim.id} claimSummary={claim.summary} />
+      ) : (
+        <>
+          {/* Sección Afirmaciones */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '14px 0 14px', flexWrap: 'wrap' }}>
+            <span className="eyebrow">{t('verification.assertions_title')}</span>
+            <small style={{ fontSize: '12px', color: 'var(--text-faint)' }}>{t('verification.assertions_subtitle')}</small>
+            <span style={{ height: '1px', background: 'var(--border)', flex: 1, minWidth: '20px' }} />
+            <button
+              onClick={() => setShowDecomposeModal(true)}
+              className="mono"
+              style={{
+                background: 'var(--surface-2)',
+                border: '1px solid var(--border)',
+                color: 'var(--accent)',
+                fontSize: '11px',
+                padding: '7px 12px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+            >
+              {t('verification.decompose_button')}
+            </button>
+          </div>
+
+          {assertions.map((a, idx) => {
         const isAssertionRetracted = !!a.retracted_at;
         const derivedStatus = isAssertionRetracted ? 'unverified' : a.status || deriveAssertionStatus(a);
         const sm = STATUS_META[derivedStatus] || STATUS_META.unverified;
@@ -1116,9 +1172,8 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
           {t('verification.try_it_body')}
         </p>
       </div>
-
-      {/* Árbol de Linaje y Propagación Genealógica */}
-      <PropagationTree claimId={claim.id} />
+      </>
+      )}
 
       {addEvidenceTarget && (
         <AddEvidenceModal
