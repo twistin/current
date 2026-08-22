@@ -14,9 +14,10 @@ import { ClaimCard } from './components/ClaimCard';
 import { VerificationRoom } from './components/VerificationRoom';
 import { MemberProfile } from './components/MemberProfile';
 import { ReportClaimModal } from './components/ReportClaimModal';
+import { useNavigate } from 'react-router-dom';
 import { ManifestoLanding } from './components/ManifestoLanding';
 import { ManifestoPage } from './components/ManifestoPage';
-import { ToxicityRadar } from './components/ToxicityRadar';
+import { RadarDashboard } from './components/RadarDashboard';
 import { ActorDossier } from './components/ActorDossier';
 import { useTheme } from './theme';
 
@@ -159,6 +160,8 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     clearSession();
     setPseudonym(null);
@@ -167,24 +170,20 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleSelectClaim = (id: string, pushHistory = true) => {
+  const handleSelectClaim = (id: string) => {
     setSelectedMemberId(null);
     setSelectedActorId(null);
     setSelectedClaimId(id);
     loadClaimDetail(id);
-    if (pushHistory) {
-      window.history.pushState(null, '', `/claims/${id}`);
-    }
+    navigate(`/claims/${id}`);
   };
 
-  const handleSelectActor = (actorId: string, pushHistory = true) => {
+  const handleSelectActor = (actorId: string) => {
     setSelectedMemberId(null);
     setSelectedClaimId(null);
     setClaimDetail(null);
     setSelectedActorId(actorId);
-    if (pushHistory) {
-      window.history.pushState(null, '', `/actor/${actorId}`);
-    }
+    navigate(`/actor/${actorId}`);
   };
 
   const refreshCurrentRoom = () => {
@@ -193,33 +192,29 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleNavigate = (view: AppView, pushHistory = true) => {
+  const handleNavigate = (view: AppView) => {
     setSelectedMemberId(null);
     setSelectedClaimId(null);
     setSelectedActorId(null);
     setClaimDetail(null);
     setCurrentView(view);
-    if (pushHistory) {
-      if (view === 'manifesto') {
-        window.history.pushState(null, '', '/manifesto');
-      } else if (view === 'radar') {
-        window.history.pushState(null, '', '/radar');
-      } else if (view === 'queue') {
-        window.history.pushState(null, '', '/queue');
-      } else {
-        window.history.pushState(null, '', '/');
-      }
+    if (view === 'manifesto') {
+      navigate('/manifesto');
+    } else if (view === 'radar') {
+      navigate('/radar');
+    } else if (view === 'queue') {
+      navigate('/queue');
+    } else {
+      navigate('/');
     }
   };
 
-  const handleSelectMember = (identifier: string, pushHistory = true) => {
+  const handleSelectMember = (identifier: string) => {
     setSelectedClaimId(null);
     setSelectedActorId(null);
     setClaimDetail(null);
     setSelectedMemberId(identifier);
-    if (pushHistory) {
-      window.history.pushState(null, '', `/members/${encodeURIComponent(identifier)}`);
-    }
+    navigate(`/members/${encodeURIComponent(identifier)}`);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -262,13 +257,12 @@ export const App: React.FC = () => {
           <ActorDossier
             actorId={selectedActorId}
             onBack={() => handleNavigate('radar')}
-            onSelectClaim={(claimId) => handleSelectClaim(claimId)}
           />
         )}
 
-        {/* VISTA G: Radar Táctico de Toxicidad y Actores */}
+        {/* VISTA G: Radar Táctico de Actores y Vectores */}
         {!selectedActorId && !selectedMemberId && !selectedClaimId && currentView === 'radar' && (
-          <ToxicityRadar onSelectActor={(actorId) => handleSelectActor(actorId)} />
+          <RadarDashboard onSelectActor={(actorId) => handleSelectActor(actorId)} />
         )}
 
         {/* VISTA E: Perfil Seudónimo de Miembro */}

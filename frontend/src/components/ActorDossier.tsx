@@ -1,19 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { Actor, ReputationMeter, getActorMeta } from './ToxicityRadar';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getThreatLevel } from './RadarDashboard';
 import { ThreatGraph } from './ThreatGraph';
 
-export interface DisinformationTrace {
+export interface ForensicTrace {
   id: string;
-  claim_id: string;
-  title: string;
+  claim_title: string;
+  forensic_summary: string;
   detected_at: string;
   platform: string;
-  origin_url: string;
-  impact_level: 'critical' | 'high' | 'medium';
+  source_url: string;
   verdict: 'false' | 'misleading' | 'unproven';
-  penalty_applied: number;
-  evidence_count: number;
-  summary: string;
+  penalty_score: number;
+  verified_by_nodes: number;
 }
 
 export interface LinkedNode {
@@ -24,558 +23,285 @@ export interface LinkedNode {
   linked_at: string;
 }
 
-export interface ActorDetail extends Actor {
+export interface ActorDetailData {
+  id: string;
+  name: string;
+  actor_type: 'media' | 'social_account' | 'telegram_channel';
+  reputation_score: number;
   first_seen_at: string;
-  total_traces: number;
-  coordinated_campaigns: number;
+  last_updated_at: string;
   network_reach_estimate: string;
+  coordinated_campaigns: number;
   linked_nodes: LinkedNode[];
-  traces: DisinformationTrace[];
+  traces: ForensicTrace[];
 }
+
+export type ActorDetail = ActorDetailData;
 
 interface ActorDossierProps {
-  actorId: string;
+  actorId?: string;
   onBack?: () => void;
-  onSelectClaim?: (claimId: string) => void;
 }
 
-export const ActorDossier: React.FC<ActorDossierProps> = ({ actorId, onBack, onSelectClaim }) => {
-  const [dossier, setDossier] = useState<ActorDetail | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'traces' | 'nodes'>('traces');
+const MOCK_DOSSIERS: Record<string, ActorDetailData> = {
+  'actor-okdiario': {
+    id: 'actor-okdiario',
+    name: '@Okdiario',
+    actor_type: 'media',
+    reputation_score: 34.5,
+    first_seen_at: '2025-11-03T08:22:14Z',
+    last_updated_at: '2026-08-22T10:00:00Z',
+    network_reach_estimate: '~480.000 impresiones/bulo',
+    coordinated_campaigns: 5,
+    linked_nodes: [
+      { id: 'node-1', platform: 'Telegram', handle_or_url: 't.me/okdiario_alertas', confidence: 96, linked_at: '2026-02-10T14:12:00Z' },
+      { id: 'node-2', platform: 'X (Twitter)', handle_or_url: 'x.com/okdiario', confidence: 100, linked_at: '2026-01-15T10:00:00Z' },
+      { id: 'node-3', platform: 'Enjambre Bot', handle_or_url: 'Red de amplificación #401 (Lanzarote/Mareta)', confidence: 84, linked_at: '2026-08-16T18:40:00Z' },
+    ],
+    traces: [
+      {
+        id: 'trace-8841',
+        claim_title: 'Vídeo manipulado en zona de seguridad (Aeropuerto de Lanzarote)',
+        forensic_summary: 'Difusión de metraje recortado afirmando que un vehículo de apoyo logístico era un coche oficial de Presidencia sin matrícula reglamentaria con destino a La Mareta.',
+        detected_at: '2026-08-16T18:39:17Z',
+        platform: 'X (Twitter) & Portal Digital',
+        source_url: 'https://okdiario.com/espana/video-calleja-lanzarote',
+        verdict: 'false',
+        penalty_score: -15.0,
+        verified_by_nodes: 12,
+      },
+      {
+        id: 'trace-7720',
+        claim_title: 'Titular falso sobre ilegalización total del dinero en efectivo',
+        forensic_summary: 'Atribución inventada a la legislación bancaria asegurando la prohibición del uso de billetes a partir de septiembre sin respaldo en el BOE.',
+        detected_at: '2026-08-10T12:00:00Z',
+        platform: 'X & Canales de Amplificación',
+        source_url: 'https://x.com/post/viral-cash-prohibition',
+        verdict: 'false',
+        penalty_score: -10.0,
+        verified_by_nodes: 8,
+      },
+    ],
+  },
+  'actor-alvise': {
+    id: 'actor-alvise',
+    name: '@Alvise_Canal_Noticias',
+    actor_type: 'telegram_channel',
+    reputation_score: 22.0,
+    first_seen_at: '2025-09-12T10:00:00Z',
+    last_updated_at: '2026-08-22T11:00:00Z',
+    network_reach_estimate: '~720.000 vistas/mensaje',
+    coordinated_campaigns: 11,
+    linked_nodes: [
+      { id: 'node-a1', platform: 'Telegram', handle_or_url: 't.me/noticias_alvise', confidence: 99, linked_at: '2025-09-12T10:00:00Z' },
+      { id: 'node-a2', platform: 'X (Twitter)', handle_or_url: 'x.com/alvise_info', confidence: 92, linked_at: '2025-10-01T08:00:00Z' },
+      { id: 'node-a3', platform: 'Enjambre Bot', handle_or_url: 'Canales espejo #12-#18', confidence: 88, linked_at: '2026-03-01T12:00:00Z' },
+    ],
+    traces: [
+      {
+        id: 'trace-9001',
+        claim_title: 'Difusión de encuesta falsa atribuida a organismo oficial',
+        forensic_summary: 'Manipulación de porcentajes electorales sin ficha técnica verificable en el registro oficial.',
+        detected_at: '2026-08-20T11:15:00Z',
+        platform: 'Telegram',
+        source_url: 'https://t.me/noticias_alvise',
+        verdict: 'false',
+        penalty_score: -18.0,
+        verified_by_nodes: 15,
+      },
+    ],
+  },
+};
 
-  useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
-    setError(null);
+export const ActorDossier: React.FC<ActorDossierProps> = ({
+  actorId: propActorId,
+  onBack: propOnBack,
+}) => {
+  const params = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = React.useState<'traces' | 'graph'>('traces');
 
-    const timer = setTimeout(() => {
-      if (!isMounted) return;
+  const currentId = propActorId || params.id || 'actor-okdiario';
+  const actor = MOCK_DOSSIERS[currentId] || {
+    ...MOCK_DOSSIERS['actor-okdiario'],
+    id: currentId,
+    name: `@${currentId.replace('actor-', '')}`,
+  };
 
-      const mockDossier: ActorDetail = {
-        id: actorId,
-        name: actorId.includes('alvise') ? '@Alvise_Canal_Noticias' : '@Okdiario',
-        actor_type: actorId.includes('alvise') ? 'telegram_channel' : 'media',
-        reputation_score: actorId.includes('alvise') ? 22.0 : 34.5,
-        created_at: '2026-01-15T10:00:00Z',
-        updated_at: new Date().toISOString(),
-        first_seen_at: '2025-11-03T08:22:14Z',
-        total_traces: 14,
-        coordinated_campaigns: 5,
-        network_reach_estimate: '~480K impresiones/bulo',
-        linked_nodes: [
-          {
-            id: 'node-1',
-            platform: 'Telegram',
-            handle_or_url: 't.me/okdiario_alertas',
-            confidence: 96,
-            linked_at: '2026-02-10T14:12:00Z',
-          },
-          {
-            id: 'node-2',
-            platform: 'X (Twitter)',
-            handle_or_url: 'x.com/okdiario',
-            confidence: 100,
-            linked_at: '2026-01-15T10:00:00Z',
-          },
-          {
-            id: 'node-3',
-            platform: 'Enjambre Bot',
-            handle_or_url: 'Red de amplificación #401 (Lanzarote/Mareta)',
-            confidence: 84,
-            linked_at: '2026-08-16T18:40:00Z',
-          },
-        ],
-        traces: [
-          {
-            id: 'trace-1',
-            claim_id: '77639856-7615-4c5b-b138-dd03a700fe48',
-            title: 'Vídeo descontextualizado en aeropuerto de Lanzarote (Caso Jesús Calleja)',
-            summary:
-              'Difusión de imágenes en zona de vehículos autorizados afirmando falsamente que se trataba de un coche oficial de Presidencia con chófer rumbo a La Mareta sin matrícula oficial ni documentación.',
-            detected_at: '2026-08-16T18:39:17Z',
-            platform: 'X & Web Digital',
-            origin_url: 'https://okdiario.com/espana/video-calleja-lanzarote',
-            impact_level: 'critical',
-            verdict: 'false',
-            penalty_applied: -15.0,
-            evidence_count: 3,
-          },
-          {
-            id: 'trace-2',
-            claim_id: 'claim-sample-2',
-            title: 'Atribución falsa de prohibición de dinero en efectivo en comercios',
-            summary:
-              'Titular sensacionalista que aseguraba la ilegalización total del dinero físico en septiembre mediante un supuesto decreto inexistente.',
-            detected_at: '2026-08-10T12:00:00Z',
-            platform: 'X (Twitter)',
-            origin_url: 'https://x.com/post/viral-cash-prohibition',
-            impact_level: 'high',
-            verdict: 'false',
-            penalty_applied: -10.0,
-            evidence_count: 2,
-          },
-        ],
-      };
+  const threat = getThreatLevel(actor.reputation_score);
+  const isCritical = threat === 'CRÍTICO';
 
-      setDossier(mockDossier);
-      setLoading(false);
-    }, 300);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(timer);
-    };
-  }, [actorId]);
-
-  if (loading) {
-    return (
-      <div style={{ padding: '80px 0', textAlign: 'center', fontFamily: 'monospace', color: '#6b7280' }}>
-        [DESENCRIPTANDO EXPEDIENTE DE INTELIGENCIA: {actorId}...]
-      </div>
-    );
-  }
-
-  if (error || !dossier) {
-    return (
-      <div style={{ padding: '40px 16px', maxWidth: '1280px', margin: '0 auto', color: '#f3f4f6' }}>
-        {onBack && (
-          <button
-            onClick={onBack}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#60a5fa',
-              fontFamily: 'monospace',
-              fontSize: '12px',
-              cursor: 'pointer',
-              marginBottom: '16px',
-            }}
-          >
-            ← Volver al Radar
-          </button>
-        )}
-        <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', padding: '24px', borderRadius: '12px' }}>
-          ⚠️ {error || 'No se encontró el expediente solicitado.'}
-        </div>
-      </div>
-    );
-  }
-
-  const meta = getActorMeta(dossier.actor_type);
+  const handleBack = () => {
+    if (propOnBack) {
+      propOnBack();
+    } else {
+      navigate('/radar');
+    }
+  };
 
   return (
-    <div
-      style={{
-        width: '100%',
-        maxWidth: '1360px',
-        margin: '0 auto',
-        padding: '24px 16px 80px',
-        color: '#f3f4f6',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 bg-[#0f172a] text-[#f8fafc] font-sans antialiased min-h-screen">
+      <div className="flex items-center justify-between pb-6 mb-8 border-b border-slate-800">
         <button
-          onClick={onBack || (() => window.history.back())}
-          style={{
-            background: 'rgba(255, 255, 255, 0.04)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            color: '#9ca3af',
-            fontFamily: 'monospace',
-            fontSize: '12px',
-            padding: '8px 14px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
+          onClick={handleBack}
+          className="inline-flex items-center gap-2 font-mono text-xs text-slate-400 hover:text-white bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-lg transition-colors"
         >
-          ← RADAR DE TOXICIDAD
+          ← VOLVER AL RADAR
         </button>
 
-        <div style={{ fontFamily: 'monospace', fontSize: '11px', color: '#6b7280' }}>
-          EXPEDIENTE: <span style={{ color: '#ef4444', fontWeight: 700 }}>AUDITADO</span>
+        <div className="font-mono text-xs text-slate-400">
+          ESTADO DEL EXPEDIENTE: <span className="text-red-400 font-bold">BAJO AUDITORÍA</span>
         </div>
       </div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(300px, 360px) 1fr',
-          gap: '24px',
-          alignItems: 'start',
-        }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div
-            style={{
-              background: 'rgba(17, 24, 39, 0.9)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '16px',
-              padding: '24px',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <span
-                style={{
-                  fontFamily: 'monospace',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  padding: '4px 10px',
-                  borderRadius: '4px',
-                  background: meta.badgeBg,
-                  color: meta.badgeColor,
-                  border: `1px solid ${meta.border}`,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-              >
-                <span>{meta.icon}</span> {meta.label}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <div className="lg:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/80 p-6 md:p-8 backdrop-blur-md shadow-2xl relative overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <span className="font-mono text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/30 px-3 py-1 rounded-md">
+              {actor.actor_type === 'media' ? 'MEDIO DIGITAL AUDITADO' : 'CANAL SOCIAL AUDITADO'}
+            </span>
+            <span className="font-mono text-xs text-slate-500">
+              Primera traza: {new Date(actor.first_seen_at).toLocaleDateString()}
+            </span>
+          </div>
+
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2">
+            {actor.name}
+          </h1>
+          <div className="font-mono text-xs text-slate-500 mb-6">
+            ID CIBERDEFENSA: {actor.id}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-slate-800 font-mono">
+            <div>
+              <div className="text-xs text-slate-500 uppercase">Trazas Registradas</div>
+              <div className="text-2xl font-bold text-slate-100 mt-1">{actor.traces.length}</div>
+            </div>
+            <div>
+              <div className="text-xs text-slate-500 uppercase">Campañas Coord.</div>
+              <div className="text-2xl font-bold text-red-400 mt-1">{actor.coordinated_campaigns}</div>
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <div className="text-xs text-slate-500 uppercase">Alcance Estimado</div>
+              <div className="text-sm font-semibold text-slate-300 mt-2">{actor.network_reach_estimate}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 md:p-8 backdrop-blur-md flex flex-col justify-between shadow-2xl">
+          <div>
+            <div className="font-mono text-xs text-slate-400 uppercase tracking-wider mb-2">
+              Índice de Confianza Histórico
+            </div>
+            <div className="flex items-baseline gap-2 font-mono">
+              <span className={`text-5xl font-extrabold ${isCritical ? 'text-red-500' : 'text-amber-500'}`}>
+                {actor.reputation_score.toFixed(1)}
               </span>
+              <span className="text-slate-500 text-sm font-semibold">/ 100.0</span>
             </div>
 
-            <h1
-              style={{
-                fontSize: '24px',
-                fontWeight: 800,
-                color: '#ffffff',
-                margin: '0 0 6px',
-                letterSpacing: '-0.02em',
-                wordBreak: 'break-word',
-              }}
-            >
-              {dossier.name}
-            </h1>
-            <div style={{ fontFamily: 'monospace', fontSize: '11px', color: '#6b7280', marginBottom: '24px' }}>
-              ID: {dossier.id}
-            </div>
-
-            <div
-              style={{
-                background: 'rgba(0, 0, 0, 0.35)',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                borderRadius: '12px',
-                padding: '16px',
-                marginBottom: '20px',
-              }}
-            >
-              <div style={{ fontFamily: 'monospace', fontSize: '10px', color: '#9ca3af', marginBottom: '8px' }}>
-                ÍNDICE DE CONFIANZA HISTÓRICO
-              </div>
-              <ReputationMeter score={dossier.reputation_score} />
-            </div>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '12px',
-                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-                paddingTop: '16px',
-              }}
-            >
-              <div>
-                <div style={{ fontFamily: 'monospace', fontSize: '10px', color: '#6b7280' }}>TRAZAS TOTALES</div>
-                <div style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 700, color: '#f3f4f6', marginTop: '2px' }}>
-                  {dossier.total_traces}
-                </div>
-              </div>
-              <div>
-                <div style={{ fontFamily: 'monospace', fontSize: '10px', color: '#6b7280' }}>CAMPAÑAS COORD.</div>
-                <div style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 700, color: '#ef4444', marginTop: '2px' }}>
-                  {dossier.coordinated_campaigns}
-                </div>
-              </div>
-              <div style={{ gridColumn: 'span 2' }}>
-                <div style={{ fontFamily: 'monospace', fontSize: '10px', color: '#6b7280' }}>ALCANCE ESTIMADO</div>
-                <div style={{ fontFamily: 'monospace', fontSize: '12.5px', color: '#9ca3af', marginTop: '2px' }}>
-                  {dossier.network_reach_estimate}
-                </div>
-              </div>
+            <div className="mt-4 h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+              <div
+                style={{ width: `${actor.reputation_score}%` }}
+                className={`h-full ${isCritical ? 'bg-red-500 shadow-[0_0_12px_#ef4444]' : 'bg-amber-500'}`}
+              />
             </div>
           </div>
 
-          <div
-            style={{
-              background: 'rgba(17, 24, 39, 0.9)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '16px',
-              padding: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-            }}
-          >
-            <div
-              style={{
-                fontFamily: 'monospace',
-                fontSize: '10.5px',
-                fontWeight: 700,
-                color: '#60a5fa',
-                letterSpacing: '0.08em',
-                marginBottom: '4px',
-              }}
-            >
-              [ ACCIONES DE CIBERDEFENSA ]
-            </div>
-
+          <div className="flex flex-col gap-2.5 mt-6 font-mono text-xs">
             <button
-              onClick={() => alert(`Aportar traza contra ${dossier.name}`)}
-              style={{
-                background: '#3b82f6',
-                color: '#ffffff',
-                border: 'none',
-                fontFamily: 'monospace',
-                fontSize: '12px',
-                fontWeight: 700,
-                padding: '10px 14px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
+              onClick={() => alert(`Aportar prueba forense para ${actor.name}`)}
+              className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-red-950/50"
             >
-              <span>+</span> Aportar Traza de Desinformación
+              <span>+</span> Aportar Traza Forense
             </button>
-
             <button
-              onClick={() => alert(`Vincular nuevo nodo a ${dossier.name}`)}
-              style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: '#e5e7eb',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                fontFamily: 'monospace',
-                fontSize: '12px',
-                fontWeight: 600,
-                padding: '10px 14px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
+              onClick={() => alert(`Vincular nodo a ${actor.name}`)}
+              className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 px-4 rounded-lg border border-slate-700 transition-colors flex items-center justify-center gap-2"
             >
-              <span>🔗</span> Vincular Nodo (Ej. Telegram)
-            </button>
-
-            <button
-              onClick={() => alert(`Reportar patrón coordinado para ${dossier.name}`)}
-              style={{
-                background: 'rgba(239, 68, 68, 0.15)',
-                color: '#fca5a5',
-                border: '1px solid rgba(239, 68, 68, 0.4)',
-                fontFamily: 'monospace',
-                fontSize: '12px',
-                fontWeight: 600,
-                padding: '10px 14px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                textAlign: 'left',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-              }}
-            >
-              <span>⚠️</span> Reportar Patrón Coordinado
+              <span>🔗</span> Vincular Nodo (Telegram / Bot)
             </button>
           </div>
         </div>
+      </section>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div
-            style={{
-              display: 'flex',
-              gap: '8px',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-              paddingBottom: '12px',
-            }}
-          >
-            <button
-              onClick={() => setActiveTab('traces')}
-              style={{
-                background: activeTab === 'traces' ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
-                border: activeTab === 'traces' ? '1px solid #3b82f6' : '1px solid transparent',
-                color: activeTab === 'traces' ? '#60a5fa' : '#9ca3af',
-                fontFamily: 'monospace',
-                fontSize: '12px',
-                fontWeight: 600,
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-              }}
-            >
-              LÍNEA DE TIEMPO / TRAZAS ({dossier.traces.length})
-            </button>
+      {/* PESTAÑAS DE CONTENIDO */}
+      <div className="flex items-center gap-3 border-b border-slate-800 mb-6 font-mono text-xs">
+        <button
+          onClick={() => setActiveTab('traces')}
+          className={`pb-3 font-bold transition-all border-b-2 ${
+            activeTab === 'traces'
+              ? 'border-red-500 text-red-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          REGISTRO DE TRAZAS ({actor.traces.length})
+        </button>
 
-            <button
-              onClick={() => setActiveTab('nodes')}
-              style={{
-                background: activeTab === 'nodes' ? 'rgba(168, 85, 247, 0.2)' : 'transparent',
-                border: activeTab === 'nodes' ? '1px solid #c084fc' : '1px solid transparent',
-                color: activeTab === 'nodes' ? '#c084fc' : '#9ca3af',
-                fontFamily: 'monospace',
-                fontSize: '12px',
-                fontWeight: 600,
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-              }}
-            >
-              MAPA DE ENJAMBRES ({dossier.linked_nodes.length})
-            </button>
-          </div>
-
-          {activeTab === 'traces' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {dossier.traces.map((trace) => (
-                <div
-                  key={trace.id}
-                  style={{
-                    background: 'rgba(17, 24, 39, 0.85)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '14px',
-                    padding: '20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span
-                        style={{
-                          fontFamily: 'monospace',
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          background: 'rgba(239, 68, 68, 0.2)',
-                          color: '#f87171',
-                          border: '1px solid rgba(239, 68, 68, 0.3)',
-                        }}
-                      >
-                        VEREDICTO: {trace.verdict.toUpperCase()}
-                      </span>
-                      <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#6b7280' }}>
-                        {new Date(trace.detected_at).toLocaleDateString()} · {trace.platform}
-                      </span>
-                    </div>
-
-                    <span
-                      style={{
-                        fontFamily: 'monospace',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        color: '#ef4444',
-                        background: 'rgba(239, 68, 68, 0.1)',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                      }}
-                    >
-                      {trace.penalty_applied} PTS
-                    </span>
-                  </div>
-
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1.4 }}>
-                    {trace.title}
-                  </h3>
-
-                  <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0, lineHeight: 1.55 }}>
-                    {trace.summary}
-                  </p>
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-                      paddingTop: '12px',
-                      marginTop: '4px',
-                    }}
-                  >
-                    <a
-                      href={trace.origin_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        fontFamily: 'monospace',
-                        fontSize: '11px',
-                        color: '#60a5fa',
-                        textDecoration: 'underline',
-                      }}
-                    >
-                      Fuente origen registrada ↗
-                    </a>
-
-                    {onSelectClaim && (
-                      <button
-                        onClick={() => onSelectClaim(trace.claim_id)}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#10b981',
-                          fontFamily: 'monospace',
-                          fontSize: '11px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Ver Sala de Verificación →
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {activeTab === 'nodes' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <ThreatGraph actor={dossier} height={400} />
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {dossier.linked_nodes.map((node) => (
-                  <div
-                    key={node.id}
-                    style={{
-                      background: 'rgba(17, 24, 39, 0.85)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      borderRadius: '12px',
-                      padding: '16px 20px',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontFamily: 'monospace', fontSize: '11px', color: '#c084fc', fontWeight: 700 }}>
-                        {node.platform}
-                      </div>
-                      <div style={{ fontSize: '14px', color: '#ffffff', fontWeight: 600, marginTop: '2px' }}>
-                        {node.handle_or_url}
-                      </div>
-                    </div>
-
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontFamily: 'monospace', fontSize: '10px', color: '#6b7280' }}>CONFIANZA VÍNCULO</div>
-                      <div style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: 700, color: '#10b981' }}>
-                        {node.confidence}%
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        <button
+          onClick={() => setActiveTab('graph')}
+          className={`pb-3 font-bold transition-all border-b-2 ${
+            activeTab === 'graph'
+              ? 'border-purple-500 text-purple-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          MAPA DE ENJAMBRES ({actor.linked_nodes.length})
+        </button>
       </div>
+
+      {activeTab === 'traces' ? (
+        <section className="flex flex-col gap-4">
+          {actor.traces.map((trace) => (
+            <article
+              key={trace.id}
+              className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-sm hover:border-slate-700 transition-all"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-[11px] font-bold px-2.5 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/40 uppercase">
+                    VEREDICTO: {trace.verdict === 'false' ? 'FALSO / FABRICADO' : 'ENGAÑOSO'}
+                  </span>
+                  <span className="font-mono text-xs text-slate-500">
+                    {new Date(trace.detected_at).toLocaleDateString()} · {trace.platform}
+                  </span>
+                </div>
+
+                <span className="font-mono text-xs font-bold text-red-400 bg-red-950/40 border border-red-800/60 px-2.5 py-1 rounded">
+                  PENALIZACIÓN: {trace.penalty_score} PTS
+                </span>
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-100 mb-2 leading-snug">
+                {trace.claim_title}
+              </h3>
+
+              <p className="text-sm text-slate-400 mb-4 leading-relaxed">
+                {trace.forensic_summary}
+              </p>
+
+              <div className="flex flex-wrap items-center justify-between pt-4 border-t border-slate-800/80 font-mono text-xs">
+                <a
+                  href={trace.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 underline font-semibold"
+                >
+                  Inspeccionar URL de Origen ↗
+                </a>
+
+                <span className="text-slate-500">
+                  Auditado por <strong className="text-slate-300">{trace.verified_by_nodes}</strong> nodos verificadores
+                </span>
+              </div>
+            </article>
+          ))}
+        </section>
+      ) : (
+        <section className="flex flex-col gap-4">
+          <ThreatGraph actor={actor} height={420} />
+        </section>
+      )}
     </div>
   );
 };

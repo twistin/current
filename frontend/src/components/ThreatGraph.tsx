@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import { ActorDetail, LinkedNode } from './ActorDossier';
+import { LinkedNode } from './ActorDossier';
 
 export interface GraphNode {
   id: string;
@@ -21,7 +21,11 @@ export interface GraphParticle {
 }
 
 interface ThreatGraphProps {
-  actor: ActorDetail;
+  actor: {
+    id: string;
+    name: string;
+    linked_nodes: LinkedNode[];
+  };
   height?: number;
 }
 
