@@ -27,6 +27,7 @@ async fn init_database(pool: &PgPool) {
         ("0003_assertion", include_str!("../../../migrations/0003_assertion.sql")),
         ("0004_source_evidence", include_str!("../../../migrations/0004_source_evidence.sql")),
         ("0005_rebuttal_contribution", include_str!("../../../migrations/0005_rebuttal_contribution.sql")),
+        ("0006_actors_forensic_traces", include_str!("../../../migrations/0006_actors_forensic_traces.sql")),
     ];
 
     for (name, sql) in ddl_scripts {
