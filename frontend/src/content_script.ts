@@ -15,21 +15,39 @@ type RadarDictionary = Record<string, FlaggedActor>;
 
 let radarCache: RadarDictionary = {
   '@okdiario': {
-    id: 'actor-okdiario',
+    id: '22222222-2222-2222-2222-222222222222',
     handle: '@Okdiario',
     reputation: 34.5,
     threatLevel: 'CRÍTICO',
   },
   '@alvise_canal_noticias': {
-    id: 'actor-alvise',
+    id: '33333333-3333-3333-3333-333333333333',
     handle: '@Alvise_Canal_Noticias',
-    reputation: 22.0,
+    reputation: 28.0,
     threatLevel: 'CRÍTICO',
   },
-  '@periodistadig': {
-    id: 'actor-periodistadig',
+  '@periodistadigital': {
+    id: '11111111-1111-1111-1111-111111111111',
     handle: '@PeriodistaDigital',
-    reputation: 48.2,
+    reputation: 42.0,
+    threatLevel: 'CRÍTICO',
+  },
+  '@liberaldig': {
+    id: '44444444-4444-4444-4444-444444444444',
+    handle: '@Liberaldig',
+    reputation: 38.0,
+    threatLevel: 'CRÍTICO',
+  },
+  '@vox_es': {
+    id: '66666666-6666-6666-6666-666666666666',
+    handle: '@vox_es',
+    reputation: 32.0,
+    threatLevel: 'CRÍTICO',
+  },
+  '@mavica81': {
+    id: '77777777-7777-7777-7777-777777777777',
+    handle: '@mavica81',
+    reputation: 29.0,
     threatLevel: 'CRÍTICO',
   },
 };
@@ -38,22 +56,50 @@ const processedTweets = new WeakSet<HTMLElement>();
 const PROCESSED_ATTR = 'data-current-audited';
 
 function extractTweetHandle(tweetElement: HTMLElement): string | null {
+  // 1. Buscar en enlaces dentro de User-Name
   const userNameContainer = tweetElement.querySelector('[data-testid="User-Name"]');
-  if (!userNameContainer) return null;
+  if (userNameContainer) {
+    const links = userNameContainer.querySelectorAll('a[role="link"]');
+    for (const link of Array.from(links)) {
+      const href = link.getAttribute('href') || '';
+      if (href.startsWith('/') && !href.includes('/status/') && !href.includes('/analytics')) {
+        const handleFromHref = href.replace('/', '').trim();
+        if (handleFromHref) return `@${handleFromHref}`;
+      }
+      const text = link.textContent?.trim() || '';
+      if (text.startsWith('@')) {
+        return text;
+      }
+    }
 
-  const links = userNameContainer.querySelectorAll('a[role="link"]');
-  for (const link of Array.from(links)) {
+    const allTexts = userNameContainer.querySelectorAll('span');
+    for (const span of Array.from(allTexts)) {
+      const text = span.textContent?.trim() || '';
+      if (text.startsWith('@') && text.length > 1) {
+        return text;
+      }
+    }
+  }
+
+  // 2. Fallback: buscar cualquier enlace de perfil de autor en el tweet
+  const allUserLinks = tweetElement.querySelectorAll('a[role="link"][href^="/"]');
+  for (const link of Array.from(allUserLinks)) {
+    const href = link.getAttribute('href') || '';
+    if (href.length > 1 && !href.includes('/') && !href.includes('?') && !href.includes('home') && !href.includes('explore')) {
+      return `@${href.replace('/', '')}`;
+    }
     const text = link.textContent?.trim() || '';
-    if (text.startsWith('@')) {
+    if (text.startsWith('@') && text.length > 1) {
       return text;
     }
   }
 
-  const allTexts = userNameContainer.querySelectorAll('span');
-  for (const span of Array.from(allTexts)) {
-    const text = span.textContent?.trim() || '';
-    if (text.startsWith('@') && text.length > 1) {
-      return text;
+  // 3. Fallback de URL actual si es vista de post individual
+  const currentPath = window.location.pathname;
+  if (currentPath.includes('/status/')) {
+    const segments = currentPath.split('/');
+    if (segments[1] && segments[1] !== 'i') {
+      return `@${segments[1]}`;
     }
   }
 
