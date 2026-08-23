@@ -36,12 +36,11 @@ async fn main() {
     pretty_env_logger::init();
     info!("Iniciando Current Telegram Bot de Ciberdefensa...");
 
-    let bot_token = env::var("TELEGRAM_BOT_TOKEN").unwrap_or_else(|_| "".to_string());
-    if bot_token.is_empty() {
-        info!("TELEGRAM_BOT_TOKEN no configurado. Modo demostración e inspección listo.");
-    }
+    let bot_token = env::var("TELEGRAM_BOT_TOKEN")
+        .or_else(|_| env::var("TELOXIDE_TOKEN"))
+        .expect("Debes configurar TELEGRAM_BOT_TOKEN o TELOXIDE_TOKEN en .env");
 
-    let bot = Bot::from_env();
+    let bot = Bot::new(bot_token);
 
     Command::repl(bot, answer).await;
 }
