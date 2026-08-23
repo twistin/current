@@ -51,17 +51,15 @@ async fn answer(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
 
     match cmd {
         Command::Start => {
-            let text = "🛡️ *Bienvenido a Current Shield Bot*\n\n\
+            let text = "🛡️ Bienvenido a Current Shield Bot\n\n\
                 Herramienta de verificación ciudadana y ciberdefensa contra la desinformación en Telegram.\n\n\
-                *¿Cómo usarme?*\n\
-                1️⃣ *Reenvíame cualquier mensaje* o enlace sospechoso de un canal.\n\
-                2️⃣ Escribe `/check <texto>` para buscarlo en la base forense.\n\
-                3️⃣ Escribe `/radar` para ver actores fichados de alto riesgo.\n\n\
+                ¿Cómo usarme?\n\
+                1️⃣ Reenvíame cualquier mensaje o enlace sospechoso de un canal.\n\
+                2️⃣ Escribe /check <texto> para buscarlo en la base forense.\n\
+                3️⃣ Escribe /radar para ver actores fichados de alto riesgo.\n\n\
                 🌐 Web: https://current-app-qg6pp.ondigitalocean.app\n\
                 💻 Código Abierto bajo licencia AGPL-3.0";
-            bot.send_message(msg.chat.id, text)
-                .parse_mode(teloxide::types::ParseMode::MarkdownV2)
-                .await?;
+            bot.send_message(msg.chat.id, text).await?;
         }
         Command::Help => {
             let text = Command::descriptions().to_string();
@@ -71,7 +69,7 @@ async fn answer(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
             if query.trim().is_empty() {
                 bot.send_message(
                     msg.chat.id,
-                    "⚠️ Debes indicar qué quieres verificar.\nEjemplo: `/check Pedro Sanchez coche Lanzarote`",
+                    "⚠️ Debes indicar qué quieres verificar.\nEjemplo: /check Pedro Sanchez Lanzarote",
                 )
                 .await?;
                 return Ok(());
@@ -79,9 +77,8 @@ async fn answer(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
 
             bot.send_message(
                 msg.chat.id,
-                format!("🔍 *Auditando en la base de Current:*\n_«{}»_\n\n⏳ Consultando matriz de evidencias y radar...", query),
+                format!("🔍 Auditando en la base de Current:\n«{}»\n\n⏳ Consultando matriz de evidencias y radar...", query),
             )
-            .parse_mode(teloxide::types::ParseMode::MarkdownV2)
             .await?;
 
             // Consulta a la API de Current
