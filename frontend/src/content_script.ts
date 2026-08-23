@@ -244,21 +244,22 @@ function injectTacticalWarning(tweetElement: HTMLElement, actor: FlaggedActor): 
 function analyzeTweets(): void {
   if (!radarCache || Object.keys(radarCache).length === 0) return;
 
-  const tweets = document.querySelectorAll<HTMLElement>('article[data-testid="tweet"]');
+  const tweetElements = document.querySelectorAll<HTMLElement>(
+    'article[data-testid="tweet"], div[data-testid="cellInnerDiv"] article, [data-testid="tweet"]'
+  );
 
-  tweets.forEach((tweet) => {
-    if (processedTweets.has(tweet) || tweet.hasAttribute(PROCESSED_ATTR)) {
+  tweetElements.forEach((tweet) => {
+    if (tweet.querySelector('.current-tactical-shield-banner')) {
       return;
     }
-
-    processedTweets.add(tweet);
-    tweet.setAttribute(PROCESSED_ATTR, 'true');
 
     const handle = extractTweetHandle(tweet);
     if (!handle) return;
 
-    const normalizedHandle = handle.toLowerCase().trim();
-    const matchedActor = radarCache[normalizedHandle];
+    const cleanHandle = handle.toLowerCase().replace(/[@\s]/g, '').trim();
+    const withAt = `@${cleanHandle}`;
+
+    const matchedActor = radarCache[withAt] || radarCache[cleanHandle];
 
     if (matchedActor) {
       injectTacticalWarning(tweet, matchedActor);
@@ -310,6 +311,11 @@ async function initTacticalShield(): Promise<void> {
     }
 
     analyzeTweets();
+
+    // Intervalo de seguridad para SPAs con virtual scrolling agresivo como X
+    setInterval(() => {
+      analyzeTweets();
+    }, 1500);
 
     observer.observe(document.body, {
       childList: true,
