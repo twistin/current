@@ -355,7 +355,8 @@ async function initTacticalShield(): Promise<void> {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
       const storage = await chrome.storage.local.get('currentRadarList');
       if (storage.currentRadarList && Object.keys(storage.currentRadarList).length > 0) {
-        radarCache = storage.currentRadarList as RadarDictionary;
+        // Merge: defaults first, then storage data on top (storage never deletes hardcoded actors)
+        radarCache = { ...radarCache, ...(storage.currentRadarList as RadarDictionary) };
       }
 
       chrome.storage.onChanged.addListener((changes, areaName) => {
