@@ -4,5 +4,6 @@ members = [
     "crates/persistence",
     "crates/service",
     "crates/api",
+    "crates/telegram-bot",
 ]
 resolver = "2"
