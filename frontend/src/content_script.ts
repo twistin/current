@@ -153,83 +153,128 @@ function injectTacticalWarning(tweetElement: HTMLElement, actor: FlaggedActor): 
     backdropFilter: 'blur(8px)',
   });
 
-  banner.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-      <div style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: #ef4444; font-size: 11.5px; letter-spacing: 0.04em;">
-        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px #ef4444;"></span>
-        ⚠️ [CURRENT] ACTOR DE ALTO IMPACTO DETECTADO
-      </div>
-      <span style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700;">
-        ${actor.threatLevel}
-      </span>
-    </div>
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #9ca3af; flex-wrap: wrap; gap: 8px;">
-      <span>Índice de Confianza: <strong style="color: #ef4444;">${actor.reputation.toFixed(1)} / 100</strong></span>
-      <a 
-        href="https://current-app-qg6pp.ondigitalocean.app/actor/${encodeURIComponent(actor.id || actor.handle)}" 
-        target="_blank" 
-        rel="noopener noreferrer" 
-        style="color: #60a5fa; text-decoration: underline; font-weight: 600; cursor: pointer;"
-      >
-        Ver Expediente Público →
-      </a>
-    </div>
+  // 1. Header del Banner
+  const headerRow = document.createElement('div');
+  headerRow.style.display = 'flex';
+  headerRow.style.justifyContent = 'space-between';
+  headerRow.style.alignItems = 'center';
+  headerRow.style.gap = '8px';
 
-    ${
-      isCritical
-        ? `
-      <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 8px; margin-top: 2px; display: flex; justify-content: flex-end;">
-        <button 
-          class="current-reveal-btn"
-          style="
-            background: rgba(239, 68, 68, 0.1);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.5);
-            font-family: inherit;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 5px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.15s ease;
-          "
-        >
-          👁️ Revelar contenido bajo riesgo
-        </button>
-      </div>
-    `
-        : ''
-    }
-  `;
+  const titleBox = document.createElement('div');
+  titleBox.style.display = 'inline-flex';
+  titleBox.style.alignItems = 'center';
+  titleBox.style.gap = '6px';
+  titleBox.style.fontWeight = '700';
+  titleBox.style.color = '#ef4444';
+  titleBox.style.fontSize = '11.5px';
+  titleBox.style.letterSpacing = '0.04em';
 
+  const dot = document.createElement('span');
+  dot.style.display = 'inline-block';
+  dot.style.width = '8px';
+  dot.style.height = '8px';
+  dot.style.borderRadius = '50%';
+  dot.style.background = '#ef4444';
+  dot.style.boxShadow = '0 0 8px #ef4444';
+
+  titleBox.appendChild(dot);
+  titleBox.appendChild(document.createTextNode(' ⚠️ [CURRENT] ACTOR DE ALTO IMPACTO DETECTADO'));
+
+  const badge = document.createElement('span');
+  badge.textContent = actor.threatLevel;
+  badge.style.background = 'rgba(239, 68, 68, 0.2)';
+  badge.style.color = '#f87171';
+  badge.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+  badge.style.padding = '2px 6px';
+  badge.style.borderRadius = '4px';
+  badge.style.fontSize = '10px';
+  badge.style.fontWeight = '700';
+
+  headerRow.appendChild(titleBox);
+  headerRow.appendChild(badge);
+
+  // 2. Info Row
+  const infoRow = document.createElement('div');
+  infoRow.style.display = 'flex';
+  infoRow.style.justifyContent = 'space-between';
+  infoRow.style.alignItems = 'center';
+  infoRow.style.fontSize = '11px';
+  infoRow.style.color = '#9ca3af';
+  infoRow.style.flexWrap = 'wrap';
+  infoRow.style.gap = '8px';
+
+  const scoreSpan = document.createElement('span');
+  scoreSpan.textContent = `Índice de Confianza: ${actor.reputation.toFixed(1)} / 100`;
+  scoreSpan.style.color = '#ef4444';
+  scoreSpan.style.fontWeight = '700';
+
+  const link = document.createElement('a');
+  link.href = `https://current-app-qg6pp.ondigitalocean.app/actor/${encodeURIComponent(actor.id || actor.handle)}`;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.textContent = 'Ver Expediente Público →';
+  link.style.color = '#60a5fa';
+  link.style.textDecoration = 'underline';
+  link.style.fontWeight = '600';
+  link.style.cursor = 'pointer';
+
+  infoRow.appendChild(scoreSpan);
+  infoRow.appendChild(link);
+
+  banner.appendChild(headerRow);
+  banner.appendChild(infoRow);
+
+  // 3. Botón de Revelar (si es crítico)
   if (isCritical) {
-    const revealBtn = banner.querySelector<HTMLButtonElement>('.current-reveal-btn');
-    if (revealBtn) {
-      revealBtn.addEventListener('click', (e: MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
+    const btnRow = document.createElement('div');
+    btnRow.style.borderTop = '1px solid rgba(255, 255, 255, 0.08)';
+    btnRow.style.paddingTop = '8px';
+    btnRow.style.marginTop = '2px';
+    btnRow.style.display = 'flex';
+    btnRow.style.justifyContent = 'flex-end';
 
-        contentNodes.forEach((node) => {
-          node.style.filter = 'none';
-          node.style.opacity = '1';
-          node.style.userSelect = 'auto';
-          node.style.pointerEvents = 'auto';
-        });
+    const revealBtn = document.createElement('button');
+    revealBtn.textContent = '👁️ Revelar contenido bajo riesgo';
+    revealBtn.className = 'current-reveal-btn';
+    Object.assign(revealBtn.style, {
+      background: 'rgba(239, 68, 68, 0.1)',
+      color: '#fca5a5',
+      border: '1px solid rgba(239, 68, 68, 0.5)',
+      fontFamily: 'inherit',
+      fontSize: '11px',
+      fontWeight: '600',
+      padding: '5px 10px',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '5px',
+      transition: 'all 0.15s ease',
+    });
 
-        revealBtn.style.background = 'transparent';
-        revealBtn.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-        revealBtn.style.color = '#9ca3af';
-        revealBtn.style.cursor = 'default';
-        revealBtn.textContent = '🔓 Contenido revelado por el usuario';
-        revealBtn.disabled = true;
+    revealBtn.addEventListener('click', (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      contentNodes.forEach((node) => {
+        node.style.filter = 'none';
+        node.style.opacity = '1';
+        node.style.userSelect = 'auto';
+        node.style.pointerEvents = 'auto';
       });
 
-      revealBtn.addEventListener('mousedown', (e: MouseEvent) => e.stopPropagation());
-    }
+      revealBtn.style.background = 'transparent';
+      revealBtn.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+      revealBtn.style.color = '#9ca3af';
+      revealBtn.style.cursor = 'default';
+      revealBtn.textContent = '🔓 Contenido revelado por el usuario';
+      revealBtn.disabled = true;
+    });
+
+    revealBtn.addEventListener('mousedown', (e: MouseEvent) => e.stopPropagation());
+
+    btnRow.appendChild(revealBtn);
+    banner.appendChild(btnRow);
   }
 
   if (tweetTextNode && tweetTextNode.parentElement) {
