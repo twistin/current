@@ -20,9 +20,10 @@ import { ManifestoPage } from './components/ManifestoPage';
 import { RadarDashboard } from './components/RadarDashboard';
 import { ActorDossier } from './components/ActorDossier';
 import { CommunityActivityFeed } from './components/CommunityActivityFeed';
+import { ResearchLab } from './components/ResearchLab';
 import { useTheme } from './theme';
 
-type AppView = 'landing' | 'queue' | 'manifesto' | 'radar';
+type AppView = 'landing' | 'queue' | 'manifesto' | 'radar' | 'lab';
 
 function parseRouteFromUrl(): {
   view: AppView;
@@ -66,6 +67,10 @@ function parseRouteFromUrl(): {
 
   if (pathname === '/manifesto' || pathname === '/manifiesto') {
     return { view: 'manifesto', claimId: null, memberId: null, actorId: null };
+  }
+
+  if (pathname === '/lab' || pathname === '/observatorio') {
+    return { view: 'lab', claimId: null, memberId: null, actorId: null };
   }
 
   if (pathname === '/queue' || pathname === '/cola') {
@@ -203,6 +208,8 @@ export const App: React.FC = () => {
       navigate('/manifesto');
     } else if (view === 'radar') {
       navigate('/radar');
+    } else if (view === 'lab') {
+      navigate('/lab');
     } else if (view === 'queue') {
       navigate('/queue');
     } else {
@@ -264,6 +271,14 @@ export const App: React.FC = () => {
         {/* VISTA G: Radar Táctico de Actores y Vectores */}
         {!selectedActorId && !selectedMemberId && !selectedClaimId && currentView === 'radar' && (
           <RadarDashboard onSelectActor={(actorId) => handleSelectActor(actorId)} />
+        )}
+
+        {/* VISTA H: Current Research Lab (Observatorio Académico) */}
+        {!selectedActorId && !selectedMemberId && !selectedClaimId && currentView === 'lab' && (
+          <ResearchLab
+            claims={claims}
+            onSelectClaim={(claimId) => handleSelectClaim(claimId)}
+          />
         )}
 
         {/* VISTA E: Perfil Seudónimo de Miembro */}

@@ -7,8 +7,8 @@ interface HeaderProps {
   memberPseudonym?: string | null;
   onRegisterClick?: () => void;
   onLogout?: () => void;
-  currentView?: 'landing' | 'queue' | 'manifesto' | 'room' | 'profile' | 'radar' | 'actor';
-  onNavigate?: (view: 'landing' | 'queue' | 'manifesto' | 'radar') => void;
+  currentView?: 'landing' | 'queue' | 'manifesto' | 'room' | 'profile' | 'radar' | 'actor' | 'lab';
+  onNavigate?: (view: 'landing' | 'queue' | 'manifesto' | 'radar' | 'lab') => void;
   onSelectMember?: (pseudonym: string) => void;
   theme: ThemeMode;
   onToggleTheme: () => void;
@@ -102,6 +102,27 @@ export const Header: React.FC<HeaderProps> = ({
                 }}
               >
                 {t('header.nav_manifesto')}
+              </button>
+
+              <button
+                onClick={() => onNavigate('lab')}
+                className="mono"
+                style={{
+                  background: currentView === 'lab' ? 'rgba(168, 85, 247, 0.2)' : 'transparent',
+                  color: currentView === 'lab' ? '#c084fc' : 'var(--text-soft)',
+                  border: currentView === 'lab' ? '1px solid #a855f7' : '1px solid transparent',
+                  padding: '5px 10px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  fontWeight: currentView === 'lab' ? 700 : 500,
+                  transition: 'all 0.15s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <span>🔬</span> Lab Académico
               </button>
             </nav>
           )}
