@@ -1,4 +1,6 @@
-# Guía de Puesta en Marcha: Current Telegram Bot (@CurrentShieldBot)
+# Guía de Puesta en Marcha: Current Telegram Bot (@CurrentRadarBot)
+
+Bot oficial de ciberdefensa ciudadana en Telegram: **[`https://t.me/CurrentRadarBot`](https://t.me/CurrentRadarBot)** (`@CurrentRadarBot`).
 
 Este microservicio en Rust (`backend/crates/telegram-bot`) permite auditar bulos, consultar el Radar de Actores y recibir alertas automáticas en grupos y canales de Telegram.
 
