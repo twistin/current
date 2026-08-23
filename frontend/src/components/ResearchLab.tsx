@@ -519,15 +519,17 @@ export const ResearchLab: React.FC<ResearchLabProps> = ({ claims }) => {
       {/* CONTENIDO PESTAÑA 3: TAXONOMÍAS */}
       {activeTab === 'taxonomies' && (
         <div style={{
-          background: '#0b1120',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: '16px',
-          padding: '28px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '20px'
+          gap: '24px'
         }}>
-          <div>
+          {/* Header */}
+          <div style={{
+            background: '#0b1120',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: '16px',
+            padding: '28px 32px',
+          }}>
             <span style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -537,53 +539,104 @@ export const ResearchLab: React.FC<ResearchLabProps> = ({ claims }) => {
               fontWeight: 700,
               color: '#38bdf8',
               background: 'rgba(56, 189, 248, 0.12)',
-              padding: '3px 8px',
+              padding: '3px 10px',
               borderRadius: '6px',
               border: '1px solid rgba(56, 189, 248, 0.3)',
-              marginBottom: '8px'
+              marginBottom: '14px'
             }}>
-              MARCO METODOLÓGICO UE & FIRST DRAFT
+              🏛️ MARCO METODOLÓGICO UE & FIRST DRAFT
             </span>
-            <h3 style={{ fontSize: '22px', fontWeight: 700, color: '#ffffff', margin: '0 0 6px' }}>
+            <h3 style={{ fontSize: '24px', fontWeight: 700, color: '#ffffff', margin: '0 0 8px' }}>
               Matriz de Clasificación Tipológica de Desinformación
             </h3>
-            <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0, maxWidth: '720px', lineHeight: 1.5 }}>
-              Estandarización de las anomalías informativas detectadas en Current según la taxonomía académica de 7 tipos de desinformación (Wardle & Derakhshan).
+            <p style={{ fontSize: '13.5px', color: '#94a3b8', margin: 0, maxWidth: '760px', lineHeight: 1.6 }}>
+              Estandarización de las anomalías informativas detectadas en Current según la taxonomía académica
+              de 7 tipos de desinformación <strong style={{ color: '#cbd5e1' }}>(Wardle & Derakhshan)</strong>.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+          {/* Cards — 2 columnas con espacio generoso */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
             {[
-              { type: 'Reciclaje Temporal / Anacronismo', count: 4, desc: 'Reutilización de encuestas o sucesos pasados presentándolos como de actualidad inmediata.', color: '#ef4444' },
-              { type: 'Contenido Manipulado / Descontextualizado', count: 6, desc: 'Vídeos o documentos auténticos alterados o con atribución falsa de autoría/lugar.', color: '#f59e0b' },
-              { type: 'Contenido Fabricado 100%', count: 3, desc: 'Falsificación total de resoluciones judiciales o declaraciones inexistentes.', color: '#ec4899' },
-              { type: 'Uso Sesgado de Estadísticas', count: 5, desc: 'Multiplicación o tergiversación de datos demográficos y registros oficiales.', color: '#a855f7' },
+              {
+                type: 'Reciclaje Temporal / Anacronismo',
+                count: 4,
+                desc: 'Reutilización de encuestas o sucesos pasados presentándolos como de actualidad inmediata. Ejemplo documentado: vídeo de Ceuta con rótulo 05/02/2026 difundido en agosto como "esta mañana".',
+                color: '#ef4444',
+                icon: '🕰️',
+                tag: 'TIPO I'
+              },
+              {
+                type: 'Contenido Manipulado / Descontextualizado',
+                count: 6,
+                desc: 'Vídeos o documentos auténticos empleados fuera de su contexto original, con atribución falsa de autoría, lugar o fecha de los hechos.',
+                color: '#f59e0b',
+                icon: '✂️',
+                tag: 'TIPO II'
+              },
+              {
+                type: 'Contenido Fabricado 100%',
+                count: 3,
+                desc: 'Falsificación total de resoluciones judiciales, declaraciones de autoridades o eventos que nunca ocurrieron.',
+                color: '#ec4899',
+                icon: '🧪',
+                tag: 'TIPO III'
+              },
+              {
+                type: 'Uso Sesgado de Estadísticas',
+                count: 5,
+                desc: 'Multiplicación o tergiversación de datos demográficos y registros oficiales para amplificar una narrativa de amenaza.',
+                color: '#a855f7',
+                icon: '📊',
+                tag: 'TIPO IV'
+              },
             ].map((item, idx) => (
               <div key={idx} style={{
-                background: '#030712',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                borderRadius: '12px',
-                padding: '18px',
+                background: '#0b1120',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderLeft: `4px solid ${item.color}`,
+                borderRadius: '14px',
+                padding: '24px 26px',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'space-between'
+                gap: '14px',
               }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#f8fafc' }}>{item.type}</span>
+                {/* Top row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '22px' }}>{item.icon}</span>
                     <span style={{
                       fontFamily: 'monospace',
-                      fontSize: '11px',
+                      fontSize: '10.5px',
                       fontWeight: 700,
                       color: item.color,
-                      background: 'rgba(255, 255, 255, 0.05)',
+                      background: 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${item.color}33`,
                       padding: '2px 8px',
-                      borderRadius: '4px'
+                      borderRadius: '4px',
+                      letterSpacing: '0.06em'
                     }}>
-                      {item.count} Casos
+                      {item.tag}
                     </span>
                   </div>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: 1.45 }}>
+                  <span style={{
+                    fontFamily: 'monospace',
+                    fontSize: '20px',
+                    fontWeight: 800,
+                    color: item.color,
+                    lineHeight: 1,
+                  }}>
+                    {item.count}
+                    <span style={{ fontSize: '11px', fontWeight: 500, color: '#64748b', marginLeft: '4px' }}>casos</span>
+                  </span>
+                </div>
+
+                {/* Title + description */}
+                <div>
+                  <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#f1f5f9', margin: '0 0 8px', lineHeight: 1.3 }}>
+                    {item.type}
+                  </h4>
+                  <p style={{ fontSize: '12.5px', color: '#94a3b8', margin: 0, lineHeight: 1.55 }}>
                     {item.desc}
                   </p>
                 </div>
