@@ -9,7 +9,7 @@ struct ClaimSearchResult {
     id: String,
     summary: String,
     propagation_score: i32,
-    current_verdict: Option<String>,
+    verdict: Option<String>,
 }
 
 #[derive(BotCommands, Clone)]
@@ -95,7 +95,7 @@ async fn answer(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
                             .find(|c| c.summary.to_lowercase().contains(&query_lower));
 
                         if let Some(c) = found {
-                            let verdict_str = c.current_verdict.unwrap_or_else(|| "unproven".to_string());
+                            let verdict_str = c.verdict.unwrap_or_else(|| "unproven".to_string());
                             let emoji = if verdict_str == "false" { "❌ FALSO" } else if verdict_str == "misleading" { "⚠️ ENGAÑOSO" } else { "🔍 EN AUDITORÍA" };
                             format!(
                                 "🚨 *EXPEDIENTE ENCONTRADO EN CURRENT*\n\n\
