@@ -111,24 +111,22 @@ function injectTacticalWarning(tweetElement: HTMLElement, actor: FlaggedActor): 
 
   const isCritical = actor.threatLevel === 'CRÍTICO';
 
+  // Buscar todos los bloques de contenido (texto, fotos, vídeos, embeds)
   const tweetTextNode = tweetElement.querySelector<HTMLElement>('[data-testid="tweetText"]');
-  const tweetPhotoNode = tweetElement.querySelector<HTMLElement>('[data-testid="tweetPhoto"]');
-  const tweetVideoNode = tweetElement.querySelector<HTMLElement>('[data-testid="videoPlayer"], [data-testid="videoComponent"]');
-  const tweetCardNode = tweetElement.querySelector<HTMLElement>('[data-testid="card.wrapper"]');
+  const mediaNodes = tweetElement.querySelectorAll<HTMLElement>(
+    '[data-testid="tweetPhoto"], [data-testid="videoPlayer"], [data-testid="videoComponent"], video, [data-testid="card.wrapper"]'
+  );
 
   const contentNodes: HTMLElement[] = [
     tweetTextNode,
-    tweetPhotoNode?.parentElement as HTMLElement,
-    tweetVideoNode?.parentElement as HTMLElement,
-    tweetCardNode,
+    ...Array.from(mediaNodes).map((m) => (m.parentElement as HTMLElement) || m),
   ].filter((node): node is HTMLElement => node !== null && node !== undefined);
 
   if (isCritical) {
     contentNodes.forEach((node) => {
-      node.style.filter = 'blur(6px)';
-      node.style.opacity = '0.65';
-      node.style.transition = 'filter 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease';
-      node.style.userSelect = 'none';
+      node.style.filter = 'blur(10px) brightness(0.7)';
+      node.style.opacity = '0.5';
+      node.style.transition = 'filter 0.3s ease, opacity 0.3s ease';
       node.style.pointerEvents = 'none';
     });
   }
