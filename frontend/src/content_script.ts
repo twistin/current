@@ -242,24 +242,23 @@ function injectTacticalWarning(tweetElement: HTMLElement, actor: FlaggedActor): 
 function analyzeTweets(): void {
   if (!radarCache || Object.keys(radarCache).length === 0) return;
 
-  // 1. Detección si estamos directamente en la página de un post (/usuario/status/...)
-  const currentPath = window.location.pathname;
+  const currentPath = window.location.pathname.toLowerCase();
   let pageAuthorHandle: string | null = null;
   if (currentPath.includes('/status/')) {
     const segments = currentPath.split('/');
     if (segments[1] && segments[1] !== 'i') {
-      pageAuthorHandle = `@${segments[1].toLowerCase().trim()}`;
+      pageAuthorHandle = `@${segments[1].trim()}`;
     }
   }
 
   const tweetElements = document.querySelectorAll<HTMLElement>(
-    'article[data-testid="tweet"], div[data-testid="cellInnerDiv"] article, article, [data-testid="tweet"]'
+    'article[data-testid="tweet"], div[data-testid="cellInnerDiv"] article, article, [data-testid="tweet"], main section'
   );
 
-  console.log(`🛡️ [CURRENT] Escaneando DOM de X... Elementos encontrados: ${tweetElements.length}. Actor en URL: ${pageAuthorHandle || 'ninguno'}`);
+  console.error(`🛡️ [CURRENT] Escaneando DOM de X... Elementos: ${tweetElements.length}. URL Author: ${pageAuthorHandle || 'ninguno'}`);
 
   tweetElements.forEach((tweet) => {
-    if (tweet.querySelector('.current-tactical-shield-banner')) {
+    if (tweet.querySelector('.current-tactical-shield-banner') || tweet.classList.contains('current-audited-done')) {
       return;
     }
 
@@ -272,7 +271,8 @@ function analyzeTweets(): void {
     const matchedActor = radarCache[withAt] || radarCache[cleanHandle];
 
     if (matchedActor) {
-      console.log(`🚨 [CURRENT] ¡MATCH CONFIRMADO! Aplicando escudo a ${matchedActor.handle}...`);
+      console.error(`🚨 [CURRENT] ¡MATCH CONFIRMADO! Aplicando escudo a ${matchedActor.handle}...`);
+      tweet.classList.add('current-audited-done');
       injectTacticalWarning(tweet, matchedActor);
     }
   });
