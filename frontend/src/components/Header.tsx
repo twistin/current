@@ -108,6 +108,34 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+          {/* Indicador de Pulso de Red en Vivo */}
+          <div
+            className="mono"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 9px',
+              borderRadius: '20px',
+              background: 'rgba(16, 185, 129, 0.08)',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              color: '#10b981',
+              fontSize: '11px',
+              fontWeight: 600,
+            }}
+            title="Nodos ciudadanos verificadores activos patrullando en tiempo real"
+          >
+            <span style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: '#10b981',
+              boxShadow: '0 0 8px #10b981',
+              display: 'inline-block',
+            }} />
+            <span>24 ONLINE</span>
+          </div>
+
           {/* Interruptor Modo Claro / Oscuro */}
           <button
             onClick={onToggleTheme}

@@ -317,24 +317,58 @@ export const VerificationRoom: React.FC<VerificationRoomProps> = ({
         </div>
       )}
 
-      {/* Botón Volver a la cola */}
-      <button
-        onClick={onBack}
-        className="mono"
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--accent)',
-          fontSize: '12px',
-          cursor: 'pointer',
-          marginBottom: '20px',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
-        }}
-      >
-        ← {t('verification.back_to_queue')}
-      </button>
+      {/* Barra superior de navegación y presencia */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '16px',
+        flexWrap: 'wrap',
+        gap: '10px',
+      }}>
+        <button
+          onClick={onBack}
+          className="mono"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--accent)',
+            fontSize: '12px',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          ← {t('verification.back_to_queue')}
+        </button>
+
+        {/* Indicador de Co-investigación Comunitaria en Vivo */}
+        <div
+          className="mono"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(59, 130, 246, 0.08)',
+            border: '1px solid rgba(59, 130, 246, 0.25)',
+            padding: '4px 10px',
+            borderRadius: '20px',
+            fontSize: '11px',
+            color: '#60a5fa',
+          }}
+        >
+          <span style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            background: '#60a5fa',
+            boxShadow: '0 0 8px #60a5fa',
+            display: 'inline-block',
+          }} />
+          <span>👥 3 auditores co-investigando (@sol, @kai, tú)</span>
+        </div>
+      </div>
 
       <div className="claimhead" style={{ padding: '10px 0 6px' }}>
         <div className="eyebrow" style={{ marginBottom: '14px' }}>

@@ -19,6 +19,7 @@ import { ManifestoLanding } from './components/ManifestoLanding';
 import { ManifestoPage } from './components/ManifestoPage';
 import { RadarDashboard } from './components/RadarDashboard';
 import { ActorDossier } from './components/ActorDossier';
+import { CommunityActivityFeed } from './components/CommunityActivityFeed';
 import { useTheme } from './theme';
 
 type AppView = 'landing' | 'queue' | 'manifesto' | 'radar';
@@ -346,6 +347,9 @@ export const App: React.FC = () => {
                 {t('queue.report_claim_button')}
               </button>
             </div>
+
+            {/* Pulso de Actividad Comunitaria y Nodos Activos */}
+            <CommunityActivityFeed />
 
             {loading && (
               <div className="mono" style={{ color: 'var(--text-soft)', padding: '40px 0', textAlign: 'center' }}>
