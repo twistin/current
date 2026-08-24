@@ -75,7 +75,7 @@ impl ContributionRepo {
         let row = sqlx::query(
             r#"
             INSERT INTO contribution (id, member_id, target_type, target_id, created_at, outcome)
-            VALUES ($1, $2, $3::contribution_target, $4, $5, $6::contribution_outcome)
+            VALUES ($1, $2, $3::contribution_target_type, $4, $5, $6::contribution_outcome)
             RETURNING id, member_id, target_type::text, target_id, created_at, outcome::text
             "#,
         )

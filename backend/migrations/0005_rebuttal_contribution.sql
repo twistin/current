@@ -16,11 +16,11 @@ DO $$ BEGIN CREATE TYPE contribution_target_type AS ENUM ('assertion', 'source',
 DO $$ BEGIN CREATE TYPE contribution_outcome AS ENUM ('held', 'overturned'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 CREATE TABLE IF NOT EXISTS contribution (
-    id          UUID                 PRIMARY KEY DEFAULT gen_random_uuid(),
-    member_id   UUID                 NOT NULL REFERENCES member(id),
-    target_type contribution_target  NOT NULL,
-    target_id   UUID                 NOT NULL,
-    created_at  TIMESTAMPTZ          NOT NULL DEFAULT now(),
+    id          UUID                      PRIMARY KEY DEFAULT gen_random_uuid(),
+    member_id   UUID                      NOT NULL REFERENCES member(id),
+    target_type contribution_target_type  NOT NULL,
+    target_id   UUID                      NOT NULL,
+    created_at  TIMESTAMPTZ               NOT NULL DEFAULT now(),
     outcome     contribution_outcome
 );
 
